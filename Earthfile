@@ -22,4 +22,7 @@ build:
 tests:
     FROM +sbt
     COPY src src
-    RUN sbt test
+    COPY docker-compose.yml ./
+    WITH DOCKER --compose docker-compose.yml
+        RUN sbt test
+    END

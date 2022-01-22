@@ -11,7 +11,9 @@ parallelExecution in Test := false
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % sparkVersion % Provided,
   "org.apache.spark" %% "spark-sql" % sparkVersion % Provided,
-   "com.holdenkarau" %% "spark-testing-base" % "3.2.0_1.1.1" % Test,
-   "org.typelevel" %% "discipline-scalatest" % "2.1.5" % Test
+  "ru.yandex.clickhouse" % "clickhouse-jdbc" % "0.3.2",
+
+  "com.holdenkarau" %% "spark-testing-base" % "3.2.0_1.1.1" % Test,
+  "org.typelevel" %% "discipline-scalatest" % "2.1.5" % Test
 
 )

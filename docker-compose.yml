@@ -1,8 +1,22 @@
 version: "3.7"
-
 services:
+  ch_zookeeper:
+    image: zookeeper
+    container_name: ch-zookeeper
+    network_mode: host
+
   clickhouse-server:
     image: yandex/clickhouse-server:21.8.10.19
     container_name: clickhouse-server
-    ports:
-      - 8123:8123
+    network_mode: host
+    volumes:
+      - ./docker/config-main.xml:/etc/clickhouse-server/config.xml
+      - ./docker/users.xml:/etc/clickhouse-server/users.xml
+
+  clickhouse-server-replica:
+    image: yandex/clickhouse-server:21.8.10.19
+    container_name: clickhouse-server-replica
+    network_mode: host
+    volumes:
+      - ./docker/config-replica.xml:/etc/clickhouse-server/config.xml
+      - ./docker/users.xml:/etc/clickhouse-server/users.xml

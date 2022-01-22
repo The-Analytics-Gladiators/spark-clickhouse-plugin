@@ -3,3 +3,10 @@
 .bsp/
 .idea/
 target/
+.bloop
+.metals/
+project/metals.sbt
+project/project/metals.sbt
+project/project/target
+project/project/project.target.config-classes
+project/project/project/metals.sbt

@@ -1,7 +1,7 @@
 version: "3.7"
-networks:
-  spark_network:
-    name: spark_network
+#networks:
+#  spark_network:
+#    name: spark_network
 
 services:
   clickhouse-server:
@@ -9,13 +9,13 @@ services:
     container_name: clickhouse-server
     expose:
       - 8123:8123
-    networks:
-      - spark_network
+#    networks:
+#      - spark_network
 
 
-  spark-master:
-    image: bitnami/spark:3.2.0
-    container_name: spark-master
-    networks:
-      - spark_network
+#  spark-master:
+#    image: bitnami/spark:3.2.0
+#    container_name: spark-master
+#    networks:
+#      - spark_network
 

@@ -3,9 +3,9 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 class DummyTest extends AnyFlatSpec with SharedSparkContext {
   "spark" should "run" in {
-     val set = sc.parallelize(Seq(1, 2, 3))
+     val set = sc.parallelize(Seq(1, 2, 3, 4))
        .collect().toSet
 
-    assert(set == Set(1, 2, 3))
+    assert(set == Set(1, 2, 3, 4))
   }
 }

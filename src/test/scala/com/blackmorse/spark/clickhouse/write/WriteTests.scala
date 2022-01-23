@@ -1,9 +1,9 @@
 package com.blackmorse.spark.clickhouse.write
 
-import com.blackmorse.spark.clickhouse.{CLICKHOUSE_HOST_NAME, CLICKHOUSE_PORT, TABLE}
 import com.clickhouse.jdbc.ClickHouseDriver
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.flatspec.AnyFlatSpec
+import com.blackmorse.spark.clickhouse._
 
 import java.util.Properties
 
@@ -24,20 +24,13 @@ class WriteTests extends AnyFlatSpec with DataFrameSuiteBase {
       .withColumnRenamed("value", "a")
 
     df.write
-      .format("com.blackmorse.spark.clickhouse")
-      .option(CLICKHOUSE_HOST_NAME, "localhost")
-      .option(CLICKHOUSE_PORT, "8123")
-      .option(TABLE, "default.t")
-      .save()
+      .clickhouse("localhost", 8123, "default.t")
 
-    val rs = connection.createStatement().executeQuery("SELECT * FROM default.t ORDER BY a")
+    val resDf = sqlContext.read
+      .clickhouse("localhost", 8123, "default.t")
 
-    rs.next()
-    assert(rs.getInt(1) == 1)
-    rs.next()
-    assert(rs.getInt(1) == 2)
-    rs.next()
-    assert(rs.getInt(1) == 3)
+    val result = resDf.collect().map(_.getInt(0)).sorted
+    assert(result sameElements Array(1, 2, 3))
 
     connection.createStatement().execute("DROP TABLE t")
   }

@@ -1,11 +1,10 @@
 package com.blackmorse.spark.clickhouse
 
+import com.clickhouse.jdbc.ClickHouseDriver
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.flatspec.AnyFlatSpec
 
 import java.util.Properties
-import java.util.concurrent.TimeUnit
-import ru.yandex.clickhouse.BalancedClickhouseDataSource
 
 class DummyTest extends AnyFlatSpec with DataFrameSuiteBase {
   "spark" should "run" in {
@@ -17,11 +16,9 @@ class DummyTest extends AnyFlatSpec with DataFrameSuiteBase {
 
   "Test clickhouse cluster" should "be consistent" in {
   //TODO managed connections
-    val dataSource = new BalancedClickhouseDataSource("jdbc:clickhouse://localhost:8123", new Properties());
-    val dataSource2 = new BalancedClickhouseDataSource("jdbc:clickhouse://localhost:8124", new Properties());
-    val connection = dataSource.getConnection()
-    val connection2 = dataSource2.getConnection()
-    
+    val connection = new ClickHouseDriver().connect("jdbc:clickhouse://localhost:8123", new Properties());
+    val connection2 = new ClickHouseDriver().connect("jdbc:clickhouse://localhost:8124", new Properties());
+
     connection.createStatement().executeQuery("CREATE TABLE t ON CLUSTER  spark_clickhouse_cluster (a UInt64) ENGINE = MergeTree() ORDER BY a")
     connection.createStatement().executeQuery("CREATE TABLE d ON CLUSTER  spark_clickhouse_cluster (a UInt64) ENGINE = Distributed('spark_clickhouse_cluster', 'default', 't')")
     connection.createStatement().executeQuery("INSERT INTO t VALUES (1)")

@@ -27,7 +27,7 @@ class WriteTests extends AnyFlatSpec with DataFrameSuiteBase {
   }
 
   "Two fields" should "be written into 2 corresponding fields" in {
-    withTable(Seq("a String, b Int32"), "a") {
+    withTable(Seq("a String", "b Int32"), "a") {
       val seq = Seq(("1", 1), ("2", 2))
       sc.parallelize(seq).toDF("a", "b")
         .write.clickhouse(host, port, table)
@@ -40,7 +40,7 @@ class WriteTests extends AnyFlatSpec with DataFrameSuiteBase {
   }
 
   "Two fields" should "be written into table with 3 fields" in {
-    withTable(Seq("a Int16, b Int64, c String"), "a") {
+    withTable(Seq("a Int16", "b Int64", "c String"), "a") {
       val seq = Seq((1.toShort, 1L), (2.toShort, 2L))
       sc.parallelize(seq).toDF("a", "b")
         .write.clickhouse(host, port, table)
@@ -48,8 +48,10 @@ class WriteTests extends AnyFlatSpec with DataFrameSuiteBase {
       val result = sqlContext.read.clickhouse(host, port, table)
         .map(row => (/** TODO getShort(0)**/row.getInt(0), row.getLong(1), row.getString(2)))
         .collect()
+        .sortBy(_._1)
 
-      assert(result sameElements seq.map{case (a, b) => (a, b, "")})
+      val expected = seq.map { case (a, b) => (a, b, "") }
+      assert(result sameElements expected)
     }
   }
 }

@@ -1,6 +1,7 @@
 package com.blackmorse.spark.clickhouse
 
 import com.clickhouse.jdbc.ClickHouseDriver
+import ru.yandex.clickhouse.settings.ClickHouseProperties
 
 import java.util.Properties
 import scala.util.{Failure, Success, Using}
@@ -23,10 +24,10 @@ object ClickhouseTests {
              |""".stripMargin)
       testSpec
       } finally {
-        connection.createStatement().execute(s"DROP TABLE $tableName SYNC")
+        connection.createStatement().execute(s"DROP TABLE IF EXISTS $tableName SYNC")
       }
     } match {
-      case Success(_) => println("Success")
+      case Success(_) =>
       case Failure(e) => throw e
     }
   }

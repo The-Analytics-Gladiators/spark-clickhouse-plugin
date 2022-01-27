@@ -1,19 +1,11 @@
 package com.blackmorse.spark.clickhouse.reader
 
-import com.clickhouse.client.ClickHouseDataType
+import com.blackmorse.spark.clickhouse.sql.types.ClickhouseField
 import com.clickhouse.jdbc.ClickHouseDriver
 
 import java.util.Properties
 import scala.collection.mutable
 import scala.util.{Failure, Success, Using}
-
-sealed trait ClickhouseType
-
-case class PrimitiveClickhouseType(typ: ClickHouseDataType, nullable: Boolean, lowCardinality: Boolean) extends ClickhouseType
-case class ClickhouseArray(typ: ClickhouseType) extends ClickhouseType
-case class ClickhouseMap(key: ClickhouseType, value: ClickhouseType, nullable: Boolean) extends ClickhouseType
-
-case class ClickhouseField(name: String, typ: ClickhouseType)
 
 object ClickhouseSchemaParser {
   def parseTable(url: String, table: String): Seq[ClickhouseField] = {

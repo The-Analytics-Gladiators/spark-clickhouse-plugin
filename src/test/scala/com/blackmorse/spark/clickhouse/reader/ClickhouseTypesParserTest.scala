@@ -1,5 +1,6 @@
 package com.blackmorse.spark.clickhouse.reader
 
+import com.blackmorse.spark.clickhouse.sql.types.{ClickhouseArray, ClickhouseDecimal, ClickhouseDecimalN, PrimitiveClickhouseType}
 import com.clickhouse.client.ClickHouseDataType
 import org.scalatest.matchers.should
 import org.scalatest.prop.TableDrivenPropertyChecks
@@ -230,6 +231,23 @@ class ClickhouseTypesParserTest extends AnyPropSpec
 
   property("Parsing Array of LowCardinality of Nullable of primitive types") {
     forAll(arrayOfLowCardinalityOfPrimitives) { case (typ, expectedResult) =>
+      ClickhouseTypesParser.parseType(typ) should be (expectedResult)
+    }
+  }
+
+  val decimals = Table(
+    "decimals",
+    "Decimal(4, 5)" -> ClickhouseDecimal(4 ,5, false),
+    "Nullable(Decimal(8, 10))" -> ClickhouseDecimal(8, 10, true),
+    "Array(Nullable(Decimal(4, 5)))" -> ClickhouseArray(ClickhouseDecimal(4, 5, true)),
+    "Decimal32(8)" -> ClickhouseDecimalN(32, 8, false),
+    "Nullable(Decimal64(4))" -> ClickhouseDecimalN(64, 4, true),
+    "Array(Decimal128(5))" -> ClickhouseArray(ClickhouseDecimalN(128, 5, false)),
+    "Array(Nullable(Decimal256(19)))" -> ClickhouseArray(ClickhouseDecimalN(256, 19, true))
+  )
+
+  property("Parsing various of Decimals") {
+    forAll(decimals) { case (typ, expectedResult) =>
       ClickhouseTypesParser.parseType(typ) should be (expectedResult)
     }
   }

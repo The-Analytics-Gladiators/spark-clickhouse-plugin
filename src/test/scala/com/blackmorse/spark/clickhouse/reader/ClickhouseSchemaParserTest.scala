@@ -1,6 +1,7 @@
 package com.blackmorse.spark.clickhouse.reader
 
 import com.blackmorse.spark.clickhouse.ClickhouseTests.withTable
+import com.blackmorse.spark.clickhouse.sql.types.{ClickhouseArray, ClickhouseDecimal, ClickhouseDecimalN, ClickhouseField, PrimitiveClickhouseType}
 import com.clickhouse.client.ClickHouseDataType
 import org.scalatest.flatspec.AnyFlatSpec
 
@@ -27,6 +28,24 @@ class ClickhouseSchemaParserTest extends AnyFlatSpec {
           ClickhouseField("f", ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.UInt256, nullable = true, lowCardinality = false))),
           ClickhouseField("g", ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.UInt8, nullable = false, lowCardinality = true))),
           ClickhouseField("h", ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.UInt64, nullable = true, lowCardinality = true))),
+      ))
+    }
+  }
+
+  "ClickhouseSchemaParser" should "parse schema with Decimals" in {
+    withTable(Seq(
+      "a Decimal(3, 2)",
+      "b Decimal32(5)",
+      "c Decimal64(8)",
+      "d Decimal128(12)",
+    ), "a") {
+      val fields = ClickhouseSchemaParser.parseTable("jdbc:clickhouse://localhost:8123", "default.test_table")
+
+      assert(fields equals Seq(
+        ClickhouseField("a", ClickhouseDecimal(3, 2, nullable = false)),
+        ClickhouseField("b", ClickhouseDecimal(9, 5, nullable = false)),
+        ClickhouseField("c", ClickhouseDecimal(18, 8, nullable = false)),
+        ClickhouseField("d", ClickhouseDecimal(38, 12, nullable = false)),
       ))
     }
   }

@@ -1,6 +1,6 @@
 package com.blackmorse.spark.clickhouse.reader
 
-import com.blackmorse.spark.clickhouse.sql.types.{ClickhouseArray, ClickhouseDecimal, ClickhouseDecimalN, PrimitiveClickhouseType}
+import com.blackmorse.spark.clickhouse.sql.types.{ClickhouseArray, ClickhouseDateTime64, ClickhouseDecimal, ClickhouseDecimalN, PrimitiveClickhouseType}
 import com.clickhouse.client.ClickHouseDataType
 import org.scalatest.matchers.should
 import org.scalatest.prop.TableDrivenPropertyChecks
@@ -248,6 +248,20 @@ class ClickhouseTypesParserTest extends AnyPropSpec
 
   property("Parsing various of Decimals") {
     forAll(decimals) { case (typ, expectedResult) =>
+      ClickhouseTypesParser.parseType(typ) should be (expectedResult)
+    }
+  }
+
+  val dates = Table(
+    "dates",
+    "Date" -> PrimitiveClickhouseType(ClickHouseDataType.Date, false, false),
+    "Date32" -> PrimitiveClickhouseType(ClickHouseDataType.Date32, false, false),
+    "DateTime" -> PrimitiveClickhouseType(ClickHouseDataType.DateTime, false, false),
+    "DateTime64(8)" -> ClickhouseDateTime64(8, false)
+  )
+
+  property("Parsing various DateTimes") {
+    forAll(dates) { case (typ, expectedResult) =>
       ClickhouseTypesParser.parseType(typ) should be (expectedResult)
     }
   }

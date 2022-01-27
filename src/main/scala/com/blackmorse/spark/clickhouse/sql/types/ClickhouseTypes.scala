@@ -18,6 +18,7 @@ case class ClickhouseDecimal(p: Int, s: Int, nullable: Boolean) extends DecimalT
  */
 case class ClickhouseDecimalN(n: Int, s: Int, nullable: Boolean) extends DecimalTrait
 
+case class ClickhouseDateTime64(p: Int, nullable: Boolean) extends ClickhouseType
 
 case class ClickhouseArray(typ: ClickhouseType) extends ClickhouseType
 case class ClickhouseMap(key: ClickhouseType, value: ClickhouseType, nullable: Boolean) extends ClickhouseType

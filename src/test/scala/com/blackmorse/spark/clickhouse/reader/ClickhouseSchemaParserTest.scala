@@ -1,7 +1,7 @@
 package com.blackmorse.spark.clickhouse.reader
 
 import com.blackmorse.spark.clickhouse.ClickhouseTests.withTable
-import com.blackmorse.spark.clickhouse.sql.types.{ClickhouseArray, ClickhouseDecimal, ClickhouseDecimalN, ClickhouseField, PrimitiveClickhouseType}
+import com.blackmorse.spark.clickhouse.sql.types.{ClickhouseArray, ClickhouseDateTime64, ClickhouseDecimal, ClickhouseDecimalN, ClickhouseField, PrimitiveClickhouseType}
 import com.clickhouse.client.ClickHouseDataType
 import org.scalatest.flatspec.AnyFlatSpec
 
@@ -46,6 +46,24 @@ class ClickhouseSchemaParserTest extends AnyFlatSpec {
         ClickhouseField("b", ClickhouseDecimal(9, 5, nullable = false)),
         ClickhouseField("c", ClickhouseDecimal(18, 8, nullable = false)),
         ClickhouseField("d", ClickhouseDecimal(38, 12, nullable = false)),
+      ))
+    }
+  }
+
+  "ClickhouseSchemaParser" should "parse Date and DateTimes" in {
+    withTable(Seq(
+      "a Date",
+//      "b Date32", TODO CH version after 21.8
+      "c DateTime",
+      "d DateTime64(8)"
+    ), "a") {
+      val fields = ClickhouseSchemaParser.parseTable("jdbc:clickhouse://localhost:8123", "default.test_table")
+
+      assert(fields equals Seq(
+        ClickhouseField("a", PrimitiveClickhouseType(ClickHouseDataType.Date, nullable = false, lowCardinality = false)),
+//        ClickhouseField("b", PrimitiveClickhouseType(ClickHouseDataType.Date32, nullable = false, lowCardinality = false)),
+        ClickhouseField("c", PrimitiveClickhouseType(ClickHouseDataType.DateTime, nullable = false, lowCardinality = false)),
+        ClickhouseField("d", ClickhouseDateTime64(8, nullable = false))
       ))
     }
   }

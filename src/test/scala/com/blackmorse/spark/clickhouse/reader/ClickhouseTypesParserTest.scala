@@ -1,6 +1,6 @@
 package com.blackmorse.spark.clickhouse.reader
 
-import com.blackmorse.spark.clickhouse.sql.types.{ClickhouseArray, ClickhouseDateTime64, ClickhouseDecimal, ClickhouseDecimalN, PrimitiveClickhouseType}
+import com.blackmorse.spark.clickhouse.sql.types.{ClickhouseArray, ClickhouseDateTime, ClickhouseDateTime64, ClickhouseDecimal, PrimitiveClickhouseType}
 import com.clickhouse.client.ClickHouseDataType
 import org.scalatest.matchers.should
 import org.scalatest.prop.TableDrivenPropertyChecks
@@ -29,7 +29,7 @@ class ClickhouseTypesParserTest extends AnyPropSpec
     "Float64" -> PrimitiveClickhouseType(ClickHouseDataType.Float64, false, false),
     "Date" -> PrimitiveClickhouseType(ClickHouseDataType.Date, false, false),
     "Date32" -> PrimitiveClickhouseType(ClickHouseDataType.Date32, false, false),
-    "DateTime" -> PrimitiveClickhouseType(ClickHouseDataType.DateTime, false, false),
+    "DateTime" -> ClickhouseDateTime(false, false),
   )
 
   property("Parsing simple primitive types") {
@@ -57,7 +57,7 @@ class ClickhouseTypesParserTest extends AnyPropSpec
     "Array(Float64)" -> ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.Float64, false, false)),
     "Array(Date)" -> ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.Date, false, false)),
     "Array(Date32)" -> ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.Date32, false, false)),
-    "Array(DateTime)" -> ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.DateTime, false, false)),
+    "Array(DateTime)" -> ClickhouseArray(ClickhouseDateTime(false, false)),
   )
 
   property("Parsing array of simple primitive types") {
@@ -67,7 +67,7 @@ class ClickhouseTypesParserTest extends AnyPropSpec
   }
 
   val lowCardinalityofPrimitives = Table(
-    "lowCardinalityofPrimitives",
+    "lowCardinalityOfPrimitives",
     "LowCardinality(Int8)" -> PrimitiveClickhouseType(ClickHouseDataType.Int8, false, true),
     "LowCardinality(Int16)" -> PrimitiveClickhouseType(ClickHouseDataType.Int16, false, true),
     "LowCardinality(Int32)" -> PrimitiveClickhouseType(ClickHouseDataType.Int32, false, true),
@@ -85,7 +85,7 @@ class ClickhouseTypesParserTest extends AnyPropSpec
     "LowCardinality(Float64)" -> PrimitiveClickhouseType(ClickHouseDataType.Float64, false, true),
     "LowCardinality(Date)" -> PrimitiveClickhouseType(ClickHouseDataType.Date, false, true),
     "LowCardinality(Date32)" -> PrimitiveClickhouseType(ClickHouseDataType.Date32, false, true),
-    "LowCardinality(DateTime)" -> PrimitiveClickhouseType(ClickHouseDataType.DateTime, false, true),
+    "LowCardinality(DateTime)" -> ClickhouseDateTime(false, true),
   )
 
   property("Parsing LowCardinality of primitive types") {
@@ -113,7 +113,7 @@ class ClickhouseTypesParserTest extends AnyPropSpec
     "Nullable(Float64)" -> PrimitiveClickhouseType(ClickHouseDataType.Float64, true, false),
     "Nullable(Date)" -> PrimitiveClickhouseType(ClickHouseDataType.Date, true, false),
     "Nullable(Date32)" -> PrimitiveClickhouseType(ClickHouseDataType.Date32, true, false),
-    "Nullable(DateTime)" -> PrimitiveClickhouseType(ClickHouseDataType.DateTime, true, false),
+    "Nullable(DateTime)" -> ClickhouseDateTime(true, false)
   )
 
   property("Parsing Nullable of primitive types") {
@@ -141,7 +141,7 @@ class ClickhouseTypesParserTest extends AnyPropSpec
     "LowCardinality(Nullable(Float64))" -> PrimitiveClickhouseType(ClickHouseDataType.Float64, true, true),
     "LowCardinality(Nullable(Date))" -> PrimitiveClickhouseType(ClickHouseDataType.Date, true, true),
     "LowCardinality(Nullable(Date32))" -> PrimitiveClickhouseType(ClickHouseDataType.Date32, true, true),
-    "LowCardinality(Nullable(DateTime))" -> PrimitiveClickhouseType(ClickHouseDataType.DateTime, true, true),
+    "LowCardinality(Nullable(DateTime))" -> ClickhouseDateTime(true, true),
   )
 
   property("Parsing LowCardinality of Nullable of primitive types") {
@@ -169,7 +169,7 @@ class ClickhouseTypesParserTest extends AnyPropSpec
     "Array(Nullable(Float64))" -> ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.Float64, true, false)),
     "Array(Nullable(Date))" -> ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.Date, true, false)),
     "Array(Nullable(Date32))" -> ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.Date32, true, false)),
-    "Array(Nullable(DateTime))" -> ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.DateTime, true, false)),
+    "Array(Nullable(DateTime))" -> ClickhouseArray(ClickhouseDateTime(true, false)),
   )
 
 
@@ -198,7 +198,7 @@ class ClickhouseTypesParserTest extends AnyPropSpec
     "Array(LowCardinality(Float64))" -> ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.Float64, false, true)),
     "Array(LowCardinality(Date))" -> ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.Date, false, true)),
     "Array(LowCardinality(Date32))" -> ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.Date32, false, true)),
-    "Array(LowCardinality(DateTime))" -> ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.DateTime, false, true)),
+    "Array(LowCardinality(DateTime))" -> ClickhouseArray(ClickhouseDateTime(false, true)),
   )
 
   property("Parsing Array of LowCardinality of primitive types") {
@@ -226,7 +226,7 @@ class ClickhouseTypesParserTest extends AnyPropSpec
     "Array(LowCardinality(Nullable(Float64)))" -> ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.Float64, true, true)),
     "Array(LowCardinality(Nullable(Date)))" -> ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.Date, true, true)),
     "Array(LowCardinality(Nullable(Date32)))" -> ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.Date32, true, true)),
-    "Array(LowCardinality(Nullable(DateTime)))" -> ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.DateTime, true, true)),
+    "Array(LowCardinality(Nullable(DateTime)))" -> ClickhouseArray(ClickhouseDateTime(true, true)),
   )
 
   property("Parsing Array of LowCardinality of Nullable of primitive types") {
@@ -240,10 +240,6 @@ class ClickhouseTypesParserTest extends AnyPropSpec
     "Decimal(4, 5)" -> ClickhouseDecimal(4 ,5, false),
     "Nullable(Decimal(8, 10))" -> ClickhouseDecimal(8, 10, true),
     "Array(Nullable(Decimal(4, 5)))" -> ClickhouseArray(ClickhouseDecimal(4, 5, true)),
-    "Decimal32(8)" -> ClickhouseDecimalN(32, 8, false),
-    "Nullable(Decimal64(4))" -> ClickhouseDecimalN(64, 4, true),
-    "Array(Decimal128(5))" -> ClickhouseArray(ClickhouseDecimalN(128, 5, false)),
-    "Array(Nullable(Decimal256(19)))" -> ClickhouseArray(ClickhouseDecimalN(256, 19, true))
   )
 
   property("Parsing various of Decimals") {
@@ -256,8 +252,11 @@ class ClickhouseTypesParserTest extends AnyPropSpec
     "dates",
     "Date" -> PrimitiveClickhouseType(ClickHouseDataType.Date, false, false),
     "Date32" -> PrimitiveClickhouseType(ClickHouseDataType.Date32, false, false),
-    "DateTime" -> PrimitiveClickhouseType(ClickHouseDataType.DateTime, false, false),
-    "DateTime64(8)" -> ClickhouseDateTime64(8, false)
+    "DateTime" -> ClickhouseDateTime(false, false),
+    "DateTime64(8)" -> ClickhouseDateTime64(8, false),
+    "Nullable(DateTime)" -> ClickhouseDateTime(true, false),
+    "LowCardinality(DateTime('Europe/Moscow'))" -> ClickhouseDateTime(false, true),
+    "Nullable(DateTime('Europe/Moscow'))" -> ClickhouseDateTime(true, false),
   )
 
   property("Parsing various DateTimes") {

@@ -5,10 +5,10 @@ import com.clickhouse.client.ClickHouseDataType
 import com.clickhouse.jdbc.ClickHouseDriver
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, SaveMode}
 import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, RelationProvider, TableScan}
-import org.apache.spark.sql.types.{ArrayType, BooleanType, ByteType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, StructType}
+import org.apache.spark.sql.types.{ArrayType, BooleanType, ByteType, DateType, DecimalType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, StructType, TimestampType}
 
 import java.sql.PreparedStatement
-import java.util.Properties
+import java.util.{Calendar, Properties, TimeZone}
 import scala.collection.mutable
 import scala.util.{Failure, Success, Using}
 
@@ -36,6 +36,11 @@ class DefaultSource extends RelationProvider with CreatableRelationProvider {
       .foreachPartition((iterator: scala.collection.Iterator[Row]) => {
         Using(new ClickHouseDriver().connect(url, new Properties())) {connection =>
 
+          val rs = connection.createStatement().executeQuery("SELECT timeZone()")
+          rs.next()
+          val clickhouseTimeZone = rs.getString(1)
+          val cal = Calendar.getInstance(TimeZone.getTimeZone(clickhouseTimeZone))
+
           var rowsInBatch = 0
           var statement = connection.prepareStatement(s"INSERT INTO $table $fields VALUES $values")
 
@@ -48,13 +53,15 @@ class DefaultSource extends RelationProvider with CreatableRelationProvider {
                 structField.dataType match {
                   case BooleanType => statement.setBoolean(i + 1, row.getBoolean(i))
                   case ByteType => statement.setByte(i + 1, row.getByte(i))
-                  case IntegerType =>
-                    statement.setInt(i + 1, row.getInt(i))
+                  case IntegerType => statement.setInt(i + 1, row.getInt(i))
                   case LongType => statement.setLong(i + 1, row.getLong(i))
                   case ShortType => statement.setShort(i + 1, row.getShort(i))
                   case FloatType => statement.setFloat(i + 1, row.getFloat(i))
                   case DoubleType => statement.setDouble(i + 1, row.getDouble(i))
                   case StringType => statement.setString(i + 1, row.getString(i))
+                  case DecimalType() => statement.setBigDecimal(i + 1, row.getDecimal(i))
+                  case DateType => statement.setDate(i + 1, row.getDate(i))
+                  case TimestampType => statement.setTimestamp(i + 1, row.getTimestamp(i), cal)
                   case ArrayType(elementType, _containsNull) =>
                     val clickhouseTypeName = elementType match {
                       case BooleanType => ClickHouseDataType.UInt8.toString
@@ -98,14 +105,6 @@ class DefaultSource extends RelationProvider with CreatableRelationProvider {
    * Relation for reading from Clickhouse
    */
   override def createRelation(sqlContext: SQLContext, parameters: Map[String, String]): BaseRelation = {
-    val hostName = parameters(CLICKHOUSE_HOST_NAME)
-    val port = parameters(CLICKHOUSE_PORT)
-    val table = parameters(TABLE)
-
-    val url = s"jdbc:clickhouse://$hostName:$port"
-    val df = sqlContext.read
-      .jdbc(url, table, new Properties())
-
     ReaderClickhouseRelation(sqlContext, parameters)
   }
 }

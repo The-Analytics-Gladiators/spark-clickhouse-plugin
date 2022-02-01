@@ -46,7 +46,7 @@ class WriteTests extends AnyFlatSpec with DataFrameSuiteBase {
         .write.clickhouse(host, port, table)
 
       val result = sqlContext.read.clickhouse(host, port, table)
-        .map(row => (/** TODO getShort(0)**/row.getInt(0), row.getLong(1), row.getString(2)))
+        .map(row => (row.getShort(0), row.getLong(1), row.getString(2)))
         .collect()
         .sortBy(_._1)
 

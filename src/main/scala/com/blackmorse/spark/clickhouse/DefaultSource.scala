@@ -7,9 +7,9 @@ import org.apache.spark.sql.{DataFrame, Row, SQLContext, SaveMode}
 import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, RelationProvider, TableScan}
 import org.apache.spark.sql.types.{ArrayType, BooleanType, ByteType, DateType, DecimalType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, StructType, TimestampType}
 
-import java.sql.PreparedStatement
+import java.sql.Timestamp
+import java.util.Calendar
 import java.util.{Calendar, Properties, TimeZone}
-import scala.collection.mutable
 import scala.util.{Failure, Success, Using}
 
 case class WriteClickhouseRelation(@transient sqlContext: SQLContext, schema: StructType) extends BaseRelation
@@ -41,10 +41,12 @@ class DefaultSource extends RelationProvider with CreatableRelationProvider {
           val clickhouseTimeZone = rs.getString(1)
           val cal = Calendar.getInstance(TimeZone.getTimeZone(clickhouseTimeZone))
 
+          //No method to write Array(DateTime) with timezone
+          val timeZoneMillisDiff = TimeZone.getDefault.getRawOffset - cal.getTimeZone.getRawOffset
+
           var rowsInBatch = 0
           var statement = connection.prepareStatement(s"INSERT INTO $table $fields VALUES $values")
 
-          try {
             while (iterator.hasNext) {
               rowsInBatch += 1
               val row = iterator.next()
@@ -72,9 +74,23 @@ class DefaultSource extends RelationProvider with CreatableRelationProvider {
                       case FloatType => ClickHouseDataType.Float32.toString
                       case DoubleType => ClickHouseDataType.Float64.toString
                       case StringType => ClickHouseDataType.String.toString
+                      case DateType => ClickHouseDataType.Date.toString
+                      case TimestampType => ClickHouseDataType.DateTime.toString
+
+                      case d : DecimalType => s"Decimal(${d.precision}, ${d.scale})"
                     }
-                    val array = row.getList(i).toArray
-                    statement.setArray(i + 1, connection.createArrayOf(clickhouseTypeName, array))
+
+                    //TODO move setters to previous mappings
+                    elementType match {
+                        //Need to match schema of table. DateTime64 = DateTime * 1000
+                      case TimestampType =>
+                        val array = row.getList(i).toArray.map(el => ((el.asInstanceOf[Timestamp].getTime + timeZoneMillisDiff) / 1000).asInstanceOf[Object])
+                        statement.setArray(i + 1, connection.createArrayOf(s"Array($clickhouseTypeName)", array))
+                      case _ =>
+                        val array = row.getList(i).toArray
+                        statement.setArray(i + 1, connection.createArrayOf(s"Array($clickhouseTypeName)", array))
+                    }
+
                 }
               }
 
@@ -85,10 +101,7 @@ class DefaultSource extends RelationProvider with CreatableRelationProvider {
                 rowsInBatch = 0
               }
             }
-          } catch {
-            case e: Throwable =>
-              e.printStackTrace()
-          }
+
           if (rowsInBatch > 0) {
             statement.executeBatch()
           }

@@ -1,6 +1,7 @@
-package com.blackmorse.spark.clickhouse.reader
+package com.blackmorse.spark.clickhouse
 
-import com.blackmorse.spark.clickhouse.sql.types.{ClickhouseArray, ClickhouseDateTime, ClickhouseDateTime64, ClickhouseDecimal, PrimitiveClickhouseType}
+import com.blackmorse.spark.clickhouse.reader.ClickhouseTypesParser
+import com.blackmorse.spark.clickhouse.sql.types._
 import com.clickhouse.client.ClickHouseDataType
 import org.scalatest.matchers.should
 import org.scalatest.prop.TableDrivenPropertyChecks

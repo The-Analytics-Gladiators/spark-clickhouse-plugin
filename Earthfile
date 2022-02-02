@@ -25,5 +25,5 @@ tests:
     COPY docker docker
     COPY src src
     WITH DOCKER --compose docker-compose.yml
-        RUN sbt test
+        RUN sbt test && sbt it:test
     END

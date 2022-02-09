@@ -1,10 +1,12 @@
 package com.blackmorse.spark.clickhouse.sql.types
 
+import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{ArrayType, DataType}
 
 import java.math.BigInteger
-import java.sql.{ResultSet, Timestamp}
+import java.sql.{PreparedStatement, ResultSet, Timestamp}
 import java.time.LocalDateTime
 
 case class ClickhouseArray(typ: ClickhouseType) extends ClickhouseType {
@@ -22,4 +24,18 @@ case class ClickhouseArray(typ: ClickhouseType) extends ClickhouseType {
         resultSet.getArray(name).getArray
     }
   }
+
+  override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
+                                              (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
+    val array = typ match {
+        //Set timezone to array
+      case ClickhouseDateTime(_, _) | ClickhouseDateTime64(_, _) =>
+        row.getList(i).toArray.map(el => ((el.asInstanceOf[Timestamp].getTime + clickhouseTimeZoneInfo.timeZoneMillisDiff) / 1000).asInstanceOf[Object])
+      case _ => row.getList(i).toArray
+    }
+    val jdbcArray = statement.getConnection.createArrayOf(typ.arrayClickhouseTypeString(), array)
+    statement.setArray(i + 1, jdbcArray)
+  }
+
+  override def arrayClickhouseTypeString(): String = s"Array(${typ.arrayClickhouseTypeString()})"
 }

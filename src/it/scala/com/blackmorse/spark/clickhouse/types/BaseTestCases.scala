@@ -27,7 +27,7 @@ object BaseTestCases extends should.Matchers {
         .map(row => rowConverter(row)).collect()
 
       res.sorted.zip(seq.sorted).foreach{ case (result, expected) =>
-        assert(comparator(result, expected))
+        assert(comparator(result, expected), s"Expected values: $expected. Actual value: $result")
       }
     }
   }
@@ -55,7 +55,7 @@ object BaseTestCases extends should.Matchers {
 
       res.sortBy(_.size()).zip(input.sortBy(_.size)).foreach { case (l, r) =>
         l.asScala.zip(r).foreach{ case (fromCh, original) =>
-          assert(comparator(fromCh, original))
+          assert(comparator(fromCh, original), s"Expected values: $original. Actual value: $fromCh")
         }
       }
     }

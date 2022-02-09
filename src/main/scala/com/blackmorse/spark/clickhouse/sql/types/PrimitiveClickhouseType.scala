@@ -1,9 +1,11 @@
 package com.blackmorse.spark.clickhouse.sql.types
 
+import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{ByteType, DataType, DateType, DecimalType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, TimestampType}
 
-import java.sql.ResultSet
+import java.sql.{PreparedStatement, ResultSet}
 
 case class PrimitiveClickhouseType(typ: ClickHouseDataType, nullable: Boolean, lowCardinality: Boolean) extends ClickhouseType {
   override def toSparkType(): DataType = {
@@ -50,4 +52,29 @@ case class PrimitiveClickhouseType(typ: ClickHouseDataType, nullable: Boolean, l
       case ClickHouseDataType.Float32 => resultSet.getFloat(name)
       case ClickHouseDataType.Float64 => resultSet.getDouble(name)
     }
+
+  override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
+                                              (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
+    typ match {
+      case ClickHouseDataType.Int8 => statement.setByte(i + 1, row.getByte(i))
+      case ClickHouseDataType.UInt8 => statement.setShort(i + 1, row.getShort(i))
+      case ClickHouseDataType.Int16 => statement.setShort(i + 1, row.getShort(i))
+      case ClickHouseDataType.UInt16 => statement.setInt(i + 1, row.getInt(i))
+      case ClickHouseDataType.Int32 => statement.setInt(i + 1, row.getInt(i))
+      case ClickHouseDataType.UInt32 => statement.setLong(i + 1, row.getLong(i))
+      case ClickHouseDataType.Int64 => statement.setLong(i + 1, row.getLong(i))
+      case ClickHouseDataType.UInt64 => statement.setBigDecimal(i + 1, row.getDecimal(i))
+      case ClickHouseDataType.Int128 => statement.setBigDecimal(i + 1, row.getDecimal(i))
+      case ClickHouseDataType.UInt128 => statement.setBigDecimal(i + 1, row.getDecimal(i))
+      case ClickHouseDataType.Int256 => statement.setBigDecimal(i + 1, row.getDecimal(i))
+      case ClickHouseDataType.UInt256 => statement.setBigDecimal(i + 1, row.getDecimal(i))
+      case ClickHouseDataType.Date => statement.setDate(i + 1, row.getDate(i))
+      case ClickHouseDataType.Date32 => statement.setDate(i + 1, row.getDate(i))
+
+      case ClickHouseDataType.String => statement.setString(i + 1, row.getString(i))
+      case ClickHouseDataType.Float32 => statement.setFloat(i + 1, row.getFloat(i))
+      case ClickHouseDataType.Float64 => statement.setDouble(i + 1, row.getDouble(i))
+    }
+
+  override def arrayClickhouseTypeString(): String = s"Array(${typ.toString})"
 }

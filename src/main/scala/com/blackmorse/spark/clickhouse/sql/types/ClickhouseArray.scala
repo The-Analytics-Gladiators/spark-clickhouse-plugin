@@ -1,7 +1,7 @@
 package com.blackmorse.spark.clickhouse.sql.types
 
+import com.blackmorse.spark.clickhouse.sql.types.primitives._
 import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
-import com.clickhouse.client.ClickHouseDataType
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{ArrayType, DataType}
 
@@ -16,7 +16,8 @@ case class ClickhouseArray(typ: ClickhouseType) extends ClickhouseType {
   override def extractFromRs(name: String, resultSet: ResultSet): Any = {
     typ match {
         //TODO
-      case PrimitiveClickhouseType(ClickHouseDataType.Int128 | ClickHouseDataType.UInt128 | ClickHouseDataType.Int256 | ClickHouseDataType.UInt256, _, _)  =>
+      case ClickhouseInt128(_, _) | ClickhouseInt256(_, _) | ClickhouseUInt64(_, _) |
+        ClickhouseUInt128(_, _) | ClickhouseUInt256(_, _) =>
         resultSet.getArray(name).getArray.asInstanceOf[Array[BigInteger]].map(bi => new java.math.BigDecimal(bi))
       case ClickhouseDateTime(_, _) | ClickhouseDateTime64(_, _) =>
         resultSet.getArray(name).getArray.asInstanceOf[Array[LocalDateTime]].map(ldt => Timestamp.valueOf(ldt))

@@ -1,15 +1,13 @@
 package com.blackmorse.spark.clickhouse.writer
 
-import com.blackmorse.spark.clickhouse.spark.types.SparkTypeMapper
+import com.blackmorse.spark.clickhouse.reader.ClickhouseSchemaParser
+import com.blackmorse.spark.clickhouse.spark.types.{SchemaMerger, SparkTypeMapper}
 import com.blackmorse.spark.clickhouse.{BATCH_SIZE, CLICKHOUSE_HOST_NAME, CLICKHOUSE_PORT, TABLE, WriteClickhouseRelation}
-import com.clickhouse.client.ClickHouseDataType
 import com.clickhouse.jdbc.ClickHouseDriver
 import org.apache.spark.sql.sources.BaseRelation
-import org.apache.spark.sql.types.{ArrayType, BooleanType, ByteType, DateType, DecimalType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, TimestampType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 
-import java.sql.Timestamp
-import java.util.{Calendar, Properties, TimeZone}
+import java.util.Properties
 import scala.util.{Failure, Success, Using}
 
 object ClickhouseWriter {
@@ -25,6 +23,10 @@ object ClickhouseWriter {
     val columnsNumber = schema.size
     val values = Array.fill(columnsNumber)("?").mkString("(", ", ", ")")
     val fields = schema.map(_.name).mkString("(", ", ", ")")
+
+    val clickhouseFields = ClickhouseSchemaParser.parseTable(url, table)
+
+    val mergedSchema = SchemaMerger.mergeSchemas(schema, clickhouseFields)
 
     dataFrame
       .foreachPartition((iterator: scala.collection.Iterator[Row]) => {
@@ -42,8 +44,10 @@ object ClickhouseWriter {
             rowsInBatch += 1
             val row = iterator.next()
 
-            schema.zipWithIndex.foreach { case (structField, i) =>
-              SparkTypeMapper.mapType(structField.dataType).extractFromRowAndSetToStatement(i, row, statement)(clickhouseTimeZoneInfo)
+            mergedSchema.zipWithIndex.foreach { case ((sparkField, chField), index) =>
+              SparkTypeMapper
+                .mapType(sparkField.dataType, chField.typ)
+                .extractFromRowAndSetToStatement(index, row, statement)(clickhouseTimeZoneInfo)
             }
 
             statement.addBatch()

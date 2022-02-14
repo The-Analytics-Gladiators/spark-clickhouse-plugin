@@ -1,6 +1,6 @@
 package com.blackmorse.spark.clickhouse.reader
 
-import com.blackmorse.spark.clickhouse.sql.types.{ClickhouseArray, ClickhouseDateTime, ClickhouseDateTime64, ClickhouseDecimal, ClickhouseType, PrimitiveClickhouseType}
+import com.blackmorse.spark.clickhouse.sql.types._
 import com.clickhouse.client.ClickHouseDataType
 
 
@@ -30,7 +30,7 @@ object ClickhouseTypesParser {
       val split = rest.split(",")
       ClickhouseDecimal(split.head.trim.toInt, split(1).trim.toInt, nullable = nullable)
     } else {
-      PrimitiveClickhouseType(ClickHouseDataType.valueOf(typ), nullable = nullable, lowCardinality = lowCardinality)
+        ClickhousePrimitive.toPrimitiveConstructor(ClickHouseDataType.valueOf(typ))(nullable, lowCardinality)
     }
   }
 }

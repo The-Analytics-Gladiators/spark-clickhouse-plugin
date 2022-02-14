@@ -2,6 +2,7 @@ package com.blackmorse.spark.clickhouse.reader
 
 import com.blackmorse.spark.clickhouse.ClickhouseTests.withTable
 import com.blackmorse.spark.clickhouse.sql.types._
+import com.blackmorse.spark.clickhouse.sql.types.primitives.{ClickhouseDate, ClickhouseFloat64, ClickhouseInt32, ClickhouseString, ClickhouseUInt256, ClickhouseUInt64, ClickhouseUInt8}
 import com.clickhouse.client.ClickHouseDataType
 import org.scalatest.flatspec.AnyFlatSpec
 
@@ -20,14 +21,14 @@ class ClickhouseSchemaParserTest extends AnyFlatSpec {
       val fields = ClickhouseSchemaParser.parseTable("jdbc:clickhouse://localhost:8123", "default.test_table")
 
       assert(fields equals Seq(
-          ClickhouseField("a", PrimitiveClickhouseType(ClickHouseDataType.Int32, nullable = false, lowCardinality = false)),
-          ClickhouseField("b", PrimitiveClickhouseType(ClickHouseDataType.String, nullable = false, lowCardinality = true)),
-          ClickhouseField("c", PrimitiveClickhouseType(ClickHouseDataType.Float64, nullable = true, lowCardinality = false)),
-          ClickhouseField("d", PrimitiveClickhouseType(ClickHouseDataType.String, nullable = true, lowCardinality = true)),
+          ClickhouseField("a", ClickhouseInt32(nullable = false, lowCardinality = false)),
+          ClickhouseField("b", ClickhouseString(nullable = false, lowCardinality = true)),
+          ClickhouseField("c", ClickhouseFloat64(nullable = true, lowCardinality = false)),
+          ClickhouseField("d", ClickhouseString(nullable = true, lowCardinality = true)),
           ClickhouseField("e", ClickhouseArray(ClickhouseDateTime(nullable = false, lowCardinality = false))),
-          ClickhouseField("f", ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.UInt256, nullable = true, lowCardinality = false))),
-          ClickhouseField("g", ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.UInt8, nullable = false, lowCardinality = true))),
-          ClickhouseField("h", ClickhouseArray(PrimitiveClickhouseType(ClickHouseDataType.UInt64, nullable = true, lowCardinality = true))),
+          ClickhouseField("f", ClickhouseArray(ClickhouseUInt256(nullable = true, lowCardinality = false))),
+          ClickhouseField("g", ClickhouseArray(ClickhouseUInt8(nullable = false, lowCardinality = true))),
+          ClickhouseField("h", ClickhouseArray(ClickhouseUInt64(nullable = true, lowCardinality = true))),
       ))
     }
   }
@@ -61,7 +62,7 @@ class ClickhouseSchemaParserTest extends AnyFlatSpec {
       val fields = ClickhouseSchemaParser.parseTable("jdbc:clickhouse://localhost:8123", "default.test_table")
 
       assert(fields equals Seq(
-        ClickhouseField("a", PrimitiveClickhouseType(ClickHouseDataType.Date, nullable = false, lowCardinality = false)),
+        ClickhouseField("a", ClickhouseDate(nullable = false, lowCardinality = false)),
 //        ClickhouseField("b", PrimitiveClickhouseType(ClickHouseDataType.Date32, nullable = false, lowCardinality = false)),
         ClickhouseField("c", ClickhouseDateTime(nullable = false, lowCardinality = false)),
         ClickhouseField("d", ClickhouseDateTime64(8, nullable = false)),

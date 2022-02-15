@@ -6,6 +6,7 @@ import com.clickhouse.client.ClickHouseDataType
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{DataType, DecimalType}
 
+import java.math.BigInteger
 import java.sql.{PreparedStatement, ResultSet}
 
 case class ClickhouseInt256(nullable: Boolean, lowCardinality: Boolean) extends ClickhousePrimitive {
@@ -19,4 +20,6 @@ case class ClickhouseInt256(nullable: Boolean, lowCardinality: Boolean) extends 
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Int256
 
+  override def extractArray(name: String, resultSet: ResultSet): AnyRef =
+    resultSet.getArray(name).getArray.asInstanceOf[Array[BigInteger]].map(bi => new java.math.BigDecimal(bi))
 }

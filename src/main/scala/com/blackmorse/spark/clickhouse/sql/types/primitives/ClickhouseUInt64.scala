@@ -18,4 +18,9 @@ case class ClickhouseUInt64(nullable: Boolean, lowCardinality: Boolean) extends 
     statement.setBigDecimal(i + 1, row.getDecimal(i))
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.UInt64
+
+  override def extractArray(name: String, resultSet: ResultSet): AnyRef = {
+    val array = resultSet.getArray(name).getArray
+    array.asInstanceOf[Array[Long]].map(l => new java.math.BigDecimal(l.toString))
+  }
 }

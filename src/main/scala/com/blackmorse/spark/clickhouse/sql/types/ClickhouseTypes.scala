@@ -8,11 +8,17 @@ import java.sql.{PreparedStatement, ResultSet}
 
 trait ClickhouseType {
   val nullable: Boolean
+
   def toSparkType(): DataType
+
   def extractFromRs(name: String, resultSet: ResultSet): Any
+
   def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
                                      (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit
+
   def arrayClickhouseTypeString(): String
+
+  def extractArray(name: String, resultSet: ResultSet): AnyRef = resultSet.getArray(name).getArray
 }
 
 case class ClickhouseField(name: String, typ: ClickhouseType) {

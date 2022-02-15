@@ -1,30 +1,17 @@
 package com.blackmorse.spark.clickhouse.sql.types
 
-import com.blackmorse.spark.clickhouse.sql.types.primitives._
 import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{ArrayType, DataType}
 
-import java.math.BigInteger
 import java.sql.{PreparedStatement, ResultSet, Timestamp}
-import java.time.LocalDateTime
 
 case class ClickhouseArray(typ: ClickhouseType) extends ClickhouseType {
   override def toSparkType(): DataType = ArrayType(typ.toSparkType(), typ.nullable)
   override val nullable: Boolean = false
 
-  override def extractFromRs(name: String, resultSet: ResultSet): Any = {
-    typ match {
-        //TODO
-      case ClickhouseInt128(_, _) | ClickhouseInt256(_, _) | ClickhouseUInt64(_, _) |
-        ClickhouseUInt128(_, _) | ClickhouseUInt256(_, _) =>
-        resultSet.getArray(name).getArray.asInstanceOf[Array[BigInteger]].map(bi => new java.math.BigDecimal(bi))
-      case ClickhouseDateTime(_, _) | ClickhouseDateTime64(_, _) =>
-        resultSet.getArray(name).getArray.asInstanceOf[Array[LocalDateTime]].map(ldt => Timestamp.valueOf(ldt))
-      case _ =>
-        resultSet.getArray(name).getArray
-    }
-  }
+  override def extractFromRs(name: String, resultSet: ResultSet): Any =
+    typ.extractArray(name, resultSet)
 
   override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
                                               (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {

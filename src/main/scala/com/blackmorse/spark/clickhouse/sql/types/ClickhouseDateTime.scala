@@ -20,6 +20,14 @@ case class ClickhouseDateTime(nullable: Boolean, lowCardinality: Boolean) extend
 
   override def extractArray(name: String, resultSet: ResultSet): AnyRef =
     resultSet.getArray(name).getArray.asInstanceOf[Array[LocalDateTime]].map(ldt => Timestamp.valueOf(ldt))
+
+  override def extractArrayFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
+                                          (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
+    //Set timezone to array
+    val array = row.getList(i).toArray.map(el => ((el.asInstanceOf[Timestamp].getTime + clickhouseTimeZoneInfo.timeZoneMillisDiff) / 1000).asInstanceOf[Object])
+    val jdbcArray = statement.getConnection.createArrayOf(arrayClickhouseTypeString(), array)
+    statement.setArray(i + 1, jdbcArray)
+  }
 }
 
 case class ClickhouseDateTime64(p: Int, nullable: Boolean) extends ClickhouseType {

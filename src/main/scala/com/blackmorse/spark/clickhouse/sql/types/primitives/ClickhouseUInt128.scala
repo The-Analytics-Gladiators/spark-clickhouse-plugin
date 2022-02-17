@@ -21,5 +21,8 @@ case class ClickhouseUInt128(nullable: Boolean, lowCardinality: Boolean) extends
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.UInt128
 
   override def extractArray(name: String, resultSet: ResultSet): AnyRef =
-    resultSet.getArray(name).getArray.asInstanceOf[Array[BigInteger]].map(bi => new java.math.BigDecimal(bi))
+    resultSet.getArray(name)
+      .getArray
+      .asInstanceOf[Array[BigInteger]]
+      .map(bi => new java.math.BigDecimal(bi))
 }

@@ -15,14 +15,7 @@ case class ClickhouseArray(typ: ClickhouseType) extends ClickhouseType {
 
   override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
                                               (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
-    val array = typ match {
-        //Set timezone to array
-      case ClickhouseDateTime(_, _) | ClickhouseDateTime64(_, _) =>
-        row.getList(i).toArray.map(el => ((el.asInstanceOf[Timestamp].getTime + clickhouseTimeZoneInfo.timeZoneMillisDiff) / 1000).asInstanceOf[Object])
-      case _ => row.getList(i).toArray
-    }
-    val jdbcArray = statement.getConnection.createArrayOf(typ.arrayClickhouseTypeString(), array)
-    statement.setArray(i + 1, jdbcArray)
+    typ.extractArrayFromRowAndSetToStatement(i, row, statement)(clickhouseTimeZoneInfo)
   }
 
   override def arrayClickhouseTypeString(): String = s"Array(${typ.arrayClickhouseTypeString()})"

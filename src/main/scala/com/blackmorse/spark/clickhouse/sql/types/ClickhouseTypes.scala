@@ -19,6 +19,14 @@ trait ClickhouseType {
   def arrayClickhouseTypeString(): String
 
   def extractArray(name: String, resultSet: ResultSet): AnyRef = resultSet.getArray(name).getArray
+
+  def extractArrayFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
+                                     (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
+    val array = row.getList(i).toArray
+    val jdbcArray = statement.getConnection.createArrayOf(arrayClickhouseTypeString(), array)
+    statement.setArray(i + 1, jdbcArray)
+  }
+
 }
 
 case class ClickhouseField(name: String, typ: ClickhouseType) {

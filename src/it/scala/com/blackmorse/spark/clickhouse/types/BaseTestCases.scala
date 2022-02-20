@@ -14,6 +14,19 @@ object BaseTestCases extends should.Matchers {
   val port = 8123
   val table = "default.test_table"
 
+  def testPrimitiveAndArray[T: Encoder](typ: String,
+                                        seq: Seq[Seq[T]],
+                                        rowConverter: Row => T,
+                                        sparkType: DataType,
+                                        comparator: (T, T) => Boolean = (t: T, s: T) => t == s)
+                                       (implicit ord: Ordering[T], encoder: Encoder[Seq[T]], ct: ClassTag[T], sqlContext: SQLContext): Unit = {
+    seq.foreach(seqInner =>
+      testPrimitive(typ, seqInner, rowConverter, comparator))
+    testPrimitive(typ, seq.flatten ++ Seq(), rowConverter, comparator)
+
+    testArray(typ, seq.flatten , sparkType, comparator)
+  }
+
   def testPrimitive[T : Encoder](typ: String, seq: Seq[T], rowConverter: Row => T,
                                  comparator: (T, T) => Boolean = (t: T, s: T) => t == s)
                                 (implicit ord: Ordering[T], ct: ClassTag[T], sqlContext: SQLContext) = {

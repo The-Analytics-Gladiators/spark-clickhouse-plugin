@@ -14,17 +14,17 @@ import scala.util.{Failure, Success, Using}
 case class ReaderClickhouseRelation(@transient sqlContext: SQLContext, parameters: Map[String, String])
   extends BaseRelation with TableScan with Serializable {
 
-  val hostName = parameters(CLICKHOUSE_HOST_NAME)
-  val port = parameters(CLICKHOUSE_PORT)
-  val table = parameters(TABLE)
+  private val hostName = parameters(CLICKHOUSE_HOST_NAME)
+  private val port = parameters(CLICKHOUSE_PORT)
+  private val table = parameters(TABLE)
 
-  val url = s"jdbc:clickhouse://$hostName:$port"
-  val clickhouseFields = ClickhouseSchemaParser.parseTable(url, table)
+  private val url = s"jdbc:clickhouse://$hostName:$port"
+  private val clickhouseFields = ClickhouseSchemaParser.parseTable(url, table)
 
   override val schema: StructType =
     StructType(clickhouseFields.map(clickhouseField => StructField(clickhouseField.name, clickhouseField.typ.toSparkType(), clickhouseField.typ.nullable)))
 
-  val fieldsNames = clickhouseFields.map(field => s"`${field.name}`").mkString(",")
+  private val fieldsNames = clickhouseFields.map(field => s"`${field.name}`").mkString(",")
 
 
   override def buildScan(): RDD[Row] = {

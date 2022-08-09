@@ -30,38 +30,40 @@ object ClickhouseWriter {
 
     dataFrame
       .foreachPartition((iterator: scala.collection.Iterator[Row]) => {
-        Using(new ClickHouseDriver().connect(url, new Properties())) {connection =>
+        Using(new ClickHouseDriver().connect(url, new Properties())) { connection =>
+          Using(connection.createStatement()) { stmt =>
+            val rs = stmt.executeQuery("SELECT timeZone()")
+            rs.next()
+            val clickhouseTimeZone = rs.getString(1)
+            val clickhouseTimeZoneInfo = ClickhouseTimeZoneInfo(clickhouseTimeZone)
 
-          val rs = connection.createStatement().executeQuery("SELECT timeZone()")
-          rs.next()
-          val clickhouseTimeZone = rs.getString(1)
-          val clickhouseTimeZoneInfo = ClickhouseTimeZoneInfo(clickhouseTimeZone)
+            var rowsInBatch = 0
+            var statement = connection.prepareStatement(s"INSERT INTO $table $fields VALUES $values")
 
-          var rowsInBatch = 0
-          var statement = connection.prepareStatement(s"INSERT INTO $table $fields VALUES $values")
+            while (iterator.hasNext) {
+              rowsInBatch += 1
+              val row = iterator.next()
 
-          while (iterator.hasNext) {
-            rowsInBatch += 1
-            val row = iterator.next()
+              mergedSchema.zipWithIndex.foreach { case ((sparkField, chField), index) =>
+                SparkTypeMapper
+                  .mapType(sparkField.dataType, chField.typ)
+                  .extractFromRowAndSetToStatement(index, row, statement)(clickhouseTimeZoneInfo)
+              }
 
-            mergedSchema.zipWithIndex.foreach { case ((sparkField, chField), index) =>
-              SparkTypeMapper
-                .mapType(sparkField.dataType, chField.typ)
-                .extractFromRowAndSetToStatement(index, row, statement)(clickhouseTimeZoneInfo)
+              statement.addBatch()
+              if (rowsInBatch >= batchSize) {
+                statement.execute()
+                statement.close()
+                statement = connection.prepareStatement(s"INSERT INTO $table $fields VALUES $values")
+                rowsInBatch = 0
+              }
             }
 
-            statement.addBatch()
-            if (rowsInBatch >= batchSize) {
-              statement.execute()
-              statement = connection.prepareStatement(s"INSERT INTO $table $fields VALUES $values")
-              rowsInBatch = 0
+            if (rowsInBatch > 0) {
+              statement.executeBatch()
             }
           }
-
-          if (rowsInBatch > 0) {
-            statement.executeBatch()
-          }
-        } match {
+        }.flatten match {
           case Success(_) =>
           case Failure(exception) => throw exception
         }

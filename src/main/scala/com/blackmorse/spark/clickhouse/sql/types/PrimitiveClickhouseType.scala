@@ -13,7 +13,7 @@ trait ClickhousePrimitive extends ClickhouseType {
   val lowCardinality: Boolean
 
   def toSparkType(): DataType
-  def extractFromRs(name: String, resultSet: ResultSet): Any
+  def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any
   def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
           (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit
 
@@ -70,7 +70,7 @@ case class PrimitiveClickhouseType(typ: ClickHouseDataType, nullable: Boolean, l
     }
   }
 
-  override def extractFromRs(name: String, resultSet: ResultSet): Any =
+  override def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     typ match {
       case ClickHouseDataType.Int8 => resultSet.getByte(name)
       case ClickHouseDataType.UInt8 => resultSet.getShort(name)

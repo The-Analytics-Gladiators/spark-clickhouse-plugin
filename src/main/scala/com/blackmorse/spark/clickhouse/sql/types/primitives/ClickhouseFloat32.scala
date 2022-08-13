@@ -11,7 +11,8 @@ import java.sql.{PreparedStatement, ResultSet}
 case class ClickhouseFloat32(nullable: Boolean, lowCardinality: Boolean) extends ClickhousePrimitive {
   override def toSparkType(): DataType = FloatType
 
-  override def extractFromRs(name: String, resultSet: ResultSet): Any = resultSet.getFloat(name)
+  override def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+    resultSet.getFloat(name)
 
   override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
                                               (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =

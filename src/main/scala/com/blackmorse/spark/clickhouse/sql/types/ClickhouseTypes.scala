@@ -11,14 +11,15 @@ trait ClickhouseType {
 
   def toSparkType(): DataType
 
-  def extractFromRs(name: String, resultSet: ResultSet): Any
+  def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any
 
   def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
                                      (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit
 
   def arrayClickhouseTypeString(): String
 
-  def extractArray(name: String, resultSet: ResultSet): AnyRef = resultSet.getArray(name).getArray
+  def extractArray(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef
+    = resultSet.getArray(name).getArray
 
   def extractArrayFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
                                      (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
@@ -30,7 +31,7 @@ trait ClickhouseType {
 }
 
 case class ClickhouseField(name: String, typ: ClickhouseType) {
-  def extractFromRs(resultSet: ResultSet): Any = {
-    typ.extractFromRs(name, resultSet)
+  def extractFromRs(resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any = {
+    typ.extractFromRs(name, resultSet)(clickhouseTimeZoneInfo)
   }
 }

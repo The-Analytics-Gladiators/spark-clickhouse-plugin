@@ -11,7 +11,8 @@ import java.sql.{PreparedStatement, ResultSet}
 case class ClickhouseInt64(nullable: Boolean, lowCardinality: Boolean) extends ClickhousePrimitive {
   override def toSparkType(): DataType = LongType
 
-  override def extractFromRs(name: String, resultSet: ResultSet): Any = resultSet.getLong(name)
+  override def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+    resultSet.getLong(name)
 
   override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
                                               (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =

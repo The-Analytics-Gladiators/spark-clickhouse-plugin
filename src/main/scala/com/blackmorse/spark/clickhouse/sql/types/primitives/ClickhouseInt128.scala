@@ -12,7 +12,8 @@ import java.sql.{PreparedStatement, ResultSet}
 case class ClickhouseInt128(nullable: Boolean, lowCardinality: Boolean) extends ClickhousePrimitive {
   override def toSparkType(): DataType = DecimalType(38, 0)
 
-  override def extractFromRs(name: String, resultSet: ResultSet): Any = resultSet.getBigDecimal(name).setScale(0)
+  override def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+    resultSet.getBigDecimal(name).setScale(0)
 
   override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
                                               (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
@@ -20,6 +21,6 @@ case class ClickhouseInt128(nullable: Boolean, lowCardinality: Boolean) extends 
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Int128
 
-  override def extractArray(name: String, resultSet: ResultSet): AnyRef =
+  override def extractArray(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
     resultSet.getArray(name).getArray.asInstanceOf[Array[BigInteger]].map(bi => new java.math.BigDecimal(bi))
 }

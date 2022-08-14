@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   ch_zookeeper:
-    image: zookeeper
+    image: zookeeper:3.8.0
     container_name: ch-zookeeper
     network_mode: host
 

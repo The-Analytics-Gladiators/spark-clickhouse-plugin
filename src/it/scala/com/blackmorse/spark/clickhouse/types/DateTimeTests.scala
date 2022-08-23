@@ -1,6 +1,6 @@
 package com.blackmorse.spark.clickhouse.types
 
-import com.blackmorse.spark.clickhouse.types.BaseTestCases.{testArray, testPrimitive, testPrimitiveAndArray}
+import com.blackmorse.spark.clickhouse.types.BaseTestCases.testPrimitiveAndArray
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.spark.sql.types.TimestampType
 import org.scalatest.flatspec.AnyFlatSpec
@@ -20,8 +20,14 @@ class DateTimeTests extends AnyFlatSpec with DataFrameSuiteBase {
     )
 
   implicit val timestampOrdering: Ordering[Timestamp] = Ordering.by(_.getTime)
-  "Primitive type DateTime64" should "be written and read" in {
-    testPrimitive("DateTime64(8)", (1 to 100).map(time), row => row.getTimestamp(0))
+  "DateTime64" should "be supported" in {
+    (1 to 8) foreach (i =>
+      testPrimitiveAndArray(
+        typ = s"DateTime64($i)",
+        seq = Seq((1 to 100) map time),
+        rowConverter = row => row.getTimestamp(0),
+        sparkType = TimestampType)
+      )
   }
 
   "DateTime" should "be supported" in {
@@ -32,9 +38,4 @@ class DateTimeTests extends AnyFlatSpec with DataFrameSuiteBase {
       sparkType = TimestampType
     )
   }
-
-  //TODO testPrimitiveAndArray for DateTime32
-//  "Array(DateTime64)" should "be written and read" in {
-//    testArray("DateTime64", (1 to 100).map(time), TimestampType)
-//  }
 }

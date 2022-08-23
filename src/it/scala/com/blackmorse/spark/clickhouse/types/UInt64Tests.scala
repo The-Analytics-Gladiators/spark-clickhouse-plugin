@@ -8,7 +8,8 @@ import org.scalatest.flatspec.AnyFlatSpec
 class UInt64Tests extends AnyFlatSpec with DataFrameSuiteBase {
   import sqlContext.implicits._
 
-  "Big Primitives of UInt64" should "be written and read" in {
+  //This PR shuld resolve https://github.com/ClickHouse/clickhouse-jdbc/pull/1040
+  "Big Primitives of UInt64" should "be written and read" ignore {
     testPrimitive("UInt64", (1 to 100).map(i => new java.math.BigDecimal(s"10223372036854775$i")), row => row.getDecimal(0))
   }
 

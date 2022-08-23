@@ -14,7 +14,8 @@ sealed trait DecimalTrait extends ClickhouseType
 case class ClickhouseDecimal(p: Int, s: Int, nullable: Boolean) extends DecimalTrait {
   override def toSparkType(): DataType = DecimalType(p, s)
 
-  override def extractFromRs(name: String, resultSet: ResultSet): Any = resultSet.getBigDecimal(name)
+  override def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+    resultSet.getBigDecimal(name)
 
   override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
                                               (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {

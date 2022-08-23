@@ -1,5 +1,7 @@
 package com.blackmorse.spark.clickhouse.reader
 
+import com.blackmorse.spark.clickhouse.utils.JDBCTimeZoneUtils
+import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import com.blackmorse.spark.clickhouse.{CLICKHOUSE_HOST_NAME, CLICKHOUSE_PORT, TABLE}
 import com.clickhouse.jdbc.ClickHouseDriver
 import org.apache.spark.rdd.RDD
@@ -29,19 +31,23 @@ case class ReaderClickhouseRelation(@transient sqlContext: SQLContext, parameter
 
   override def buildScan(): RDD[Row] = {
     //TODO scale
+    val clickhouseTimeZoneInfo = JDBCTimeZoneUtils.fetchClickhouseTimeZoneFromServer(url)
+
     sqlContext.sparkContext.parallelize(Seq(()), 1)
       .flatMap(_ => {
         val selectSQL = s"SELECT ${fieldsNames} FROM $table"
         Using(new ClickHouseDriver().connect(url, new Properties))(connection => {
-          val rs = connection.createStatement().executeQuery(selectSQL)
-          val rows = mutable.Buffer[Row]()
-          while (rs.next()) {
-            val fieldValues = clickhouseFields.map(_.extractFromRs(rs))
-            rows += Row.fromSeq(fieldValues)
+          Using(connection.createStatement()) { stmt =>
+            val rs = stmt.executeQuery(selectSQL)
+            val rows = mutable.Buffer[Row]()
+            while (rs.next()) {
+              val fieldValues = clickhouseFields.map(_.extractFromRs(rs)(clickhouseTimeZoneInfo))
+              rows += Row.fromSeq(fieldValues)
+            }
+            rows
           }
-          rows
         })
-      } match {
+      }.flatten match {
         case Success(rows) => rows
         case Failure(e) => throw e
       })

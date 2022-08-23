@@ -10,8 +10,8 @@ case class ClickhouseArray(typ: ClickhouseType) extends ClickhouseType {
   override def toSparkType(): DataType = ArrayType(typ.toSparkType(), typ.nullable)
   override val nullable: Boolean = false
 
-  override def extractFromRs(name: String, resultSet: ResultSet): Any =
-    typ.extractArray(name, resultSet)
+  override def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+    typ.extractArray(name, resultSet)(clickhouseTimeZoneInfo)
 
   override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
                                               (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {

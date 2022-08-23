@@ -10,7 +10,8 @@ import java.time.LocalDateTime
 case class ClickhouseDateTime(nullable: Boolean, lowCardinality: Boolean) extends ClickhouseType {
   override def toSparkType(): DataType = TimestampType
 
-  override def extractFromRs(name: String, resultSet: ResultSet): Any = resultSet.getTimestamp(name)
+  override def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+    resultSet.getTimestamp(name)
 
   override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
                                               (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
@@ -18,7 +19,7 @@ case class ClickhouseDateTime(nullable: Boolean, lowCardinality: Boolean) extend
 
   override def arrayClickhouseTypeString(): String = s"Array(DateTime)"
 
-  override def extractArray(name: String, resultSet: ResultSet): AnyRef =
+  override def extractArray(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
     resultSet.getArray(name).getArray.asInstanceOf[Array[LocalDateTime]].map(ldt => Timestamp.valueOf(ldt))
 
   override def extractArrayFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
@@ -33,7 +34,8 @@ case class ClickhouseDateTime(nullable: Boolean, lowCardinality: Boolean) extend
 case class ClickhouseDateTime64(p: Int, nullable: Boolean) extends ClickhouseType {
   override def toSparkType(): DataType = TimestampType
 
-  override def extractFromRs(name: String, resultSet: ResultSet): Any = resultSet.getTimestamp(name)
+  override def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+    resultSet.getTimestamp(name)
 
   override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
                                               (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
@@ -41,6 +43,6 @@ case class ClickhouseDateTime64(p: Int, nullable: Boolean) extends ClickhouseTyp
 
   override def arrayClickhouseTypeString(): String = s"Array(DateTime64($p))"
 
-  override def extractArray(name: String, resultSet: ResultSet): AnyRef =
+  override def extractArray(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
     resultSet.getArray(name).getArray.asInstanceOf[Array[LocalDateTime]].map(ldt => Timestamp.valueOf(ldt))
 }

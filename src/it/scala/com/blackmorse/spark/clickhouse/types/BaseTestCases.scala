@@ -29,7 +29,7 @@ object BaseTestCases extends should.Matchers {
 
   def testPrimitive[T : Encoder](typ: String, seq: Seq[T], rowConverter: Row => T,
                                  comparator: (T, T) => Boolean = (t: T, s: T) => t == s)
-                                (implicit ord: Ordering[T], ct: ClassTag[T], sqlContext: SQLContext) = {
+                                (implicit ord: Ordering[T], ct: ClassTag[T], sqlContext: SQLContext): Unit = {
     import sqlContext.implicits._
     val sc = sqlContext.sparkContext
     withTable(Seq(s"a $typ"), "a") {

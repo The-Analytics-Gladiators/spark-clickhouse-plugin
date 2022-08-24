@@ -21,14 +21,14 @@ case class ClickhouseDateTime(nullable: Boolean, lowCardinality: Boolean) extend
 
   override def extractArray(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
     resultSet.getArray(name).getArray.asInstanceOf[Array[LocalDateTime]].map(ldt => Timestamp.valueOf(ldt))
-
-  override def extractArrayFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
-                                          (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
-    //Set timezone to array
-    val array = row.getList(i).toArray.map(el => ((el.asInstanceOf[Timestamp].getTime + clickhouseTimeZoneInfo.timeZoneMillisDiff) / 1000).asInstanceOf[Object])
-    val jdbcArray = statement.getConnection.createArrayOf(arrayClickhouseTypeString(), array)
-    statement.setArray(i + 1, jdbcArray)
-  }
+//  //For some reason timezone is preserved while reading an array
+//  override def extractArrayFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
+//                                          (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
+//    //Set timezone to array
+//    val array = row.getList(i).toArray.map(el => ((el.asInstanceOf[Timestamp].getTime + clickhouseTimeZoneInfo.timeZoneMillisDiff) / 1000).asInstanceOf[Object])
+//    val jdbcArray = statement.getConnection.createArrayOf(arrayClickhouseTypeString(), array)
+//    statement.setArray(i + 1, jdbcArray)
+//  }
 }
 
 case class ClickhouseDateTime64(p: Int, nullable: Boolean) extends ClickhouseType {
@@ -39,7 +39,7 @@ case class ClickhouseDateTime64(p: Int, nullable: Boolean) extends ClickhouseTyp
 
   override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
                                               (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
-    statement.setTimestamp(i + 1, row.getTimestamp(i))
+    statement.setTimestamp(i + 1, row.getTimestamp(i), clickhouseTimeZoneInfo.calendar)
 
   override def arrayClickhouseTypeString(): String = s"Array(DateTime64($p))"
 

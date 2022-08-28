@@ -9,14 +9,18 @@ import org.apache.spark.sql.types.{DataType, FloatType}
 import java.sql.{PreparedStatement, ResultSet}
 
 case class ClickhouseFloat32(nullable: Boolean, lowCardinality: Boolean) extends ClickhousePrimitive {
+  override type T = Float
+  override val defaultValue: Float = 0.0f
+
   override def toSparkType(): DataType = FloatType
 
-  override def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+  override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getFloat(name)
 
-  override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
-                                              (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
-    statement.setFloat(i + 1, row.getFloat(i))
-
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Float32
+
+  override protected def extractFromRow(i: Int, row: Row): Float = row.getFloat(i)
+
+  override protected def setValueToStatement(i: Int, value: Float, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
+    statement.setFloat(i, value)
 }

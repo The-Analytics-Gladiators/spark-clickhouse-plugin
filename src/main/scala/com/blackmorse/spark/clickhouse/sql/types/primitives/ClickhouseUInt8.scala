@@ -9,14 +9,18 @@ import org.apache.spark.sql.types.{DataType, ShortType}
 import java.sql.{PreparedStatement, ResultSet}
 
 case class ClickhouseUInt8(nullable: Boolean, lowCardinality: Boolean) extends ClickhousePrimitive {
+  override type T = Short
+  override lazy val defaultValue: Short = 0
+
   override def toSparkType(): DataType = ShortType
 
-  override def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+  override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getShort(name)
 
-  override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
-                                              (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
-    statement.setShort(i + 1, row.getShort(i))
-
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.UInt8
+
+  override protected def extractFromRow(i: Int, row: Row): Short = row.getShort(i)
+
+  override protected def setValueToStatement(i: Int, value: Short, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
+    statement.setShort(i, value)
 }

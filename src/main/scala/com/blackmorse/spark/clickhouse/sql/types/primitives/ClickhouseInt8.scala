@@ -9,14 +9,18 @@ import org.apache.spark.sql.types.{ByteType, DataType}
 import java.sql.{PreparedStatement, ResultSet}
 
 case class ClickhouseInt8(nullable: Boolean, lowCardinality: Boolean) extends ClickhousePrimitive {
+  override type T = Byte
+  override lazy val defaultValue: Byte = 0
+
   override def toSparkType(): DataType = ByteType
 
-  override def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+  override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getByte(name)
 
-  override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
-                                              (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
-    statement.setByte(i + 1, row.getByte(i))
+  override def extractFromRow(i: Int, row: Row): Byte = row.getByte(i)
+
+  override protected def setValueToStatement(i: Int, value: Byte, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
+    statement.setByte(i, value)
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Int8
 }

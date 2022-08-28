@@ -7,31 +7,35 @@ import org.apache.spark.sql.types.DataType
 import java.sql.{PreparedStatement, ResultSet}
 
 trait ClickhouseType {
+  type T
   val nullable: Boolean
+
+  val defaultValue: T
 
   def toSparkType(): DataType
 
-  def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any
+  def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any
 
-  def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
-                                     (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit
+  protected def extractFromRow(i: Int, row: Row): T
 
-  def arrayClickhouseTypeString(): String
+  protected def setValueToStatement(i: Int, value: T, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit
 
-  def extractArray(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef
-    = resultSet.getArray(name).getArray
-
-  def extractArrayFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
-                                     (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
-    val array = row.getList(i).toArray
-    val jdbcArray = statement.getConnection.createArrayOf(arrayClickhouseTypeString(), array)
-    statement.setArray(i + 1, jdbcArray)
+  def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
+    if (row.isNullAt(i)) {
+      setValueToStatement(i + 1, defaultValue, statement)(clickhouseTimeZoneInfo)
+    } else {
+      setValueToStatement(i + 1, extractFromRow(i, row), statement)(clickhouseTimeZoneInfo)
+    }
   }
 
+  def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef
+    = resultSet.getArray(name).getArray
+
+  def clickhouseDataTypeString: String
 }
 
 case class ClickhouseField(name: String, typ: ClickhouseType) {
   def extractFromRs(resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any = {
-    typ.extractFromRs(name, resultSet)(clickhouseTimeZoneInfo)
+    typ.extractFromRsByName(name, resultSet)(clickhouseTimeZoneInfo)
   }
 }

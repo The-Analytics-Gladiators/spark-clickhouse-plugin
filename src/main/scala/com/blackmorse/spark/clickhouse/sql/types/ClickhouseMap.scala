@@ -7,12 +7,17 @@ import org.apache.spark.sql.types.DataType
 import java.sql.{PreparedStatement, ResultSet}
 
 case class ClickhouseMap(key: ClickhouseType, value: ClickhouseType, nullable: Boolean) extends ClickhouseType {
+  override type T = Map[key.T, value.T]
+
   override def toSparkType(): DataType = ???
 
-  override def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any = ???
+  override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any = ???
 
-  override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
-                                              (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = ???
+  override val defaultValue: Map[key.T, value.T] = Map()
 
-  override def arrayClickhouseTypeString(): String = ???
+  override protected def extractFromRow(i: Int, row: Row): Map[key.T, value.T] = ???
+
+  override protected def setValueToStatement(i: Int, v: Map[key.T, value.T], statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = ???
+
+  override def clickhouseDataTypeString: String = ???
 }

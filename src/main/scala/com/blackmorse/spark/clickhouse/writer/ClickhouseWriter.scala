@@ -42,9 +42,9 @@ object ClickhouseWriter {
               val row = iterator.next()
 
               mergedSchema.zipWithIndex.foreach { case ((sparkField, chField), index) =>
-                SparkTypeMapper
-                  .mapType(sparkField.dataType, chField.typ)
-                  .extractFromRowAndSetToStatement(index, row, statement)(clickhouseTimeZoneInfo)
+                val clickhouseType = SparkTypeMapper.mapType(sparkField.dataType, chField.typ)
+                clickhouseType
+                                      .extractFromRowAndSetToStatement(index, row, statement)(clickhouseTimeZoneInfo)
               }
 
               statement.addBatch()

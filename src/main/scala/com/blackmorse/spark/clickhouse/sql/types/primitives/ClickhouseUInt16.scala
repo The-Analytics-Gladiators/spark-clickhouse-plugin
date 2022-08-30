@@ -9,14 +9,18 @@ import org.apache.spark.sql.types.{DataType, IntegerType}
 import java.sql.{PreparedStatement, ResultSet}
 
 case class ClickhouseUInt16(nullable: Boolean, lowCardinality: Boolean) extends ClickhousePrimitive {
+  override type T = Int
+  override val defaultValue: Int = 0
+
   override def toSparkType(): DataType = IntegerType
 
-  override def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+  override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getInt(name)
 
-  override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
-                                              (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
-    statement.setInt(i + 1, row.getInt(i))
-
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.UInt16
+
+  override protected def extractFromRow(i: Int, row: Row): Int = row.getInt(i)
+
+  override protected def setValueToStatement(i: Int, value: Int, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
+    statement.setInt(i, value)
 }

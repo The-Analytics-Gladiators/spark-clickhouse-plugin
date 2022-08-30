@@ -6,22 +6,27 @@ import org.apache.spark.sql.types.{DataType, TimestampType}
 
 import java.sql.{PreparedStatement, ResultSet, Timestamp}
 import java.time.LocalDateTime
+import java.util.TimeZone
 
 case class ClickhouseDateTime(nullable: Boolean, lowCardinality: Boolean) extends ClickhouseType {
+  override type T = Timestamp
+  override lazy val defaultValue = new Timestamp(0 - TimeZone.getDefault.getRawOffset)
+
   override def toSparkType(): DataType = TimestampType
 
-  override def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+  override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getTimestamp(name)
 
-  override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
-                                              (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
-    statement.setTimestamp(i + 1, row.getTimestamp(i), clickhouseTimeZoneInfo.calendar)
+  override protected def extractFromRow(i: Int, row: Row): Timestamp = row.getTimestamp(i)
 
-  override def arrayClickhouseTypeString(): String = s"Array(DateTime)"
+  override protected def setValueToStatement(i: Int, value: Timestamp, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
+    statement.setTimestamp(i, value, clickhouseTimeZoneInfo.calendar)
 
-  override def extractArray(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
+  override def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
     resultSet.getArray(name).getArray.asInstanceOf[Array[LocalDateTime]].map(ldt => Timestamp.valueOf(ldt))
-//  //For some reason timezone is preserved while reading an array
+
+  override def clickhouseDataTypeString: String = "DateTime"
+  //  //For some reason timezone is preserved while reading an array
 //  override def extractArrayFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
 //                                          (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
 //    //Set timezone to array
@@ -32,17 +37,22 @@ case class ClickhouseDateTime(nullable: Boolean, lowCardinality: Boolean) extend
 }
 
 case class ClickhouseDateTime64(p: Int, nullable: Boolean) extends ClickhouseType {
+  override type T = Timestamp
+  override lazy val defaultValue: Timestamp = new Timestamp(0 - TimeZone.getDefault.getRawOffset)
   override def toSparkType(): DataType = TimestampType
 
-  override def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+  override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getTimestamp(name)
 
-  override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
-                                              (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
-    statement.setTimestamp(i + 1, row.getTimestamp(i), clickhouseTimeZoneInfo.calendar)
-
-  override def arrayClickhouseTypeString(): String = s"Array(DateTime64($p))"
-
-  override def extractArray(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
+  override def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
     resultSet.getArray(name).getArray.asInstanceOf[Array[LocalDateTime]].map(ldt => Timestamp.valueOf(ldt))
+
+  override protected def extractFromRow(i: Int, row: Row): Timestamp = row.getTimestamp(i)
+
+  protected override def setValueToStatement(i: Int, value: Timestamp, statement: PreparedStatement)
+                                            (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
+    statement.setTimestamp(i, value, clickhouseTimeZoneInfo.calendar)
+  }
+
+  override def clickhouseDataTypeString: String = s"DateTime64($p)"
 }

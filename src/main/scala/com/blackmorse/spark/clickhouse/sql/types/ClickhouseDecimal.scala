@@ -12,23 +12,20 @@ sealed trait DecimalTrait extends ClickhouseType
  * Responsible for Decimal(P, S) Clickhouse type
  */
 case class ClickhouseDecimal(p: Int, s: Int, nullable: Boolean) extends DecimalTrait {
+  override type T = java.math.BigDecimal
+
+  override lazy val defaultValue: java.math.BigDecimal = java.math.BigDecimal.ZERO
+
   override def toSparkType(): DataType = DecimalType(p, s)
 
-  override def extractFromRs(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+  override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getBigDecimal(name)
 
-  override def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
-                                              (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
+  override def extractFromRow(i: Int, row: Row): java.math.BigDecimal =
+    row.getDecimal(i)
 
-//    val value = if(s == 0) {
-//      //in case of *Int* values getting rid from fractional part for saving precision
-//      row.getDecimal(i).setScale(0)
-//    } else {
-//      row.getDecimal(i)
-//    }
-    statement.setBigDecimal(i + 1, row.getDecimal(i).setScale(s))
-  }
+  protected override def setValueToStatement(i: Int, value: java.math.BigDecimal, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
+    statement.setBigDecimal(i, value.setScale(s))
 
-  override def arrayClickhouseTypeString(): String =
-    s"Array(Decimal($p, $s))"
+  override def clickhouseDataTypeString: String = s"Decimal($p, $s)"
 }

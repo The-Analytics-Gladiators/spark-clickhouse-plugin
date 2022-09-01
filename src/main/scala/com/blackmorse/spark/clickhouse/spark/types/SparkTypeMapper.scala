@@ -23,7 +23,9 @@ object SparkTypeMapper {
       case (DecimalType(), _) =>
         ClickhouseDecimal(38, 18, nullable = false)
 
+      case (DateType, _: ClickhouseDate32) => ClickhouseDate32(nullable = false, lowCardinality = false)
       case (DateType, _) => ClickhouseDate(nullable = false, lowCardinality = false)
+
       case (TimestampType, ClickhouseDateTime(_, _)) => chType
       case (TimestampType, ClickhouseDateTime64(_, _)) => chType
       case (ArrayType(elementType, _), ClickhouseArray(typ)) =>

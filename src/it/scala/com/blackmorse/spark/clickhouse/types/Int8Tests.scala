@@ -10,7 +10,10 @@ class Int8Tests extends AnyFlatSpec with DataFrameSuiteBase {
 
   "Int8" should "be supported" in {
     testPrimitiveAndArray(clickhouseType = ClickhouseInt8(nullable = false, lowCardinality = false))(
-      seq = Seq((1 to 100) map (_.toByte)),
+      cases = Seq(
+        (1 to 100) map (_.toByte),
+        Seq((-127).toByte, 128.toByte)
+      ),
       rowConverter = row => row.getByte(0),
     )
   }

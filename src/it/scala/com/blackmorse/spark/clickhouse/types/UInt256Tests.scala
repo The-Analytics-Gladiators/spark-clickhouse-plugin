@@ -10,8 +10,11 @@ class UInt256Tests extends AnyFlatSpec with DataFrameSuiteBase {
 
   "UInt256" should "be supported" in {
     testPrimitiveAndArray(ClickhouseUInt256(nullable = false, lowCardinality = false))(
-      seq = Seq((1 to 100) map (i => new java.math.BigDecimal(i))),
-      rowConverter = row => row.getDecimal(0)
+      cases = Seq(
+        (1 to 100) map (_.toString),
+        Seq("0", "115792089237316195423570985008687907853269984665640564039457584007913129639935")
+      ),
+      rowConverter = row => row.getString(0)
     )
   }
 }

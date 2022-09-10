@@ -11,13 +11,15 @@ class DecimalTests extends AnyFlatSpec with DataFrameSuiteBase {
   val port = 8123
   val table = "default.test_table"
 
-  val comparator: (java.math.BigDecimal, java.math.BigDecimal) => Boolean =
-    (r, e) => r.subtract(e).abs().compareTo(new java.math.BigDecimal("0.01")) == -1
+  val comparator: (String, String) => Boolean =
+    (r, e) => new java.math.BigDecimal(r).subtract(new java.math.BigDecimal(e)).abs().compareTo(new java.math.BigDecimal("0.01")) == -1
 
   "Decimal" should "be supported" in {
     testPrimitiveAndArray(ClickhouseDecimal(10, 6, nullable = false))(
-      seq = Seq((1 to 100) map (i => new java.math.BigDecimal(s"$i.$i"))),
-      rowConverter = row => row.getDecimal(0),
+      cases = Seq(
+        (1 to 100) map (i => s"$i.$i")
+      ),
+      rowConverter = row => row.getString(0),
       comparator = comparator
     )
   }

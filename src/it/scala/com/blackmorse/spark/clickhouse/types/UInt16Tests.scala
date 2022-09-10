@@ -10,7 +10,10 @@ class UInt16Tests extends AnyFlatSpec with DataFrameSuiteBase {
 
   "UInt16" should "be supported" in {
     testPrimitiveAndArray(ClickhouseUInt16(false, lowCardinality = false))(
-      seq = Seq((1 to 100)),
+      cases = Seq(
+        1 to 100,
+        Seq(0, 65535)
+      ),
       rowConverter = row => row.getInt(0)
     )
   }

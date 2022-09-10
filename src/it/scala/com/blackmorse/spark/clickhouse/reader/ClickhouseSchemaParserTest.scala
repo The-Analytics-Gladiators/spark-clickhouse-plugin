@@ -2,7 +2,7 @@ package com.blackmorse.spark.clickhouse.reader
 
 import com.blackmorse.spark.clickhouse.ClickhouseTests.withTable
 import com.blackmorse.spark.clickhouse.sql.types._
-import com.blackmorse.spark.clickhouse.sql.types.primitives.{ClickhouseDate, ClickhouseFloat64, ClickhouseInt32, ClickhouseString, ClickhouseUInt256, ClickhouseUInt64, ClickhouseUInt8}
+import com.blackmorse.spark.clickhouse.sql.types.primitives.{ClickhouseDate, ClickhouseFloat64, ClickhouseInt128, ClickhouseInt16, ClickhouseInt256, ClickhouseInt32, ClickhouseInt64, ClickhouseInt8, ClickhouseString, ClickhouseUInt128, ClickhouseUInt16, ClickhouseUInt256, ClickhouseUInt32, ClickhouseUInt64, ClickhouseUInt8}
 import com.clickhouse.client.ClickHouseDataType
 import org.scalatest.flatspec.AnyFlatSpec
 
@@ -67,6 +67,40 @@ class ClickhouseSchemaParserTest extends AnyFlatSpec {
         ClickhouseField("c", ClickhouseDateTime(nullable = false, lowCardinality = false)),
         ClickhouseField("d", ClickhouseDateTime64(8, nullable = false)),
         ClickhouseField("e", ClickhouseDateTime(nullable = true, lowCardinality = false))
+      ))
+    }
+  }
+
+  "ClickhouseSchemaParser" should "recognize (U)Int{8-256} types" in {
+    withTable(Seq(
+      "a UInt8",
+      "b Int8",
+      "c Int16",
+      "d UInt16",
+      "e Int32",
+      "f UInt32",
+      "g Int64",
+      "h UInt64",
+      "j Int128",
+      "k UInt128",
+      "l Int256",
+      "m UInt256"
+    ), "a") {
+      val fields = ClickhouseSchemaParser.parseTable("jdbc:clickhouse://localhost:8123", "default.test_table")
+
+      assert(fields equals Seq(
+        ClickhouseField("a", ClickhouseUInt8(nullable = false, lowCardinality = false)),
+        ClickhouseField("b", ClickhouseInt8(nullable = false, lowCardinality = false)),
+        ClickhouseField("c", ClickhouseInt16(nullable = false, lowCardinality = false)),
+        ClickhouseField("d", ClickhouseUInt16(nullable = false, lowCardinality = false)),
+        ClickhouseField("e", ClickhouseInt32(nullable = false, lowCardinality = false)),
+        ClickhouseField("f", ClickhouseUInt32(nullable = false, lowCardinality = false)),
+        ClickhouseField("g", ClickhouseInt64(nullable = false, lowCardinality = false)),
+        ClickhouseField("h", ClickhouseUInt64(nullable = false, lowCardinality = false)),
+        ClickhouseField("j", ClickhouseInt128(nullable = false, lowCardinality = false)),
+        ClickhouseField("k", ClickhouseUInt128(nullable = false, lowCardinality = false)),
+        ClickhouseField("l", ClickhouseInt256(nullable = false, lowCardinality = false)),
+        ClickhouseField("m", ClickhouseUInt256(nullable = false, lowCardinality = false)),
       ))
     }
   }

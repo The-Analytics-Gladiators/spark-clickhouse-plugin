@@ -10,7 +10,10 @@ class UInt8Tests extends AnyFlatSpec with DataFrameSuiteBase {
 
   "UInt8" should "be supported" in {
     testPrimitiveAndArray(clickhouseType = ClickhouseUInt8(nullable = false, lowCardinality = false))(
-      seq = Seq((1 to 100) map (_.toShort)),
+      cases = Seq(
+        (1 to 100) map (_.toShort),
+        Seq(0.toShort, 255.toShort)
+      ),
       rowConverter = row => row.getShort(0),
     )
   }

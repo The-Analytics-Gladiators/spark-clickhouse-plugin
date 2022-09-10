@@ -10,7 +10,10 @@ class Int16Tests extends AnyFlatSpec with DataFrameSuiteBase {
 
   "Int16" should "be supported" in {
     testPrimitiveAndArray(ClickhouseInt16(nullable = false, lowCardinality = false))(
-      seq = Seq((1 to 100) map (_.toShort)),
+      cases = Seq(
+        (1 to 100) map (_.toShort),
+        Seq(Short.MinValue, Short.MaxValue)
+      ),
       rowConverter = row => row.getShort(0)
     )
   }

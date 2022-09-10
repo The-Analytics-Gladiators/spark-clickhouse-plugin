@@ -10,8 +10,11 @@ class Int128Tests extends AnyFlatSpec with DataFrameSuiteBase {
 
   "Int128" should "be supported" in {
     testPrimitiveAndArray(ClickhouseInt128(nullable = false, lowCardinality = false))(
-      seq = Seq((1 to 100) map (i => new java.math.BigDecimal(i))),
-      rowConverter = row => row.getDecimal(0)
+      cases = Seq(
+        (1 to 100) map (_.toString),
+        Seq("-170141183460469231731687303715884105728", "170141183460469231731687303715884105727")
+      ),
+      rowConverter = row => row.getString(0)
     )
   }
 }

@@ -23,7 +23,10 @@ class UInt64Tests extends AnyFlatSpec with DataFrameSuiteBase {
 
   "UInt64" should "be supported" in {
     testPrimitiveAndArray(ClickhouseUInt64(nullable = false, lowCardinality = false))(
-      seq = Seq((1 to 100) map (i => new java.math.BigDecimal(i))),
+      cases = Seq(
+        (1 to 100) map (i => new java.math.BigDecimal(i)),
+//        Seq(new java.math.BigDecimal(0), new java.math.BigDecimal("18446744073709551615"))// Again after that PR
+      ),
       rowConverter = row => row.getDecimal(0)
     )
   }

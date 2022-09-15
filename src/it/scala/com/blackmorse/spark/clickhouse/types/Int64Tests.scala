@@ -10,7 +10,10 @@ class Int64Tests extends AnyFlatSpec with DataFrameSuiteBase {
 
   "Int64" should "be supported" in {
     testPrimitiveAndArray(ClickhouseInt64(nullable = false, lowCardinality = false))(
-      seq = Seq((1 to 100) map (_.toLong)),
+      cases = Seq(
+        (1 to 100) map (_.toLong),
+        Seq(Long.MinValue, Long.MaxValue)
+      ),
       rowConverter = row => row.getLong(0)
     )
   }

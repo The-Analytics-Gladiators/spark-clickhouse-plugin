@@ -10,7 +10,10 @@ class StringTests extends AnyFlatSpec with DataFrameSuiteBase {
 
   "String" should "be supported" in {
     testPrimitiveAndArray(ClickhouseString(nullable = false, lowCardinality = false))(
-      seq = Seq((1 to 100) map (_.toString)),
+      cases = Seq(
+        (1 to 100) map (_.toString),
+        Seq("")
+      ),
       rowConverter = row => row.getString(0)
     )
   }

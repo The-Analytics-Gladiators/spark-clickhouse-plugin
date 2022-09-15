@@ -14,10 +14,18 @@ object SparkTypeMapper {
       case (ShortType, _) => ClickhouseInt16(nullable = false, lowCardinality = false)
       case (FloatType, _) => ClickhouseFloat32(nullable = false, lowCardinality = false)
       case (DoubleType, _) => ClickhouseFloat64(nullable = false, lowCardinality = false)
+
+      case (StringType, t @ ClickhouseInt128(_, _)) => t
+      case (StringType, t @ ClickhouseInt256(_, _)) => t
+      case (StringType, t @ ClickhouseUInt128(_, _)) => t
+      case (StringType, t @ ClickhouseUInt256(_, _)) => t
+      case (StringType, t @ ClickhouseDecimal(_, _, _)) => t
+
       case (StringType, _) => ClickhouseString(nullable = false, lowCardinality = false)
 
       case (DecimalType(), ClickhouseDecimal(p, s, nullable)) =>
         ClickhouseDecimal(p, s, nullable = nullable)
+      case(DecimalType(), t @ ClickhouseUInt64(_, _)) => t
       case (DecimalType(), t: ClickhousePrimitive) if t.clickhouseDataType.toString.contains("Int") =>
         ClickhouseDecimal(38, 0, t.nullable)
       case (DecimalType(), _) =>

@@ -10,8 +10,11 @@ class UInt128Tests extends AnyFlatSpec with DataFrameSuiteBase {
 
   "UInt128" should "be supported" in {
     testPrimitiveAndArray(ClickhouseUInt128(nullable = false, lowCardinality = false))(
-      seq = Seq((1 to 100) map (i => new java.math.BigDecimal(i))),
-      rowConverter = row => row.getDecimal(0)
+      cases = Seq(
+        (1 to 100) map (_.toString),
+        Seq("0", "340282366920938463463374607431768211455")
+      ),
+      rowConverter = row => row.getString(0)
     )
   }
 }

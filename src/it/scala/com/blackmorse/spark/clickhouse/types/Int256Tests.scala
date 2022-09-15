@@ -10,9 +10,12 @@ class Int256Tests extends AnyFlatSpec with DataFrameSuiteBase {
 
   "Int256" should "be supported" in {
     testPrimitiveAndArray(clickhouseType = ClickhouseInt256(nullable = false, lowCardinality = false))(
-      seq = Seq((1 to 100) map (i => new java.math.BigDecimal(i)))
-      ,
-      rowConverter = row => row.getDecimal(0),
+      cases = Seq(
+        (1 to 100) map (_.toString),
+        Seq("-57896044618658097711785492504343953926634992332820282019728792003956564819968",
+          "57896044618658097711785492504343953926634992332820282019728792003956564819967")
+      ),
+      rowConverter = row => row.getString(0),
     )
   }
 }

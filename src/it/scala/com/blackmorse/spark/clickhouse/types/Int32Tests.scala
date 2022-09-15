@@ -10,7 +10,10 @@ class Int32Tests extends AnyFlatSpec with DataFrameSuiteBase {
 
   "Int32" should "be supported" in {
     testPrimitiveAndArray(ClickhouseInt32(nullable = false, lowCardinality = false))(
-      seq  = Seq(1 to 100),
+      cases  = Seq(
+        1 to 100,
+        Seq(Int.MinValue, Int.MaxValue)
+      ),
       rowConverter = row => row.getInt(0))
   }
 }

@@ -10,7 +10,11 @@ class Float32Tests extends AnyFlatSpec with DataFrameSuiteBase {
 
   "Float32" should "be supported" in {
     testPrimitiveAndArray(ClickhouseFloat32(nullable = false, lowCardinality = false))(
-      seq = Seq((1 to 100) map (_.toFloat)),
+      cases = Seq(
+        (1 to 100) map (_.toFloat),
+        (1 to 100) map (f => f + f.toFloat / 100),
+        Seq(Float.MinValue, Float.MaxValue)
+      ),
       rowConverter = row => row.getFloat(0)
     )
   }

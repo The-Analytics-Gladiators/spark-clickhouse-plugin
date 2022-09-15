@@ -10,7 +10,11 @@ class Float64Tests extends AnyFlatSpec with DataFrameSuiteBase {
 
   "Float64" should "be supported" in {
     testPrimitiveAndArray(ClickhouseFloat64(nullable = false, lowCardinality = false))(
-      seq = Seq((1 to 100) map (_.toDouble)),
+      cases = Seq(
+        (1 to 100) map (_.toDouble),
+        (1 to 100) map (f => f + f.toDouble / 100),
+        Seq(Double.MinValue, Double.MaxValue)
+      ),
       rowConverter = row => row.getDouble(0)
     )
   }

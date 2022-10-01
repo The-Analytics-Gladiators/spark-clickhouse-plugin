@@ -4,7 +4,7 @@ import com.blackmorse.spark.clickhouse.sql.types.ClickhousePrimitive
 import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{DataType, StringType}
+import org.apache.spark.sql.types.{ByteType, DataType, DecimalType, IntegerType, LongType, ShortType, StringType}
 
 import java.math.BigInteger
 import java.sql.{PreparedStatement, ResultSet}
@@ -33,6 +33,11 @@ case class ClickhouseUInt256(nullable: Boolean, lowCardinality: Boolean) extends
 
 object ClickhouseBigIntType {
   def mapRowExtractor(sparkType: DataType): (Row, Int) => String = sparkType match {
-    case StringType => (row, index) => row.getString(index)
+    case ByteType      => (row, index) => row.getByte(index).toString
+    case ShortType     => (row, index) => row.getShort(index).toString
+    case IntegerType   => (row, index) => row.getInt(index).toString
+    case LongType      => (row, index) => row.getLong(index).toString
+    case DecimalType() => (row, index) => row.getDecimal(index).toString
+    case StringType    => (row, index) => row.getString(index)
   }
 }

@@ -20,22 +20,26 @@ object BaseTestCases extends should.Matchers {
   def testPrimitiveAndArray(clickhouseType: ClickhouseType)(cases: Seq[Seq[Any]],
                                                             //TODO should be in ClickhouseType ?
                                                             rowConverter: Row => clickhouseType.T,
+                                                            forceSparkType: DataType = clickhouseType.toSparkType(),
+                                                            convertToOriginalType: Any => clickhouseType.T = t => t.asInstanceOf[clickhouseType.T],
                                                             comparator: (clickhouseType.T, clickhouseType.T) => Boolean = (t: clickhouseType.T, s: clickhouseType.T) => t == s)
                            (implicit ord: Ordering[clickhouseType.T], encoder: Encoder[Seq[clickhouseType.T]], ct: ClassTag[clickhouseType.T], sqlContext: SQLContext): Unit = {
     cases.foreach(seq => {
-      testPrimitive(clickhouseType)(seq, rowConverter, comparator)
-      testPrimitive(clickhouseType)(seq ++ Seq(null), rowConverter, comparator)
-      testPrimitive(clickhouseType)(Seq(null), rowConverter, comparator)
+      testPrimitive(clickhouseType)(seq, rowConverter, forceSparkType, convertToOriginalType, comparator)
+      testPrimitive(clickhouseType)(seq ++ Seq(null), rowConverter, forceSparkType, convertToOriginalType, comparator)
+      testPrimitive(clickhouseType)(Seq(null), rowConverter, forceSparkType, convertToOriginalType, comparator)
 
-      testArray(clickhouseType)(seq, comparator)
+      testArray(clickhouseType)(seq, forceSparkType, convertToOriginalType, comparator)
     })
   }
 
   def testArray(clickhouseType: ClickhouseType)(seq: Seq[Any],
+                                                sparkType: DataType,
+                                                convertToOriginalType: Any => clickhouseType.T,
                                                 comparator: (clickhouseType.T, clickhouseType.T) => Boolean = (t: clickhouseType.T, s: clickhouseType.T) => t == s)
                (implicit ord: Ordering[clickhouseType.T], encoder: Encoder[Seq[clickhouseType.T]], ct: ClassTag[clickhouseType.T], sqlContext: SQLContext): Unit = {
     val clickhouseTypeName = clickhouseType.clickhouseDataTypeString
-    val sparkType = clickhouseType.toSparkType()
+//    val sparkType = clickhouseType.toSparkType()
     val typeDefaultValue = clickhouseType.defaultValue
 
     val sc = sqlContext.sparkContext
@@ -57,7 +61,7 @@ object BaseTestCases extends should.Matchers {
       val dataFrame = sqlContext.read.clickhouse(host, port, table)
 
       dataFrame.schema.length should be(1)
-      dataFrame.schema.head.dataType should be(ArrayType(sparkType, false))
+      dataFrame.schema.head.dataType should be(ArrayType(clickhouseType.toSparkType(), false))
 
       val result: Array[java.util.List[clickhouseType.T]] = dataFrame
         .rdd
@@ -70,7 +74,7 @@ object BaseTestCases extends should.Matchers {
           case null => Seq[clickhouseType.T]()
           case arr: Seq[clickhouseType.T] => arr map {
             case null => typeDefaultValue
-            case t: clickhouseType.T => t
+            case t => convertToOriginalType(t)
           }
         }
       .sortBy(e => (e.size, e.map(_.hashCode()).sum))
@@ -88,6 +92,8 @@ object BaseTestCases extends should.Matchers {
 
   def testPrimitive(clickhouseType: ClickhouseType)(seq: Seq[Any],
                                                     rowConverter: Row => clickhouseType.T,
+                                                    sparkType: DataType,
+                                                    convertToOriginalType: Any => clickhouseType.T,
                                                     comparator: (clickhouseType.T, clickhouseType.T) => Boolean = (t: clickhouseType.T, s: clickhouseType.T) => t == s)
                    (implicit ord: Ordering[clickhouseType.T], ct: ClassTag[clickhouseType.T], sqlContext: SQLContext): Unit = {
 
@@ -96,7 +102,7 @@ object BaseTestCases extends should.Matchers {
     val sc = sqlContext.sparkContext
     withTable(Seq(s"a $clickhouseTypeName"), "a") {
       val rows = seq.map(el => Row.fromSeq(Seq(el)))
-      val schema = StructType(Seq(StructField("a", clickhouseType.toSparkType(), nullable = true)))
+      val schema = StructType(Seq(StructField("a", sparkType, nullable = true)))
 
       sqlContext.createDataFrame(sc.parallelize(rows),  schema)
         .write.clickhouse(host, port, table)
@@ -107,11 +113,11 @@ object BaseTestCases extends should.Matchers {
 
       val expected = seq.map{
         case null => clickhouseType.defaultValue
-        case t: clickhouseType.T => t
+        case t => convertToOriginalType(t)
       }.sorted
 
       res.sorted.zip(expected).foreach { case (result, expected) =>
-        assert(comparator(result, expected), s"Expected values: $expected. Actual value: $result")
+        assert(comparator(result, expected), s"Expected value: $expected. Actual value: $result")
       }
     }
   }

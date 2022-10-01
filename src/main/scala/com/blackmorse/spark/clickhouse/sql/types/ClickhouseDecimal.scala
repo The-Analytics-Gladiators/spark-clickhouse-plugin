@@ -2,7 +2,7 @@ package com.blackmorse.spark.clickhouse.sql.types
 
 import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{DataType, DecimalType, StringType}
+import org.apache.spark.sql.types.{DataType, DecimalType, DoubleType, FloatType, StringType}
 
 import java.sql.{PreparedStatement, ResultSet}
 
@@ -32,6 +32,8 @@ case class ClickhouseDecimal(p: Int, s: Int, nullable: Boolean) extends DecimalT
 
 object ClickhouseDecimal {
   def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
+    case FloatType  => (row, index) => row.getFloat(index).toString
+    case DoubleType => (row, index) => row.getDouble(index).toString
     case StringType => (row, index) => row.getString(index)
   }
 }

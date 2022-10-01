@@ -1,7 +1,7 @@
 package com.blackmorse.spark.clickhouse.writer
 
 import com.blackmorse.spark.clickhouse.reader.ClickhouseSchemaParser
-import com.blackmorse.spark.clickhouse.spark.types.{SchemaMerger, SparkTypeMapper}
+import com.blackmorse.spark.clickhouse.spark.types.SchemaMerger
 import com.blackmorse.spark.clickhouse.utils.JDBCTimeZoneUtils
 import com.blackmorse.spark.clickhouse.{BATCH_SIZE, CLICKHOUSE_HOST_NAME, CLICKHOUSE_PORT, TABLE, WriteClickhouseRelation}
 import com.clickhouse.jdbc.ClickHouseDriver

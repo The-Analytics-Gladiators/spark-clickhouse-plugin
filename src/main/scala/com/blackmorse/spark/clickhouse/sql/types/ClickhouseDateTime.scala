@@ -17,8 +17,6 @@ case class ClickhouseDateTime(nullable: Boolean, lowCardinality: Boolean) extend
   override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getTimestamp(name)
 
-  override protected def extractFromRow(i: Int, row: Row): Timestamp = row.getTimestamp(i)
-
   override protected def setValueToStatement(i: Int, value: Timestamp, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setTimestamp(i, value, clickhouseTimeZoneInfo.calendar)
 
@@ -36,6 +34,12 @@ case class ClickhouseDateTime(nullable: Boolean, lowCardinality: Boolean) extend
 //  }
 }
 
+object ClickhouseDateTime {
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
+    case TimestampType => (row, index) => row.getTimestamp(index)
+  }
+}
+
 case class ClickhouseDateTime64(p: Int, nullable: Boolean) extends ClickhouseType {
   override type T = Timestamp
   override lazy val defaultValue: Timestamp = new Timestamp(0 - TimeZone.getDefault.getRawOffset)
@@ -47,12 +51,16 @@ case class ClickhouseDateTime64(p: Int, nullable: Boolean) extends ClickhouseTyp
   override def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
     resultSet.getArray(name).getArray.asInstanceOf[Array[LocalDateTime]].map(ldt => Timestamp.valueOf(ldt))
 
-  override protected def extractFromRow(i: Int, row: Row): Timestamp = row.getTimestamp(i)
-
   protected override def setValueToStatement(i: Int, value: Timestamp, statement: PreparedStatement)
                                             (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
     statement.setTimestamp(i, value, clickhouseTimeZoneInfo.calendar)
   }
 
   override def clickhouseDataTypeString: String = s"DateTime64($p)"
+}
+
+object ClickhouseDateTime64 {
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
+    case TimestampType => (row, index) => row.getTimestamp(index)
+  }
 }

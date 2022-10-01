@@ -19,8 +19,12 @@ case class ClickhouseString(nullable: Boolean, lowCardinality: Boolean) extends 
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.String
 
-  override protected def extractFromRow(i: Int, row: Row): String = row.getString(i)
-
   override protected def setValueToStatement(i: Int, value: String, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setString(i, value)
+}
+
+object ClickhouseString {
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
+    case StringType => (row, index) => row.getString(index)
+  }
 }

@@ -29,8 +29,6 @@ object BaseTestCases extends should.Matchers {
 
       testArray(clickhouseType)(seq, comparator)
     })
-
-    println()
   }
 
   def testArray(clickhouseType: ClickhouseType)(seq: Seq[Any],

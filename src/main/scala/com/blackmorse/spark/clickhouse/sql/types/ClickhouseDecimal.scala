@@ -21,9 +21,6 @@ case class ClickhouseDecimal(p: Int, s: Int, nullable: Boolean) extends DecimalT
   override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getString(name)
 
-  override def extractFromRow(i: Int, row: Row): String =
-    row.getString(i)
-
   protected override def setValueToStatement(i: Int, value: String, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setBigDecimal(i, new java.math.BigDecimal(value).setScale(s))
 
@@ -31,4 +28,10 @@ case class ClickhouseDecimal(p: Int, s: Int, nullable: Boolean) extends DecimalT
     resultSet.getArray(name).getArray().asInstanceOf[Array[java.math.BigDecimal]].map(_.toString)
 
   override def clickhouseDataTypeString: String = s"Decimal($p, $s)"
+}
+
+object ClickhouseDecimal {
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
+    case StringType => (row, index) => row.getString(index)
+  }
 }

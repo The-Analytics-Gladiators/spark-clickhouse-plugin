@@ -24,8 +24,12 @@ case class ClickhouseUInt64(nullable: Boolean, lowCardinality: Boolean) extends 
     array.asInstanceOf[Array[Long]].map(l => new java.math.BigDecimal(l.toString))
   }
 
-  override protected def extractFromRow(i: Int, row: Row): java.math.BigDecimal = row.getDecimal(i)
-
   override protected def setValueToStatement(i: Int, value: java.math.BigDecimal, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setBigDecimal(i, value)
+}
+
+object ClickhouseUInt64 {
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
+    case DecimalType() => (row, index) => row.getDecimal(index)
+  }
 }

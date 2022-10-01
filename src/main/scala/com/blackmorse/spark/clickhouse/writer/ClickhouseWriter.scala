@@ -8,6 +8,7 @@ import com.clickhouse.jdbc.ClickHouseDriver
 import org.apache.spark.sql.sources.BaseRelation
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 
+import java.sql.PreparedStatement
 import java.util.Properties
 import scala.util.{Failure, Success, Using}
 
@@ -28,8 +29,15 @@ object ClickhouseWriter {
     val clickhouseFields = ClickhouseSchemaParser.parseTable(url, table)
 
     val mergedSchema = SchemaMerger.mergeSchemas(schema, clickhouseFields)
-
     val clickhouseTimeZoneInfo = JDBCTimeZoneUtils.fetchClickhouseTimeZoneFromServer(url)
+
+    val rowSetters = mergedSchema.zipWithIndex.map { case ((sparkField, chField), index) =>
+      val clickhouseType = chField.typ
+      val rowExtractor = RowExtractors.mapRowExtractors(sparkField.dataType, clickhouseType)
+
+      (row: Row, statement: PreparedStatement) =>
+        clickhouseType.extractFromRowAndSetToStatement(index, row, rowExtractor, statement)(clickhouseTimeZoneInfo)
+    }
 
     dataFrame
       .foreachPartition((iterator: scala.collection.Iterator[Row]) => {
@@ -41,11 +49,7 @@ object ClickhouseWriter {
               rowsInBatch += 1
               val row = iterator.next()
 
-              mergedSchema.zipWithIndex.foreach { case ((sparkField, chField), index) =>
-                val clickhouseType = SparkTypeMapper.mapType(sparkField.dataType, chField.typ)
-                clickhouseType
-                                      .extractFromRowAndSetToStatement(index, row, statement)(clickhouseTimeZoneInfo)
-              }
+              rowSetters.foreach(rowSetter => rowSetter(row, statement))
 
               statement.addBatch()
               if (rowsInBatch >= batchSize) {

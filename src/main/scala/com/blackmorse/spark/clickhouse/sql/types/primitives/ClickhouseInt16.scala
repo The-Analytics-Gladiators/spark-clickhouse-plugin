@@ -19,8 +19,12 @@ case class ClickhouseInt16(nullable: Boolean, lowCardinality: Boolean) extends C
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Int16
 
-  override protected def extractFromRow(i: Int, row: Row): Short = row.getShort(i)
-
   override protected def setValueToStatement(i: Int, value: Short, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setShort(i, value)
+}
+
+object ClickhouseInt16 {
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
+    case ShortType => (row, index) => row.getShort(index)
+  }
 }

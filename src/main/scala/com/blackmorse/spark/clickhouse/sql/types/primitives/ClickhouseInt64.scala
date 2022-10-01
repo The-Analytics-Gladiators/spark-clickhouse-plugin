@@ -19,8 +19,12 @@ case class ClickhouseInt64(nullable: Boolean, lowCardinality: Boolean) extends C
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Int64
 
-  override protected def extractFromRow(i: Int, row: Row): Long = row.getLong(i)
-
   override protected def setValueToStatement(i: Int, value: Long, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setLong(i, value)
+}
+
+object ClickhouseInt64 {
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
+    case LongType => (row, index) => row.getLong(index)
+  }
 }

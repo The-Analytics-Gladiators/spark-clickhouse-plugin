@@ -19,8 +19,13 @@ case class ClickhouseFloat32(nullable: Boolean, lowCardinality: Boolean) extends
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Float32
 
-  override protected def extractFromRow(i: Int, row: Row): Float = row.getFloat(i)
-
   override protected def setValueToStatement(i: Int, value: Float, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setFloat(i, value)
+}
+
+object ClickhouseFloat32 {
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
+    case FloatType => (row, index) => row.getFloat(index)
+  }
+
 }

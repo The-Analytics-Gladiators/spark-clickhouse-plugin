@@ -24,8 +24,8 @@ case class ClickhouseFloat64(nullable: Boolean, lowCardinality: Boolean) extends
 }
 
 object ClickhouseFloat64 {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
-    case FloatType  => (row, index) => row.getFloat(index).toDouble
-    case DoubleType => (row, index) => row.getDouble(index)
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Double = (row, index) => sparkType match {
+    case FloatType  => row.getFloat(index).toDouble
+    case DoubleType => row.getDouble(index)
   }
 }

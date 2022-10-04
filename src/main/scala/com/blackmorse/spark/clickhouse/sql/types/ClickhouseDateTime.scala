@@ -60,7 +60,7 @@ case class ClickhouseDateTime64(p: Int, nullable: Boolean) extends ClickhouseTyp
 }
 
 object ClickhouseDateTime64 {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
-    case TimestampType => (row, index) => row.getTimestamp(index)
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Timestamp = (row, index) => sparkType match {
+    case TimestampType => row.getTimestamp(index)
   }
 }

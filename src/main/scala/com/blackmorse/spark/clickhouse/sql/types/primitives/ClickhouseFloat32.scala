@@ -24,8 +24,8 @@ case class ClickhouseFloat32(nullable: Boolean, lowCardinality: Boolean) extends
 }
 
 object ClickhouseFloat32 {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
-    case FloatType => (row, index) => row.getFloat(index)
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Float = (row, index) => sparkType match {
+    case FloatType => row.getFloat(index)
   }
 
 }

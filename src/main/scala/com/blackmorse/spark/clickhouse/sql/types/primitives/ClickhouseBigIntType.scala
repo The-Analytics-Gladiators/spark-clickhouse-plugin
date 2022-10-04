@@ -32,12 +32,12 @@ case class ClickhouseInt256(nullable: Boolean, lowCardinality: Boolean) extends 
 case class ClickhouseUInt256(nullable: Boolean, lowCardinality: Boolean) extends ClickhouseBigIntType(ClickHouseDataType.UInt256)
 
 object ClickhouseBigIntType {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => String = sparkType match {
-    case ByteType      => (row, index) => row.getByte(index).toString
-    case ShortType     => (row, index) => row.getShort(index).toString
-    case IntegerType   => (row, index) => row.getInt(index).toString
-    case LongType      => (row, index) => row.getLong(index).toString
-    case DecimalType() => (row, index) => row.getDecimal(index).toString
-    case StringType    => (row, index) => row.getString(index)
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => String = (row, index) => sparkType match {
+    case ByteType      => row.getByte(index).toString
+    case ShortType     => row.getShort(index).toString
+    case IntegerType   => row.getInt(index).toString
+    case LongType      => row.getLong(index).toString
+    case DecimalType() => row.getDecimal(index).toString
+    case StringType    => row.getString(index)
   }
 }

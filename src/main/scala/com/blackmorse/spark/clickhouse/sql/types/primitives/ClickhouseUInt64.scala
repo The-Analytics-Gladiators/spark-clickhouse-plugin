@@ -29,11 +29,11 @@ case class ClickhouseUInt64(nullable: Boolean, lowCardinality: Boolean) extends 
 }
 
 object ClickhouseUInt64 {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
-    case ByteType      => (row, index) => new java.math.BigDecimal(row.getByte(index))
-    case ShortType     => (row, index) => new java.math.BigDecimal(row.getShort(index))
-    case IntegerType   => (row, index) => new java.math.BigDecimal(row.getInt(index))
-    case LongType      => (row, index) => new java.math.BigDecimal(row.getLong(index))
-    case DecimalType() => (row, index) => row.getDecimal(index)
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => java.math.BigDecimal = (row, index) => sparkType match {
+    case ByteType      => new java.math.BigDecimal(row.getByte(index))
+    case ShortType     => new java.math.BigDecimal(row.getShort(index))
+    case IntegerType   => new java.math.BigDecimal(row.getInt(index))
+    case LongType      => new java.math.BigDecimal(row.getLong(index))
+    case DecimalType() => row.getDecimal(index)
   }
 }

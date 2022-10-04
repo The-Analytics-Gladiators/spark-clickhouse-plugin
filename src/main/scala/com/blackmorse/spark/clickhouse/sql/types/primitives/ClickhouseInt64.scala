@@ -24,10 +24,10 @@ case class ClickhouseInt64(nullable: Boolean, lowCardinality: Boolean) extends C
 }
 
 object ClickhouseInt64 {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
-    case ByteType    => (row, index) => row.getByte(index).toLong
-    case ShortType   => (row, index) => row.getShort(index).toLong
-    case IntegerType => (row, index) => row.getInt(index).toLong
-    case LongType    => (row, index) => row.getLong(index)
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Long = (row, index) => sparkType match {
+    case ByteType    => row.getByte(index).toLong
+    case ShortType   => row.getShort(index).toLong
+    case IntegerType => row.getInt(index).toLong
+    case LongType    => row.getLong(index)
   }
 }

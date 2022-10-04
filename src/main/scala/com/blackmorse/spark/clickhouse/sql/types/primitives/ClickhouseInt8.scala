@@ -24,7 +24,7 @@ case class ClickhouseInt8(nullable: Boolean, lowCardinality: Boolean) extends Cl
 }
 
 object ClickhouseInt8 {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
-    case ByteType => (row, index) => row.getByte(index)
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Byte = (row, index) => sparkType match {
+    case ByteType => row.getByte(index)
   }
 }

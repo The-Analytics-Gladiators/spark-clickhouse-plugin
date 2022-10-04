@@ -24,7 +24,7 @@ case class ClickhouseString(nullable: Boolean, lowCardinality: Boolean) extends 
 }
 
 object ClickhouseString {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
-    case StringType => (row, index) => row.getString(index)
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => String = (row, index) => sparkType match {
+    case StringType => row.getString(index)
   }
 }

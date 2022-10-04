@@ -32,7 +32,7 @@ case class ClickhouseDate32(nullable: Boolean, lowCardinality: Boolean) extends 
 }
 
 object ClickhouseDate32 {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
-    case DateType => (row, index) => row.getDate(index)
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Date = (row, index) => sparkType match {
+    case DateType => row.getDate(index)
   }
 }

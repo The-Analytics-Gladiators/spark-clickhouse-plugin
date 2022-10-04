@@ -25,9 +25,9 @@ case class ClickhouseInt32(nullable: Boolean, lowCardinality: Boolean) extends C
 }
 
 object ClickhouseInt32 {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => Int = sparkType match {
-    case ByteType    => (row, index) => row.getByte(index).toInt
-    case ShortType   => (row, index) => row.getShort(index).toInt
-    case IntegerType => (row, index) => row.getInt(index)
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Int = (row, index) => sparkType match {
+    case ByteType    => row.getByte(index).toInt
+    case ShortType   => row.getShort(index).toInt
+    case IntegerType => row.getInt(index)
   }
 }

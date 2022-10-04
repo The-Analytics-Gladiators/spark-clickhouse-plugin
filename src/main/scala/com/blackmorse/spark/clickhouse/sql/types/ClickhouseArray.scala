@@ -29,7 +29,7 @@ case class ClickhouseArray(typ: ClickhouseType) extends ClickhouseType {
 }
 
 object ClickhouseArray {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
-    case ArrayType(_, _) => (row, index) => row.getSeq[Any](index)
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Seq[Any] = (row, index) => sparkType match {
+    case ArrayType(_, _) => row.getSeq[Any](index)
   }
 }

@@ -31,9 +31,9 @@ case class ClickhouseDecimal(p: Int, s: Int, nullable: Boolean) extends DecimalT
 }
 
 object ClickhouseDecimal {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => Any = sparkType match {
-    case FloatType  => (row, index) => row.getFloat(index).toString
-    case DoubleType => (row, index) => row.getDouble(index).toString
-    case StringType => (row, index) => row.getString(index)
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => String = (row, index) => sparkType match {
+    case FloatType  => row.getFloat(index).toString
+    case DoubleType => row.getDouble(index).toString
+    case StringType => row.getString(index)
   }
 }

@@ -24,8 +24,8 @@ case class ClickhouseInt16(nullable: Boolean, lowCardinality: Boolean) extends C
 }
 
 object ClickhouseInt16 {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => Short = sparkType match {
-    case ByteType  => (row, index) => row.getByte(index).toShort
-    case ShortType => (row, index) => row.getShort(index)
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Short = (row, index) => sparkType match {
+    case ByteType  => row.getByte(index).toShort
+    case ShortType => row.getShort(index)
   }
 }

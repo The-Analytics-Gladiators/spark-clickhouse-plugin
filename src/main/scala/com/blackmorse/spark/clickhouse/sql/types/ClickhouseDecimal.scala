@@ -2,7 +2,7 @@ package com.blackmorse.spark.clickhouse.sql.types
 
 import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{DataType, DecimalType, StringType}
+import org.apache.spark.sql.types.{DataType, DecimalType, DoubleType, FloatType, StringType}
 
 import java.sql.{PreparedStatement, ResultSet}
 
@@ -21,9 +21,6 @@ case class ClickhouseDecimal(p: Int, s: Int, nullable: Boolean) extends DecimalT
   override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getString(name)
 
-  override def extractFromRow(i: Int, row: Row): String =
-    row.getString(i)
-
   protected override def setValueToStatement(i: Int, value: String, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setBigDecimal(i, new java.math.BigDecimal(value).setScale(s))
 
@@ -31,4 +28,12 @@ case class ClickhouseDecimal(p: Int, s: Int, nullable: Boolean) extends DecimalT
     resultSet.getArray(name).getArray().asInstanceOf[Array[java.math.BigDecimal]].map(_.toString)
 
   override def clickhouseDataTypeString: String = s"Decimal($p, $s)"
+}
+
+object ClickhouseDecimal {
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => String = (row, index) => sparkType match {
+    case FloatType  => row.getFloat(index).toString
+    case DoubleType => row.getDouble(index).toString
+    case StringType => row.getString(index)
+  }
 }

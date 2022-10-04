@@ -17,10 +17,14 @@ case class ClickhouseInt8(nullable: Boolean, lowCardinality: Boolean) extends Cl
   override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getByte(name)
 
-  override def extractFromRow(i: Int, row: Row): Byte = row.getByte(i)
-
   override protected def setValueToStatement(i: Int, value: Byte, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setByte(i, value)
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Int8
+}
+
+object ClickhouseInt8 {
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Byte = (row, index) => sparkType match {
+    case ByteType => row.getByte(index)
+  }
 }

@@ -6,7 +6,7 @@ import org.apache.spark.sql.types.DataType
 
 import java.sql.{PreparedStatement, ResultSet}
 
-trait ClickhouseType {
+trait ClickhouseType extends Serializable {
   type T
   val nullable: Boolean
 
@@ -16,15 +16,14 @@ trait ClickhouseType {
 
   def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any
 
-  protected def extractFromRow(i: Int, row: Row): T
-
   protected def setValueToStatement(i: Int, value: T, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit
 
-  def extractFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
+  def extractFromRowAndSetToStatement(i: Int, row: Row, rowExtractor: (Row, Int) => Any, statement: PreparedStatement)
+                                     (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
     if (row.isNullAt(i)) {
       setValueToStatement(i + 1, defaultValue, statement)(clickhouseTimeZoneInfo)
     } else {
-      setValueToStatement(i + 1, extractFromRow(i, row), statement)(clickhouseTimeZoneInfo)
+      setValueToStatement(i + 1, rowExtractor(row, i).asInstanceOf[T], statement)(clickhouseTimeZoneInfo)
     }
   }
 

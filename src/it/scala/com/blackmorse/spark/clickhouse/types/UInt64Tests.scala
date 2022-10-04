@@ -3,6 +3,7 @@ package com.blackmorse.spark.clickhouse.types
 import com.blackmorse.spark.clickhouse.sql.types.primitives.ClickhouseUInt64
 import com.blackmorse.spark.clickhouse.types.BaseTestCases.{testArray, testPrimitive, testPrimitiveAndArray}
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import org.apache.spark.sql.types.DecimalType
 import org.scalatest.flatspec.AnyFlatSpec
 
 class UInt64Tests extends AnyFlatSpec with DataFrameSuiteBase {
@@ -12,12 +13,16 @@ class UInt64Tests extends AnyFlatSpec with DataFrameSuiteBase {
   "Big Primitives of UInt64" should "be written and read" ignore {
     testPrimitive(ClickhouseUInt64(nullable = false, lowCardinality = false))(
       (1 to 100).map(i => new java.math.BigDecimal(s"10223372036854775$i")),
-      row => row.getDecimal(0))
+      row => row.getDecimal(0),
+      sparkType = DecimalType(38, 0),
+      convertToOriginalType = _.asInstanceOf[java.math.BigDecimal])
   }
 
   ignore should "Ignore due to clickhouse-jdbc upstream but" in {
     testArray(ClickhouseUInt64(nullable = false, lowCardinality = false))(
-      (1 to 100).map(i => new java.math.BigDecimal(s"10223372036854775$i"))
+      (1 to 100).map(i => new java.math.BigDecimal(s"10223372036854775$i")),
+      sparkType = DecimalType(38, 0),
+      convertToOriginalType = _.asInstanceOf[java.math.BigDecimal]
     )
   }
 
@@ -30,4 +35,6 @@ class UInt64Tests extends AnyFlatSpec with DataFrameSuiteBase {
       rowConverter = row => row.getDecimal(0)
     )
   }
+
+  //TODO cross-type checks (Byte, Short, Integer, Long)
 }

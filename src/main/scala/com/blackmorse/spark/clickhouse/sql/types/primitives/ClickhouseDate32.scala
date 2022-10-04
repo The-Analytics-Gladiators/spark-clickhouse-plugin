@@ -20,8 +20,6 @@ case class ClickhouseDate32(nullable: Boolean, lowCardinality: Boolean) extends 
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Date32
 
-  override protected def extractFromRow(i: Int, row: Row): Date = row.getDate(i)
-
   override protected def setValueToStatement(i: Int, value: Date, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setDate(i, value, clickhouseTimeZoneInfo.calendar)
 
@@ -31,4 +29,10 @@ case class ClickhouseDate32(nullable: Boolean, lowCardinality: Boolean) extends 
       .map(localDate => localDate.atStartOfDay(clickhouseTimeZoneInfo.calendar.getTimeZone.toZoneId).toInstant)
       .map(instant => java.util.Date.from(instant))
       .map(date => new java.sql.Date(date.getTime))
+}
+
+object ClickhouseDate32 {
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Date = (row, index) => sparkType match {
+    case DateType => row.getDate(index)
+  }
 }

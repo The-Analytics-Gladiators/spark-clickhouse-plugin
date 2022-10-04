@@ -7,8 +7,8 @@ import org.apache.spark.sql.types.{ArrayType, DataType}
 import java.sql.{PreparedStatement, ResultSet}
 
 case class ClickhouseArray(typ: ClickhouseType) extends ClickhouseType {
-  override type T = Array[AnyRef]
-  override lazy val defaultValue: T = Array[AnyRef]()
+  override type T = Seq[AnyRef]
+  override lazy val defaultValue: T = Seq[AnyRef]()
 
   override def toSparkType(): DataType = ArrayType(typ.toSparkType(), typ.nullable)
   override val nullable: Boolean = false
@@ -16,18 +16,20 @@ case class ClickhouseArray(typ: ClickhouseType) extends ClickhouseType {
   override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     typ.extractArrayFromRsByName(name, resultSet)(clickhouseTimeZoneInfo)
 
-  override def extractFromRow(i: Int, row: Row): Array[AnyRef] =
-    row.getList[AnyRef](i).toArray
-
-
-  override protected def setValueToStatement(i: Int, value: Array[AnyRef], statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
+  override protected def setValueToStatement(i: Int, value: Seq[AnyRef], statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
     val array = value.map{
       case null => typ.defaultValue.asInstanceOf[AnyRef]
       case el => el
     }
-    val jdbcArray = statement.getConnection.createArrayOf(clickhouseDataTypeString, array)
+    val jdbcArray = statement.getConnection.createArrayOf(clickhouseDataTypeString, array.toArray)
     statement.setArray(i, jdbcArray)
   }
 
   override def clickhouseDataTypeString: String = s"Array(${typ.clickhouseDataTypeString})"
+}
+
+object ClickhouseArray {
+  def mapRowExtractor(sparkType: DataType): (Row, Int) => Seq[Any] = (row, index) => sparkType match {
+    case ArrayType(_, _) => row.getSeq[Any](index)
+  }
 }

@@ -16,6 +16,7 @@ services:
 
   clickhouse-server-replica:
     image: clickhouse/clickhouse-server:22.3.13.80-alpine
+    container_name: clickhouse-server-replica
     ports:
       - "8124:8124"
       - "9001:9001"

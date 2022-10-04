@@ -16,12 +16,13 @@ build:
 
 jar:
     FROM +build
-    RUN sbt assembly
-    SAVE ARTIFACT TARGET/scala-2.12/spark-clickhouse-plugin-assembly-*.jar /jars
+    RUN sbt "set test in assembly := {}" assembly
+    SAVE ARTIFACT TARGET/scala-2.12/spark-clickhouse-plugin-assembly-*.jar AS LOCAL ./jars
 
-tests:
+test:
     FROM +build
     COPY docker-compose.yml build.sbt .
+    COPY docker/wait.sh .
     WITH DOCKER --compose docker-compose.yml
-        RUN sbt test && sbt it:test
+       RUN ./wait.sh && sbt test it:test
     END

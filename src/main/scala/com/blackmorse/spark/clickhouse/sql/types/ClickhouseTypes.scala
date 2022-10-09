@@ -14,14 +14,26 @@ trait ClickhouseType extends Serializable {
 
   def toSparkType(): DataType
 
-  def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any
+  protected def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any
+
+  def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any = {
+    if (resultSet.getObject(name) == null) {
+      null
+    } else {
+      extractNonNullableFromRsByName(name, resultSet)(clickhouseTimeZoneInfo)
+    }
+  }
 
   protected def setValueToStatement(i: Int, value: T, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit
 
   def extractFromRowAndSetToStatement(i: Int, row: Row, rowExtractor: (Row, Int) => Any, statement: PreparedStatement)
                                      (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
     if (row.isNullAt(i)) {
-      setValueToStatement(i + 1, defaultValue, statement)(clickhouseTimeZoneInfo)
+      if (nullable) {
+        statement.setObject(i + 1, null)
+      } else {
+        setValueToStatement(i + 1, defaultValue, statement)(clickhouseTimeZoneInfo)
+      }
     } else {
       setValueToStatement(i + 1, rowExtractor(row, i).asInstanceOf[T], statement)(clickhouseTimeZoneInfo)
     }

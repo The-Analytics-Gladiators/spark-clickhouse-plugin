@@ -13,7 +13,7 @@ trait ClickhousePrimitive extends ClickhouseType {
   val lowCardinality: Boolean
 
   def toSparkType(): DataType
-  def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any
+  protected def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any
 
   def clickhouseDataType: ClickHouseDataType
 

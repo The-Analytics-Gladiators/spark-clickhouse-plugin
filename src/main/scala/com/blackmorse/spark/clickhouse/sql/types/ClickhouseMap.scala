@@ -11,7 +11,7 @@ case class ClickhouseMap(key: ClickhouseType, value: ClickhouseType, nullable: B
 
   override def toSparkType(): DataType = ???
 
-  override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any = ???
+  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any = ???
 
   override val defaultValue: Map[key.T, value.T] = Map()
 

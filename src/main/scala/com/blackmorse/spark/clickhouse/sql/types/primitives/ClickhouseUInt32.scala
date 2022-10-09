@@ -14,7 +14,7 @@ case class ClickhouseUInt32(nullable: Boolean, lowCardinality: Boolean) extends 
 
   override def toSparkType(): DataType = LongType
 
-  override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getLong(name)
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.UInt32

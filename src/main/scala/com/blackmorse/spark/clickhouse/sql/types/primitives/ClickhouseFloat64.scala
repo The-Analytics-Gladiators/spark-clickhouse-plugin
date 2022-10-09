@@ -14,7 +14,7 @@ case class ClickhouseFloat64(nullable: Boolean, lowCardinality: Boolean) extends
 
   override def toSparkType(): DataType = DoubleType
 
-  override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getDouble(name)
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Float64

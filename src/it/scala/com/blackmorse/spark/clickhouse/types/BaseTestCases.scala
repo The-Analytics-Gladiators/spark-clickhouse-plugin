@@ -87,39 +87,39 @@ object BaseTestCases extends should.Matchers {
       }
     }
 
-    withTable(Seq(s"a Array(Nullable($clickhouseTypeName))"), "tuple()") {
-      val nullableComparator = (t: clickhouseType.T, s: Any) =>
-        (t == null & s == null) || comparator(t, s.asInstanceOf[clickhouseType.T])
-
-      df.write.clickhouse(host, port, table)
-
-      val dataFrame = sqlContext.read.clickhouse(host, port, table)
-
-      dataFrame.schema.length should be(1)
-      dataFrame.schema.head.dataType should be(ArrayType(clickhouseType.toSparkType(), true))
-
-      val result = dataFrame
-        .rdd
-        .map(row => row.getList[clickhouseType.T](0))
-        .collect()
-        .sortBy(e => (e.size(), e.asScala.map(el => Option(el).hashCode()).sum))
-
-      val expected = elements.map {
-        case null => Seq[clickhouseType.T]()
-        case arr: Seq[clickhouseType.T] => arr map {
-          case null => null
-          case t => convertToOriginalType(t)
-        }
-      }.sortBy(e => (e.size, e.map(el => Option(el).hashCode()).sum))
-
-        result.length should be (expected.size)
-        result.zip(expected).foreach { case (l, r) =>
-         l.size() should be (r.size)
-         l.asScala.zip(r).foreach { case (fromCh, original) =>
-           assert(nullableComparator(fromCh, original), s"Expected values: $original. Actual value: $fromCh")
-         }
-      }
-    }
+//    withTable(Seq(s"a Array(Nullable($clickhouseTypeName))"), "tuple()") {
+//      val nullableComparator = (t: clickhouseType.T, s: Any) =>
+//        (t == null & s == null) || comparator(t, s.asInstanceOf[clickhouseType.T])
+//
+//      df.write.clickhouse(host, port, table)
+//
+//      val dataFrame = sqlContext.read.clickhouse(host, port, table)
+//
+//      dataFrame.schema.length should be(1)
+//      dataFrame.schema.head.dataType should be(ArrayType(clickhouseType.toSparkType(), true))
+//
+//      val result = dataFrame
+//        .rdd
+//        .map(row => row.getList[clickhouseType.T](0))
+//        .collect()
+//        .sortBy(e => (e.size(), e.asScala.map(el => Option(el).hashCode()).sum))
+//
+//      val expected = elements.map {
+//        case null => Seq[clickhouseType.T]()
+//        case arr: Seq[clickhouseType.T] => arr map {
+//          case null => null
+//          case t => convertToOriginalType(t)
+//        }
+//      }.sortBy(e => (e.size, e.map(el => Option(el).hashCode()).sum))
+//
+//        result.length should be (expected.size)
+//        result.zip(expected).foreach { case (l, r) =>
+//         l.size() should be (r.size)
+//         l.asScala.zip(r).foreach { case (fromCh, original) =>
+//           assert(nullableComparator(fromCh, original), s"Expected values: $original. Actual value: $fromCh")
+//         }
+//      }
+//    }
   }
 
   def testPrimitive(clickhouseType: ClickhouseType)(seq: Seq[Any],

@@ -87,6 +87,7 @@ object BaseTestCases extends should.Matchers {
       }
     }
 
+    // disable until this fix will be applied: https://github.com/ClickHouse/clickhouse-jdbc/pull/1104
 //    withTable(Seq(s"a Array(Nullable($clickhouseTypeName))"), "tuple()") {
 //      val nullableComparator = (t: clickhouseType.T, s: Any) =>
 //        (t == null & s == null) || comparator(t, s.asInstanceOf[clickhouseType.T])

@@ -21,25 +21,26 @@ trait ClickhousePrimitive extends ClickhouseType {
 }
 
 object ClickhousePrimitive {
-  def toPrimitiveConstructor(clickHouseDataType: ClickHouseDataType): (Boolean, Boolean) => ClickhouseType = {
+  def toPrimitiveConstructor(clickHouseDataType: ClickHouseDataType): (Boolean, Boolean) => ClickhouseType = (nullable, lowCardinality) => {
     clickHouseDataType match {
-      case ClickHouseDataType.Date => (nullable, lowCardinality) => ClickhouseDate(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Date32 => (nullable, lowCardinality) => ClickhouseDate32(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Int8 => (nullable, lowCardinality) => ClickhouseInt8(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Int16 => (nullable, lowCardinality) => ClickhouseInt16(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Int32 => (nullable, lowCardinality) => ClickhouseInt32(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Int64 => (nullable, lowCardinality) => ClickhouseInt64(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Int128 => (nullable, lowCardinality) => ClickhouseInt128(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Int256 => (nullable, lowCardinality) => ClickhouseInt256(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.UInt8 => (nullable, lowCardinality) => ClickhouseUInt8(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.UInt16 => (nullable, lowCardinality) => ClickhouseUInt16(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.UInt32 => (nullable, lowCardinality) => ClickhouseUInt32(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.UInt64 => (nullable, lowCardinality) => ClickhouseUInt64(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.UInt128 => (nullable, lowCardinality) => ClickhouseUInt128(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.UInt256 => (nullable, lowCardinality) => ClickhouseUInt256(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.String => (nullable, lowCardinality) => ClickhouseString(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Float32 => (nullable, lowCardinality) => ClickhouseFloat32(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Float64 => (nullable, lowCardinality) => ClickhouseFloat64(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.Date => ClickhouseDate(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.Date32 => ClickhouseDate32(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.Int8 => ClickhouseInt8(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.Int16 => ClickhouseInt16(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.Int32 => ClickhouseInt32(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.Int64 => ClickhouseInt64(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.Int128 => ClickhouseInt128(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.Int256 => ClickhouseInt256(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.UInt8 => ClickhouseUInt8(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.UInt16 => ClickhouseUInt16(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.UInt32 => ClickhouseUInt32(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.UInt64 => ClickhouseUInt64(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.UInt128 => ClickhouseUInt128(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.UInt256 => ClickhouseUInt256(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.String => ClickhouseString(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.Float32 => ClickhouseFloat32(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.Float64 => ClickhouseFloat64(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.Bool => ClickhouseBoolean(nullable = nullable, lowCardinality = lowCardinality)
     }
   }
 }

@@ -14,17 +14,26 @@ trait ClickhouseType extends Serializable {
 
   def toSparkType(): DataType
 
-  def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any
+  protected def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any
+
+  def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any = {
+    if (resultSet.getObject(name) == null) {
+      null
+    } else {
+      extractNonNullableFromRsByName(name, resultSet)(clickhouseTimeZoneInfo)
+    }
+  }
 
   protected def setValueToStatement(i: Int, value: T, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit
 
   def extractFromRowAndSetToStatement(i: Int, row: Row, rowExtractor: (Row, Int) => Any, statement: PreparedStatement)
                                      (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
-    if (row.isNullAt(i)) {
-      setValueToStatement(i + 1, defaultValue, statement)(clickhouseTimeZoneInfo)
-    } else {
-      setValueToStatement(i + 1, rowExtractor(row, i).asInstanceOf[T], statement)(clickhouseTimeZoneInfo)
-    }
+    val rowIsNull = row.isNullAt(i)
+    val statementIndex = i + 1
+
+    if (rowIsNull && nullable) statement.setObject(statementIndex, null)
+    else if (rowIsNull) setValueToStatement(statementIndex, defaultValue, statement)(clickhouseTimeZoneInfo)
+    else setValueToStatement(statementIndex, rowExtractor(row, i).asInstanceOf[T], statement)(clickhouseTimeZoneInfo)
   }
 
   def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef

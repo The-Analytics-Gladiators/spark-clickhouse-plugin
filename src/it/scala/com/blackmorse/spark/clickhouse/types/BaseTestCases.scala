@@ -39,24 +39,23 @@ object BaseTestCases extends should.Matchers {
                                                 comparator: (clickhouseType.T, clickhouseType.T) => Boolean = (t: clickhouseType.T, s: clickhouseType.T) => t == s)
                (implicit ord: Ordering[clickhouseType.T], encoder: Encoder[Seq[clickhouseType.T]], ct: ClassTag[clickhouseType.T], sqlContext: SQLContext): Unit = {
     val clickhouseTypeName = clickhouseType.clickhouseDataTypeString
-//    val sparkType = clickhouseType.toSparkType()
     val typeDefaultValue = clickhouseType.defaultValue
 
     val sc = sqlContext.sparkContext
+    val elements = Seq(
+      seq ++ Seq(null),
+      seq,
+      Seq(null),
+      Seq(),
+      null
+    )
+    val rows = elements.map(el => Row.fromSeq(Seq(el)))
+    val schema = StructType(Seq(StructField("a", ArrayType(sparkType), true)))
+    val df = sqlContext.createDataFrame(sc.parallelize(rows), schema)
+
     withTable(Seq(s"a Array($clickhouseTypeName)"), "a") {
-      val elements = Seq(
-        seq ++ Seq(null),
-        seq,
-        Seq(null),
-        Seq(),
-        null
-      )
 
-      val schema = StructType(Seq(StructField("a", ArrayType(sparkType), true)))
-
-      val rows = elements.map(el => Row.fromSeq(Seq(el)))
-      sqlContext.createDataFrame(sc.parallelize(rows), schema)
-        .write.clickhouse(host, port, table)
+      df.write.clickhouse(host, port, table)
 
       val dataFrame = sqlContext.read.clickhouse(host, port, table)
 
@@ -69,8 +68,7 @@ object BaseTestCases extends should.Matchers {
         .collect()
         .sortBy(e => (e.size(), e.asScala.map(_.hashCode()).sum))
 
-      val expected: Seq[Seq[clickhouseType.T]] = elements
-        .map {
+      val expected: Seq[Seq[clickhouseType.T]] = elements.map {
           case null => Seq[clickhouseType.T]()
           case arr: Seq[clickhouseType.T] => arr map {
             case null => typeDefaultValue
@@ -88,6 +86,41 @@ object BaseTestCases extends should.Matchers {
         }
       }
     }
+
+    // disable until this fix will be applied: https://github.com/ClickHouse/clickhouse-jdbc/pull/1104
+//    withTable(Seq(s"a Array(Nullable($clickhouseTypeName))"), "tuple()") {
+//      val nullableComparator = (t: clickhouseType.T, s: Any) =>
+//        (t == null & s == null) || comparator(t, s.asInstanceOf[clickhouseType.T])
+//
+//      df.write.clickhouse(host, port, table)
+//
+//      val dataFrame = sqlContext.read.clickhouse(host, port, table)
+//
+//      dataFrame.schema.length should be(1)
+//      dataFrame.schema.head.dataType should be(ArrayType(clickhouseType.toSparkType(), true))
+//
+//      val result = dataFrame
+//        .rdd
+//        .map(row => row.getList[clickhouseType.T](0))
+//        .collect()
+//        .sortBy(e => (e.size(), e.asScala.map(el => Option(el).hashCode()).sum))
+//
+//      val expected = elements.map {
+//        case null => Seq[clickhouseType.T]()
+//        case arr: Seq[clickhouseType.T] => arr map {
+//          case null => null
+//          case t => convertToOriginalType(t)
+//        }
+//      }.sortBy(e => (e.size, e.map(el => Option(el).hashCode()).sum))
+//
+//        result.length should be (expected.size)
+//        result.zip(expected).foreach { case (l, r) =>
+//         l.size() should be (r.size)
+//         l.asScala.zip(r).foreach { case (fromCh, original) =>
+//           assert(nullableComparator(fromCh, original), s"Expected values: $original. Actual value: $fromCh")
+//         }
+//      }
+//    }
   }
 
   def testPrimitive(clickhouseType: ClickhouseType)(seq: Seq[Any],
@@ -100,12 +133,12 @@ object BaseTestCases extends should.Matchers {
     val clickhouseTypeName = clickhouseType.clickhouseDataTypeString
 
     val sc = sqlContext.sparkContext
-    withTable(Seq(s"a $clickhouseTypeName"), "a") {
-      val rows = seq.map(el => Row.fromSeq(Seq(el)))
-      val schema = StructType(Seq(StructField("a", sparkType, nullable = true)))
+    val rows = seq.map(el => Row.fromSeq(Seq(el)))
+    val schema = StructType(Seq(StructField("a", sparkType, nullable = true)))
 
-      sqlContext.createDataFrame(sc.parallelize(rows),  schema)
-        .write.clickhouse(host, port, table)
+    val df = sqlContext.createDataFrame(sc.parallelize(rows), schema)
+    withTable(Seq(s"a $clickhouseTypeName"), "a") {
+      df.write.clickhouse(host, port, table)
 
       val rdd = sqlContext.read.clickhouse(host, port, table).rdd
       val res = rdd
@@ -115,6 +148,26 @@ object BaseTestCases extends should.Matchers {
         case null => clickhouseType.defaultValue
         case t => convertToOriginalType(t)
       }.sorted
+
+      res.sorted.zip(expected).foreach { case (result, expected) =>
+        assert(comparator(result, expected), s"Expected value: $expected. Actual value: $result")
+      }
+    }
+
+    withTable(Seq(s"a Nullable($clickhouseTypeName)"), "tuple()") {
+      df.write.clickhouse(host, port, table)
+
+      val rdd = sqlContext.read.clickhouse(host, port, table).rdd
+
+      val collect = rdd.collect()
+      val nullsFromRdd = collect.count(_.isNullAt(0))
+      val res = rdd.filter(row => !row.isNullAt(0)).map(row => rowConverter(row)).collect()
+
+      val nullsFromExpected = seq.count(_ == null)
+      val expected = seq.filter(_ != null).map(t => convertToOriginalType(t))
+        .sorted
+
+      assert(nullsFromRdd == nullsFromExpected, s"Number of null are not matched. Expected value: $nullsFromRdd, actual: $nullsFromRdd")
 
       res.sorted.zip(expected).foreach { case (result, expected) =>
         assert(comparator(result, expected), s"Expected value: $expected. Actual value: $result")

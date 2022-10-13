@@ -3,6 +3,7 @@ package com.blackmorse.spark.clickhouse.utils
 import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import com.clickhouse.jdbc.ClickHouseDriver
 
+import java.time.LocalDate
 import java.util.Properties
 import scala.util.Using
 
@@ -16,5 +17,11 @@ object JDBCTimeZoneUtils {
         ClickhouseTimeZoneInfo(clickhouseTimeZone)
       }
     }.flatten.get
+  }
+
+  def localDateToDate(localDate: LocalDate, clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): java.sql.Date = {
+    val instant = localDate.atStartOfDay(clickhouseTimeZoneInfo.calendar.getTimeZone.toZoneId).toInstant
+    val utilDate = java.util.Date.from(instant)
+    new java.sql.Date(utilDate.getTime)
   }
 }

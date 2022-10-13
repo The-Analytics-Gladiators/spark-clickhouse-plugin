@@ -13,12 +13,12 @@ case class ClickhouseArray(typ: ClickhouseType) extends ClickhouseType {
   override def toSparkType(): DataType = ArrayType(typ.toSparkType(), typ.nullable)
   override val nullable: Boolean = false
 
-  override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     typ.extractArrayFromRsByName(name, resultSet)(clickhouseTimeZoneInfo)
 
   override protected def setValueToStatement(i: Int, value: Seq[AnyRef], statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
     val array = value.map{
-      case null => typ.defaultValue.asInstanceOf[AnyRef]
+      case null => if (typ.nullable) null else typ.defaultValue.asInstanceOf[AnyRef]
       case el => el
     }
     val jdbcArray = statement.getConnection.createArrayOf(clickhouseDataTypeString, array.toArray)

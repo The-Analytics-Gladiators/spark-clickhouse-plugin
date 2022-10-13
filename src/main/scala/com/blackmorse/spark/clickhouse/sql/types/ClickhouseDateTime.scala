@@ -14,14 +14,16 @@ case class ClickhouseDateTime(nullable: Boolean, lowCardinality: Boolean) extend
 
   override def toSparkType(): DataType = TimestampType
 
-  override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getTimestamp(name)
 
   override protected def setValueToStatement(i: Int, value: Timestamp, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setTimestamp(i, value, clickhouseTimeZoneInfo.calendar)
 
   override def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
-    resultSet.getArray(name).getArray.asInstanceOf[Array[LocalDateTime]].map(ldt => Timestamp.valueOf(ldt))
+    resultSet.getArray(name)
+      .getArray.asInstanceOf[Array[LocalDateTime]]
+      .map(ldt => if(ldt == null) null else Timestamp.valueOf(ldt))
 
   override def clickhouseDataTypeString: String = "DateTime"
   //  //For some reason timezone is preserved while reading an array
@@ -45,11 +47,13 @@ case class ClickhouseDateTime64(p: Int, nullable: Boolean) extends ClickhouseTyp
   override lazy val defaultValue: Timestamp = new Timestamp(0 - TimeZone.getDefault.getRawOffset)
   override def toSparkType(): DataType = TimestampType
 
-  override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getTimestamp(name)
 
   override def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
-    resultSet.getArray(name).getArray.asInstanceOf[Array[LocalDateTime]].map(ldt => Timestamp.valueOf(ldt))
+    resultSet.getArray(name)
+      .getArray.asInstanceOf[Array[LocalDateTime]]
+      .map(ldt => if (ldt == null) null else Timestamp.valueOf(ldt))
 
   protected override def setValueToStatement(i: Int, value: Timestamp, statement: PreparedStatement)
                                             (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {

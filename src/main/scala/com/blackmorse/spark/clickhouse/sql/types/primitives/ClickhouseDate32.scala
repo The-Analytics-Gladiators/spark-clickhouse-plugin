@@ -1,6 +1,7 @@
 package com.blackmorse.spark.clickhouse.sql.types.primitives
 
 import com.blackmorse.spark.clickhouse.sql.types.ClickhousePrimitive
+import com.blackmorse.spark.clickhouse.utils.JDBCTimeZoneUtils
 import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
 import org.apache.spark.sql.Row
@@ -15,7 +16,7 @@ case class ClickhouseDate32(nullable: Boolean, lowCardinality: Boolean) extends 
   override val defaultValue: Date = new Date(0 - TimeZone.getDefault.getRawOffset)
   override def toSparkType(): DataType = DateType
 
-  override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getDate(name)
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Date32
@@ -26,9 +27,7 @@ case class ClickhouseDate32(nullable: Boolean, lowCardinality: Boolean) extends 
   override def extractArrayFromRsByName(name: String, resultSet: ResultSet)
                                        (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
     resultSet.getArray(name).getArray.asInstanceOf[Array[LocalDate]]
-      .map(localDate => localDate.atStartOfDay(clickhouseTimeZoneInfo.calendar.getTimeZone.toZoneId).toInstant)
-      .map(instant => java.util.Date.from(instant))
-      .map(date => new java.sql.Date(date.getTime))
+      .map(localDate => if(localDate == null) null else JDBCTimeZoneUtils.localDateToDate(localDate, clickhouseTimeZoneInfo))
 }
 
 object ClickhouseDate32 {

@@ -16,11 +16,13 @@ abstract class ClickhouseBigIntType(private val _clickHouseDataType: ClickHouseD
   override def clickhouseDataType: ClickHouseDataType = _clickHouseDataType
   override def toSparkType(): DataType = StringType
 
-  override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getString(name)
 
   override def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
-    resultSet.getArray(name).getArray.asInstanceOf[Array[BigInteger]].map(bi => bi.toString())
+    resultSet.getArray(name)
+      .getArray.asInstanceOf[Array[BigInteger]]
+      .map(bi => if(bi == null) null else bi.toString())
 
   override protected def setValueToStatement(i: Int, value: String, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setBigDecimal(i, new java.math.BigDecimal(value))

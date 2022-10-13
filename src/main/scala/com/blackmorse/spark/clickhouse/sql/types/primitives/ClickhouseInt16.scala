@@ -14,7 +14,7 @@ case class ClickhouseInt16(nullable: Boolean, lowCardinality: Boolean) extends C
 
   override def toSparkType(): DataType = ShortType
 
-  override def extractFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
+  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getShort(name)
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Int16

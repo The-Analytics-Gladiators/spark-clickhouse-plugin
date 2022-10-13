@@ -28,15 +28,12 @@ trait ClickhouseType extends Serializable {
 
   def extractFromRowAndSetToStatement(i: Int, row: Row, rowExtractor: (Row, Int) => Any, statement: PreparedStatement)
                                      (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
-    if (row.isNullAt(i)) {
-      if (nullable) {
-        statement.setObject(i + 1, null)
-      } else {
-        setValueToStatement(i + 1, defaultValue, statement)(clickhouseTimeZoneInfo)
-      }
-    } else {
-      setValueToStatement(i + 1, rowExtractor(row, i).asInstanceOf[T], statement)(clickhouseTimeZoneInfo)
-    }
+    val rowIsNull = row.isNullAt(i)
+    val statementIndex = i + 1
+
+    if (rowIsNull && nullable) statement.setObject(statementIndex, null)
+    else if (rowIsNull) setValueToStatement(statementIndex, defaultValue, statement)(clickhouseTimeZoneInfo)
+    else setValueToStatement(statementIndex, rowExtractor(row, i).asInstanceOf[T], statement)(clickhouseTimeZoneInfo)
   }
 
   def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef

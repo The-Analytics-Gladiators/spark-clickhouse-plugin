@@ -23,11 +23,11 @@ case class ClickhouseUInt64(nullable: Boolean, lowCardinality: Boolean) extends 
     val array = resultSet.getArray(name).getArray
     //Array(Nullable(primitive)) produces Long[], while Array(primitive) -> long[]
     if(nullable) {
-      array.asInstanceOf[Array[java.lang.Long]]
-        .map(l => if(l == null) null else new java.math.BigDecimal(l.toString))
+      val mapper = (l: java.lang.Long) => if (l == null) null else new java.math.BigDecimal(l.toString)
+      array.asInstanceOf[Array[java.lang.Long]].map(mapper)
     } else {
-      array.asInstanceOf[Array[Long]]
-        .map(l => new java.math.BigDecimal(l.toString))
+      val mapper = (l: Long) => new java.math.BigDecimal(l.toString)
+      array.asInstanceOf[Array[Long]].map(mapper)
     }
   }
 

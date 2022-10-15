@@ -36,9 +36,6 @@ trait ClickhouseType extends Serializable {
     else setValueToStatement(statementIndex, rowExtractor(row, i).asInstanceOf[T], statement)(clickhouseTimeZoneInfo)
   }
 
-  def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef
-    = resultSet.getArray(name).getArray
-
   def clickhouseDataTypeString: String
 
   def mapFromArray(value: Any): AnyRef = value match {

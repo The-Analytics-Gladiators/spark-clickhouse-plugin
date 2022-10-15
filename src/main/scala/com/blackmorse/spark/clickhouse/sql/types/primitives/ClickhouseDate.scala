@@ -1,6 +1,7 @@
 package com.blackmorse.spark.clickhouse.sql.types.primitives
 
 import com.blackmorse.spark.clickhouse.sql.types.ClickhousePrimitive
+import com.blackmorse.spark.clickhouse.sql.types.arrays.DateArraySupport
 import com.blackmorse.spark.clickhouse.utils.JDBCTimeZoneUtils
 import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
@@ -25,12 +26,6 @@ case class ClickhouseDate(nullable: Boolean, lowCardinality: Boolean) extends Cl
     statement.setDate(i, value, clickhouseTimeZoneInfo.calendar)
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Date
-
-  override def extractArrayFromRsByName(name: String, resultSet: ResultSet)
-                                       (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
-    resultSet.getArray(name)
-      .getArray.asInstanceOf[Array[LocalDate]]
-      .map(localDate => if(localDate == null) null else JDBCTimeZoneUtils.localDateToDate(localDate, clickhouseTimeZoneInfo))
 }
 
 object ClickhouseDate {

@@ -1,5 +1,6 @@
 package com.blackmorse.spark.clickhouse.types
 
+import com.blackmorse.spark.clickhouse.sql.types.arrays.DateTimeArraySupport
 import com.blackmorse.spark.clickhouse.sql.types.{ClickhouseDateTime, ClickhouseDateTime64}
 import com.blackmorse.spark.clickhouse.types.BaseTestCases.testPrimitiveAndArray
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
@@ -33,7 +34,7 @@ class DateTimeTests extends AnyFlatSpec with DataFrameSuiteBase {
   implicit val timestampOrdering: Ordering[Timestamp] = Ordering.by(_.getTime)
   "DateTime64" should "be supported" in {
     (1 to 8) foreach (i =>
-      testPrimitiveAndArray(ClickhouseDateTime64(i, nullable = false))(
+      testPrimitiveAndArray(new ClickhouseDateTime64(i, nullable = false))(
         cases = Seq(
           (1 to 100) map time,
           Seq(new Timestamp(minTime), new Timestamp(maxTime64))
@@ -43,7 +44,7 @@ class DateTimeTests extends AnyFlatSpec with DataFrameSuiteBase {
   }
 
   "DateTime" should "be supported" in {
-    testPrimitiveAndArray(ClickhouseDateTime(nullable = false, lowCardinality = false))(
+    testPrimitiveAndArray(new ClickhouseDateTime(nullable = false, lowCardinality = false))(
       cases = Seq(
         (1 to 100) map time,
         Seq(new Timestamp(minTime), new Timestamp(maxTime))

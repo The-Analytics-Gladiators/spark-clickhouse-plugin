@@ -2,6 +2,7 @@ package com.blackmorse.spark.clickhouse
 
 import com.blackmorse.spark.clickhouse.reader.ClickhouseTypesParser
 import com.blackmorse.spark.clickhouse.sql.types._
+import com.blackmorse.spark.clickhouse.sql.types.arrays.NotImplementedArraySupport
 import com.blackmorse.spark.clickhouse.sql.types.primitives.{ClickhouseBoolean, ClickhouseDate, ClickhouseDate32, ClickhouseFloat32, ClickhouseFloat64, ClickhouseInt128, ClickhouseInt16, ClickhouseInt256, ClickhouseInt32, ClickhouseInt64, ClickhouseInt8, ClickhouseString, ClickhouseUInt128, ClickhouseUInt16, ClickhouseUInt256, ClickhouseUInt32, ClickhouseUInt64, ClickhouseUInt8}
 import org.scalatest.matchers.should
 import org.scalatest.prop.TableDrivenPropertyChecks
@@ -42,25 +43,25 @@ class ClickhouseTypesParserTest extends AnyPropSpec
 
   val arrayOfPrimitives = Table(
     "arrayOfPrimitives",
-    "Array(Int8)" -> ClickhouseArray(ClickhouseInt8(false, false)),
-    "Array(Int16)" -> ClickhouseArray(ClickhouseInt16(false, false)),
-    "Array(Int32)" -> ClickhouseArray(ClickhouseInt32(false, false)),
-    "Array(Int64)" -> ClickhouseArray(ClickhouseInt64(false, false)),
-    "Array(Int128)" -> ClickhouseArray(ClickhouseInt128(false, false)),
-    "Array(Int256)" -> ClickhouseArray(ClickhouseInt256(false, false)),
-    "Array(UInt8)" -> ClickhouseArray(ClickhouseUInt8(false, false)),
-    "Array(UInt16)" -> ClickhouseArray(ClickhouseUInt16(false, false)),
-    "Array(UInt32)" -> ClickhouseArray(ClickhouseUInt32(false, false)),
-    "Array(UInt64)" -> ClickhouseArray(ClickhouseUInt64(false, false)),
-    "Array(UInt128)" -> ClickhouseArray(ClickhouseUInt128(false, false)),
-    "Array(UInt256)" -> ClickhouseArray(ClickhouseUInt256(false, false)),
-    "Array(String)" -> ClickhouseArray(ClickhouseString(false, false)),
-    "Array(Float32)" -> ClickhouseArray(ClickhouseFloat32(false, false)),
-    "Array(Float64)" -> ClickhouseArray(ClickhouseFloat64(false, false)),
-    "Array(Date)" -> ClickhouseArray(ClickhouseDate(false, false)),
-    "Array(Date32)" -> ClickhouseArray(ClickhouseDate32(false, false)),
-    "Array(DateTime)" -> ClickhouseArray(ClickhouseDateTime(false, false)),
-    "Array(Bool)" -> ClickhouseArray(ClickhouseBoolean(false, false))
+    "Array(Int8)" -> ClickhouseArray(new ClickhouseInt8(false, false) with NotImplementedArraySupport),
+    "Array(Int16)" -> ClickhouseArray(new ClickhouseInt16(false, false) with NotImplementedArraySupport),
+    "Array(Int32)" -> ClickhouseArray(new ClickhouseInt32(false, false) with NotImplementedArraySupport),
+    "Array(Int64)" -> ClickhouseArray(new ClickhouseInt64(false, false) with NotImplementedArraySupport),
+    "Array(Int128)" -> ClickhouseArray(new ClickhouseInt128(false, false) with NotImplementedArraySupport),
+    "Array(Int256)" -> ClickhouseArray(new ClickhouseInt256(false, false) with NotImplementedArraySupport),
+    "Array(UInt8)" -> ClickhouseArray(new ClickhouseUInt8(false, false) with NotImplementedArraySupport),
+    "Array(UInt16)" -> ClickhouseArray(new ClickhouseUInt16(false, false) with NotImplementedArraySupport),
+    "Array(UInt32)" -> ClickhouseArray(new ClickhouseUInt32(false, false) with NotImplementedArraySupport),
+    "Array(UInt64)" -> ClickhouseArray(new ClickhouseUInt64(false, false) with NotImplementedArraySupport),
+    "Array(UInt128)" -> ClickhouseArray(new ClickhouseUInt128(false, false) with NotImplementedArraySupport),
+    "Array(UInt256)" -> ClickhouseArray(new ClickhouseUInt256(false, false) with NotImplementedArraySupport),
+    "Array(String)" -> ClickhouseArray(new ClickhouseString(false, false) with NotImplementedArraySupport),
+    "Array(Float32)" -> ClickhouseArray(new ClickhouseFloat32(false, false) with NotImplementedArraySupport),
+    "Array(Float64)" -> ClickhouseArray(new ClickhouseFloat64(false, false) with NotImplementedArraySupport),
+    "Array(Date)" -> ClickhouseArray(new ClickhouseDate(false, false) with NotImplementedArraySupport),
+    "Array(Date32)" -> ClickhouseArray(new ClickhouseDate32(false, false) with NotImplementedArraySupport),
+    "Array(DateTime)" -> ClickhouseArray(new ClickhouseDateTime(false, false) with NotImplementedArraySupport),
+    "Array(Bool)" -> ClickhouseArray(new ClickhouseBoolean(false, false) with NotImplementedArraySupport)
   )
 
   property("Parsing array of simple primitive types") {
@@ -158,25 +159,25 @@ class ClickhouseTypesParserTest extends AnyPropSpec
 
   val arrayOfNullableOfPrimitives = Table(
     "arrayOfNullableOfPrimitives",
-    "Array(Nullable(Int8))" -> ClickhouseArray(ClickhouseInt8(true, false)),
-    "Array(Nullable(Int16))" -> ClickhouseArray(ClickhouseInt16(true, false)),
-    "Array(Nullable(Int32))" -> ClickhouseArray(ClickhouseInt32(true, false)),
-    "Array(Nullable(Int64))" -> ClickhouseArray(ClickhouseInt64(true, false)),
-    "Array(Nullable(Int128))" -> ClickhouseArray(ClickhouseInt128(true, false)),
-    "Array(Nullable(Int256))" -> ClickhouseArray(ClickhouseInt256(true, false)),
-    "Array(Nullable(UInt8))" -> ClickhouseArray(ClickhouseUInt8(true, false)),
-    "Array(Nullable(UInt16))" -> ClickhouseArray(ClickhouseUInt16(true, false)),
-    "Array(Nullable(UInt32))" -> ClickhouseArray(ClickhouseUInt32(true, false)),
-    "Array(Nullable(UInt64))" -> ClickhouseArray(ClickhouseUInt64(true, false)),
-    "Array(Nullable(UInt128))" -> ClickhouseArray(ClickhouseUInt128(true, false)),
-    "Array(Nullable(UInt256))" -> ClickhouseArray(ClickhouseUInt256(true, false)),
-    "Array(Nullable(String))" -> ClickhouseArray(ClickhouseString(true, false)),
-    "Array(Nullable(Float32))" -> ClickhouseArray(ClickhouseFloat32(true, false)),
-    "Array(Nullable(Float64))" -> ClickhouseArray(ClickhouseFloat64(true, false)),
-    "Array(Nullable(Date))" -> ClickhouseArray(ClickhouseDate(true, false)),
-    "Array(Nullable(Date32))" -> ClickhouseArray(ClickhouseDate32(true, false)),
-    "Array(Nullable(DateTime))" -> ClickhouseArray(ClickhouseDateTime(true, false)),
-    "Array(Nullable(Bool))" -> ClickhouseArray(ClickhouseBoolean(true, false))
+    "Array(Nullable(Int8))" -> ClickhouseArray(new ClickhouseInt8(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(Int16))" -> ClickhouseArray(new ClickhouseInt16(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(Int32))" -> ClickhouseArray(new ClickhouseInt32(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(Int64))" -> ClickhouseArray(new ClickhouseInt64(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(Int128))" -> ClickhouseArray(new ClickhouseInt128(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(Int256))" -> ClickhouseArray(new ClickhouseInt256(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(UInt8))" -> ClickhouseArray(new ClickhouseUInt8(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(UInt16))" -> ClickhouseArray(new ClickhouseUInt16(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(UInt32))" -> ClickhouseArray(new ClickhouseUInt32(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(UInt64))" -> ClickhouseArray(new ClickhouseUInt64(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(UInt128))" -> ClickhouseArray(new ClickhouseUInt128(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(UInt256))" -> ClickhouseArray(new ClickhouseUInt256(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(String))" -> ClickhouseArray(new ClickhouseString(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(Float32))" -> ClickhouseArray(new ClickhouseFloat32(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(Float64))" -> ClickhouseArray(new ClickhouseFloat64(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(Date))" -> ClickhouseArray(new ClickhouseDate(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(Date32))" -> ClickhouseArray(new ClickhouseDate32(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(DateTime))" -> ClickhouseArray(new ClickhouseDateTime(true, false) with NotImplementedArraySupport),
+    "Array(Nullable(Bool))" -> ClickhouseArray(new ClickhouseBoolean(true, false) with NotImplementedArraySupport)
   )
 
 
@@ -188,25 +189,25 @@ class ClickhouseTypesParserTest extends AnyPropSpec
 
   val arrayOfLowCardinalityOfPrimitives = Table(
     "arrayOfLowCardinalityOfPrimitives",
-    "Array(LowCardinality(Int8))" -> ClickhouseArray(ClickhouseInt8(false, true)),
-    "Array(LowCardinality(Int16))" -> ClickhouseArray(ClickhouseInt16(false, true)),
-    "Array(LowCardinality(Int32))" -> ClickhouseArray(ClickhouseInt32(false, true)),
-    "Array(LowCardinality(Int64))" -> ClickhouseArray(ClickhouseInt64(false, true)),
-    "Array(LowCardinality(Int128))" -> ClickhouseArray(ClickhouseInt128(false, true)),
-    "Array(LowCardinality(Int256))" -> ClickhouseArray(ClickhouseInt256(false, true)),
-    "Array(LowCardinality(UInt8))" -> ClickhouseArray(ClickhouseUInt8(false, true)),
-    "Array(LowCardinality(UInt16))" -> ClickhouseArray(ClickhouseUInt16(false, true)),
-    "Array(LowCardinality(UInt32))" -> ClickhouseArray(ClickhouseUInt32(false, true)),
-    "Array(LowCardinality(UInt64))" -> ClickhouseArray(ClickhouseUInt64(false, true)),
-    "Array(LowCardinality(UInt128))" -> ClickhouseArray(ClickhouseUInt128(false, true)),
-    "Array(LowCardinality(UInt256))" -> ClickhouseArray(ClickhouseUInt256(false, true)),
-    "Array(LowCardinality(String))" -> ClickhouseArray(ClickhouseString(false, true)),
-    "Array(LowCardinality(Float32))" -> ClickhouseArray(ClickhouseFloat32(false, true)),
-    "Array(LowCardinality(Float64))" -> ClickhouseArray(ClickhouseFloat64(false, true)),
-    "Array(LowCardinality(Date))" -> ClickhouseArray(ClickhouseDate(false, true)),
-    "Array(LowCardinality(Date32))" -> ClickhouseArray(ClickhouseDate32(false, true)),
-    "Array(LowCardinality(DateTime))" -> ClickhouseArray(ClickhouseDateTime(false, true)),
-    "Array(LowCardinality(Bool))" -> ClickhouseArray(ClickhouseBoolean(false, true))
+    "Array(LowCardinality(Int8))" -> ClickhouseArray(new ClickhouseInt8(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Int16))" -> ClickhouseArray(new ClickhouseInt16(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Int32))" -> ClickhouseArray(new ClickhouseInt32(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Int64))" -> ClickhouseArray(new ClickhouseInt64(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Int128))" -> ClickhouseArray(new ClickhouseInt128(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Int256))" -> ClickhouseArray(new ClickhouseInt256(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(UInt8))" -> ClickhouseArray(new ClickhouseUInt8(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(UInt16))" -> ClickhouseArray(new ClickhouseUInt16(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(UInt32))" -> ClickhouseArray(new ClickhouseUInt32(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(UInt64))" -> ClickhouseArray(new ClickhouseUInt64(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(UInt128))" -> ClickhouseArray(new ClickhouseUInt128(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(UInt256))" -> ClickhouseArray(new ClickhouseUInt256(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(String))" -> ClickhouseArray(new ClickhouseString(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Float32))" -> ClickhouseArray(new ClickhouseFloat32(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Float64))" -> ClickhouseArray(new ClickhouseFloat64(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Date))" -> ClickhouseArray(new ClickhouseDate(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Date32))" -> ClickhouseArray(new ClickhouseDate32(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(DateTime))" -> ClickhouseArray(new ClickhouseDateTime(false, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Bool))" -> ClickhouseArray(new ClickhouseBoolean(false, true) with NotImplementedArraySupport)
   )
 
   property("Parsing Array of LowCardinality of primitive types") {
@@ -217,25 +218,25 @@ class ClickhouseTypesParserTest extends AnyPropSpec
 
   val arrayOfLowCardinalityOfNullableOfPrimitives = Table(
     "arrayOfLowCardinalityOfNullableOfPrimitives",
-    "Array(LowCardinality(Nullable(Int8)))" -> ClickhouseArray(ClickhouseInt8(true, true)),
-    "Array(LowCardinality(Nullable(Int16)))" -> ClickhouseArray(ClickhouseInt16(true, true)),
-    "Array(LowCardinality(Nullable(Int32)))" -> ClickhouseArray(ClickhouseInt32(true, true)),
-    "Array(LowCardinality(Nullable(Int64)))" -> ClickhouseArray(ClickhouseInt64(true, true)),
-    "Array(LowCardinality(Nullable(Int128)))" -> ClickhouseArray(ClickhouseInt128(true, true)),
-    "Array(LowCardinality(Nullable(Int256)))" -> ClickhouseArray(ClickhouseInt256(true, true)),
-    "Array(LowCardinality(Nullable(UInt8)))" -> ClickhouseArray(ClickhouseUInt8(true, true)),
-    "Array(LowCardinality(Nullable(UInt16)))" -> ClickhouseArray(ClickhouseUInt16(true, true)),
-    "Array(LowCardinality(Nullable(UInt32)))" -> ClickhouseArray(ClickhouseUInt32(true, true)),
-    "Array(LowCardinality(Nullable(UInt64)))" -> ClickhouseArray(ClickhouseUInt64(true, true)),
-    "Array(LowCardinality(Nullable(UInt128)))" -> ClickhouseArray(ClickhouseUInt128(true, true)),
-    "Array(LowCardinality(Nullable(UInt256)))" -> ClickhouseArray(ClickhouseUInt256(true, true)),
-    "Array(LowCardinality(Nullable(String)))" -> ClickhouseArray(ClickhouseString(true, true)),
-    "Array(LowCardinality(Nullable(Float32)))" -> ClickhouseArray(ClickhouseFloat32(true, true)),
-    "Array(LowCardinality(Nullable(Float64)))" -> ClickhouseArray(ClickhouseFloat64(true, true)),
-    "Array(LowCardinality(Nullable(Date)))" -> ClickhouseArray(ClickhouseDate(true, true)),
-    "Array(LowCardinality(Nullable(Date32)))" -> ClickhouseArray(ClickhouseDate32(true, true)),
-    "Array(LowCardinality(Nullable(DateTime)))" -> ClickhouseArray(ClickhouseDateTime(true, true)),
-    "Array(LowCardinality(Nullable(Bool)))" -> ClickhouseArray(ClickhouseBoolean(true, true))
+    "Array(LowCardinality(Nullable(Int8)))" -> ClickhouseArray(new ClickhouseInt8(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(Int16)))" -> ClickhouseArray(new ClickhouseInt16(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(Int32)))" -> ClickhouseArray(new ClickhouseInt32(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(Int64)))" -> ClickhouseArray(new ClickhouseInt64(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(Int128)))" -> ClickhouseArray(new ClickhouseInt128(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(Int256)))" -> ClickhouseArray(new ClickhouseInt256(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(UInt8)))" -> ClickhouseArray(new ClickhouseUInt8(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(UInt16)))" -> ClickhouseArray(new ClickhouseUInt16(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(UInt32)))" -> ClickhouseArray(new ClickhouseUInt32(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(UInt64)))" -> ClickhouseArray(new ClickhouseUInt64(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(UInt128)))" -> ClickhouseArray(new ClickhouseUInt128(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(UInt256)))" -> ClickhouseArray(new ClickhouseUInt256(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(String)))" -> ClickhouseArray(new ClickhouseString(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(Float32)))" -> ClickhouseArray(new ClickhouseFloat32(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(Float64)))" -> ClickhouseArray(new ClickhouseFloat64(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(Date)))" -> ClickhouseArray(new ClickhouseDate(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(Date32)))" -> ClickhouseArray(new ClickhouseDate32(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(DateTime)))" -> ClickhouseArray(new ClickhouseDateTime(true, true) with NotImplementedArraySupport),
+    "Array(LowCardinality(Nullable(Bool)))" -> ClickhouseArray(new ClickhouseBoolean(true, true) with NotImplementedArraySupport)
   )
 
   property("Parsing Array of LowCardinality of Nullable of primitive types") {
@@ -248,7 +249,7 @@ class ClickhouseTypesParserTest extends AnyPropSpec
     "decimals",
     "Decimal(4, 5)" -> ClickhouseDecimal(4 ,5, false),
     "Nullable(Decimal(8, 10))" -> ClickhouseDecimal(8, 10, true),
-    "Array(Nullable(Decimal(4, 5)))" -> ClickhouseArray(ClickhouseDecimal(4, 5, true)),
+    "Array(Nullable(Decimal(4, 5)))" -> ClickhouseArray(new ClickhouseDecimal(4, 5, true) with NotImplementedArraySupport),
   )
 
   property("Parsing various of Decimals") {

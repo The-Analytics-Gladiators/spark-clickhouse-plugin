@@ -1,5 +1,6 @@
 package com.blackmorse.spark.clickhouse.types
 
+import com.blackmorse.spark.clickhouse.sql.types.arrays.BigIntArraySupport
 import com.blackmorse.spark.clickhouse.sql.types.primitives.ClickhouseUInt128
 import com.blackmorse.spark.clickhouse.types.BaseTestCases.testPrimitiveAndArray
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
@@ -10,7 +11,7 @@ class UInt128Tests extends AnyFlatSpec with DataFrameSuiteBase {
   import sqlContext.implicits._
 
   "UUInt128" should "be supported" in {
-    testPrimitiveAndArray(ClickhouseUInt128(nullable = false, lowCardinality = false))(
+    testPrimitiveAndArray(new ClickhouseUInt128(nullable = false, lowCardinality = false))(
       cases = Seq(
         (1 to 100) map (_.toString),
         Seq("0", "340282366920938463463374607431768211455")
@@ -20,7 +21,7 @@ class UInt128Tests extends AnyFlatSpec with DataFrameSuiteBase {
   }
 
   "ByteType" should "be supported by UInt128" in {
-    testPrimitiveAndArray(ClickhouseUInt128(nullable = false, lowCardinality = false))(
+    testPrimitiveAndArray(new ClickhouseUInt128(nullable = false, lowCardinality = false))(
       cases = Seq(
         (1 to 100) map (_.toByte),
         Seq(0.toByte, Byte.MaxValue)
@@ -32,7 +33,7 @@ class UInt128Tests extends AnyFlatSpec with DataFrameSuiteBase {
   }
 
   "ShortType" should "be supported by UInt128" in {
-    testPrimitiveAndArray(ClickhouseUInt128(nullable = false, lowCardinality = false))(
+    testPrimitiveAndArray(new ClickhouseUInt128(nullable = false, lowCardinality = false))(
       cases = Seq(
         (1 to 100) map (_.toShort),
         Seq(0.toShort, Short.MaxValue)
@@ -44,7 +45,7 @@ class UInt128Tests extends AnyFlatSpec with DataFrameSuiteBase {
   }
 
   "IntegerType" should "be supported by UInt128" in {
-    testPrimitiveAndArray(ClickhouseUInt128(nullable = false, lowCardinality = false))(
+    testPrimitiveAndArray(new ClickhouseUInt128(nullable = false, lowCardinality = false))(
       cases = Seq(
         1 to 100,
         Seq(0, Int.MaxValue)
@@ -56,7 +57,7 @@ class UInt128Tests extends AnyFlatSpec with DataFrameSuiteBase {
   }
 
   "LongType" should "be supported by UInt128" in {
-    testPrimitiveAndArray(ClickhouseUInt128(nullable = false, lowCardinality = false))(
+    testPrimitiveAndArray(new ClickhouseUInt128(nullable = false, lowCardinality = false))(
       cases = Seq(
         (1 to 100) map (_.toLong),
         Seq(0.toLong, Long.MaxValue)
@@ -68,7 +69,7 @@ class UInt128Tests extends AnyFlatSpec with DataFrameSuiteBase {
   }
 
   "DecimalType" should "be supported by UInt128" in {
-    testPrimitiveAndArray(ClickhouseUInt128(nullable = false, lowCardinality = false))(
+    testPrimitiveAndArray(new ClickhouseUInt128(nullable = false, lowCardinality = false))(
       cases = Seq(
         (1 to 100) map (i => new java.math.BigDecimal(i.toString)),
         Seq(new java.math.BigDecimal("0"), new java.math.BigDecimal("9" * 38))

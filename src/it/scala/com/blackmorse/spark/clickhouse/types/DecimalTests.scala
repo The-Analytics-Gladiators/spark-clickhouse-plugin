@@ -1,6 +1,7 @@
 package com.blackmorse.spark.clickhouse.types
 
 import com.blackmorse.spark.clickhouse.sql.types.ClickhouseDecimal
+import com.blackmorse.spark.clickhouse.sql.types.arrays.DecimalArraySupport
 import com.blackmorse.spark.clickhouse.types.BaseTestCases.testPrimitiveAndArray
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.spark.sql.types.{DoubleType, FloatType}
@@ -16,7 +17,7 @@ class DecimalTests extends AnyFlatSpec with DataFrameSuiteBase {
     (r, e) => new java.math.BigDecimal(r).subtract(new java.math.BigDecimal(e)).abs().compareTo(new java.math.BigDecimal("0.01")) == -1
 
   "Decimal" should "be supported" in {
-    testPrimitiveAndArray(ClickhouseDecimal(10, 6, nullable = false))(
+    testPrimitiveAndArray(new ClickhouseDecimal(10, 6, nullable = false))(
       cases = Seq(
         (1 to 100) map (i => s"$i.$i"),
         Seq(s"${"9" * 10}.${"9" * 6}")
@@ -27,7 +28,7 @@ class DecimalTests extends AnyFlatSpec with DataFrameSuiteBase {
   }
 
   "FloatType" should "be supported by Decimal" in {
-    testPrimitiveAndArray(ClickhouseDecimal(38, 6, nullable = false))(
+    testPrimitiveAndArray(new ClickhouseDecimal(38, 6, nullable = false))(
       cases = Seq(
         (1 to 100) map (_.toFloat),
         (1 to 100) map (f => f + f.toFloat / 100)
@@ -40,7 +41,7 @@ class DecimalTests extends AnyFlatSpec with DataFrameSuiteBase {
   }
 
   "DoubleType" should "be supported by Decimal" in {
-    testPrimitiveAndArray(ClickhouseDecimal(38, 6, nullable = false))(
+    testPrimitiveAndArray(new ClickhouseDecimal(38, 6, nullable = false))(
       cases = Seq(
         (1 to 100) map (_.toDouble),
         (1 to 100) map (f => f + f.toDouble / 100)

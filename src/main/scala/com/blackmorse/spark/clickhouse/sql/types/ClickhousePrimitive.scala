@@ -1,12 +1,12 @@
 package com.blackmorse.spark.clickhouse.sql.types
 
+import com.blackmorse.spark.clickhouse.sql.types.arrays.{ArraySupport, BigIntArraySupport, DateArraySupport, NormalArraySupport, UnsignedLongArraySupport}
 import com.blackmorse.spark.clickhouse.sql.types.primitives._
 import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{ByteType, DataType, DateType, DecimalType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, TimestampType}
+import org.apache.spark.sql.types.DataType
 
-import java.sql.{PreparedStatement, ResultSet}
+import java.sql.ResultSet
 
 trait ClickhousePrimitive extends ClickhouseType {
   val nullable: Boolean
@@ -21,26 +21,26 @@ trait ClickhousePrimitive extends ClickhouseType {
 }
 
 object ClickhousePrimitive {
-  def toPrimitiveConstructor(clickHouseDataType: ClickHouseDataType): (Boolean, Boolean) => ClickhouseType = (nullable, lowCardinality) => {
+  def toPrimitiveConstructor(clickHouseDataType: ClickHouseDataType): (Boolean, Boolean) => ClickhouseType with ArraySupport = (nullable, lowCardinality) => {
     clickHouseDataType match {
-      case ClickHouseDataType.Date => ClickhouseDate(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Date32 => ClickhouseDate32(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Int8 => ClickhouseInt8(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Int16 => ClickhouseInt16(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Int32 => ClickhouseInt32(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Int64 => ClickhouseInt64(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Int128 => ClickhouseInt128(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Int256 => ClickhouseInt256(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.UInt8 => ClickhouseUInt8(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.UInt16 => ClickhouseUInt16(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.UInt32 => ClickhouseUInt32(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.UInt64 => ClickhouseUInt64(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.UInt128 => ClickhouseUInt128(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.UInt256 => ClickhouseUInt256(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.String => ClickhouseString(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Float32 => ClickhouseFloat32(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Float64 => ClickhouseFloat64(nullable = nullable, lowCardinality = lowCardinality)
-      case ClickHouseDataType.Bool => ClickhouseBoolean(nullable = nullable, lowCardinality = lowCardinality)
+      case ClickHouseDataType.Date => new ClickhouseDate(nullable = nullable, lowCardinality = lowCardinality) with DateArraySupport
+      case ClickHouseDataType.Date32 => new ClickhouseDate32(nullable = nullable, lowCardinality = lowCardinality) with DateArraySupport
+      case ClickHouseDataType.Int8 => new ClickhouseInt8(nullable = nullable, lowCardinality = lowCardinality) with NormalArraySupport
+      case ClickHouseDataType.Int16 => new ClickhouseInt16(nullable = nullable, lowCardinality = lowCardinality) with NormalArraySupport
+      case ClickHouseDataType.Int32 => new ClickhouseInt32(nullable = nullable, lowCardinality = lowCardinality) with NormalArraySupport
+      case ClickHouseDataType.Int64 => new ClickhouseInt64(nullable = nullable, lowCardinality = lowCardinality) with NormalArraySupport
+      case ClickHouseDataType.Int128 => new ClickhouseInt128(nullable = nullable, lowCardinality = lowCardinality) with BigIntArraySupport
+      case ClickHouseDataType.Int256 => new ClickhouseInt256(nullable = nullable, lowCardinality = lowCardinality) with BigIntArraySupport
+      case ClickHouseDataType.UInt8 => new ClickhouseUInt8(nullable = nullable, lowCardinality = lowCardinality) with NormalArraySupport
+      case ClickHouseDataType.UInt16 => new ClickhouseUInt16(nullable = nullable, lowCardinality = lowCardinality) with NormalArraySupport
+      case ClickHouseDataType.UInt32 => new ClickhouseUInt32(nullable = nullable, lowCardinality = lowCardinality) with NormalArraySupport
+      case ClickHouseDataType.UInt64 => new ClickhouseUInt64(nullable = nullable, lowCardinality = lowCardinality) with UnsignedLongArraySupport
+      case ClickHouseDataType.UInt128 => new ClickhouseUInt128(nullable = nullable, lowCardinality = lowCardinality) with BigIntArraySupport
+      case ClickHouseDataType.UInt256 => new ClickhouseUInt256(nullable = nullable, lowCardinality = lowCardinality) with BigIntArraySupport
+      case ClickHouseDataType.String => new ClickhouseString(nullable = nullable, lowCardinality = lowCardinality) with NormalArraySupport
+      case ClickHouseDataType.Float32 => new ClickhouseFloat32(nullable = nullable, lowCardinality = lowCardinality) with NormalArraySupport
+      case ClickHouseDataType.Float64 => new ClickhouseFloat64(nullable = nullable, lowCardinality = lowCardinality) with NormalArraySupport
+      case ClickHouseDataType.Bool => new ClickhouseBoolean(nullable = nullable, lowCardinality = lowCardinality) with NormalArraySupport
     }
   }
 }

@@ -1,5 +1,6 @@
 package com.blackmorse.spark.clickhouse.types
 
+import com.blackmorse.spark.clickhouse.sql.types.arrays.UnsignedLongArraySupport
 import com.blackmorse.spark.clickhouse.sql.types.primitives.ClickhouseUInt64
 import com.blackmorse.spark.clickhouse.types.BaseTestCases.{testArray, testPrimitive, testPrimitiveAndArray}
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
@@ -11,7 +12,7 @@ class UInt64Tests extends AnyFlatSpec with DataFrameSuiteBase {
 
   //This PR should resolve https://github.com/ClickHouse/clickhouse-jdbc/pull/1040
   "Big Primitives of UInt64" should "be written and read" ignore {
-    testPrimitive(ClickhouseUInt64(nullable = false, lowCardinality = false))(
+    testPrimitive(new ClickhouseUInt64(nullable = false, lowCardinality = false))(
       (1 to 100).map(i => new java.math.BigDecimal(s"10223372036854775$i")),
       row => row.getDecimal(0),
       sparkType = DecimalType(38, 0),
@@ -19,7 +20,7 @@ class UInt64Tests extends AnyFlatSpec with DataFrameSuiteBase {
   }
 
   ignore should "Ignore due to clickhouse-jdbc upstream but" in {
-    testArray(ClickhouseUInt64(nullable = false, lowCardinality = false))(
+    testArray(new ClickhouseUInt64(nullable = false, lowCardinality = false))(
       (1 to 100).map(i => new java.math.BigDecimal(s"10223372036854775$i")),
       sparkType = DecimalType(38, 0),
       convertToOriginalType = _.asInstanceOf[java.math.BigDecimal]
@@ -27,7 +28,7 @@ class UInt64Tests extends AnyFlatSpec with DataFrameSuiteBase {
   }
 
   "UInt64" should "be supported" in {
-    testPrimitiveAndArray(ClickhouseUInt64(nullable = false, lowCardinality = false))(
+    testPrimitiveAndArray(new ClickhouseUInt64(nullable = false, lowCardinality = false))(
       cases = Seq(
         (1 to 100) map (i => new java.math.BigDecimal(i)),
 //        Seq(new java.math.BigDecimal(0), new java.math.BigDecimal("18446744073709551615"))// Again after that PR

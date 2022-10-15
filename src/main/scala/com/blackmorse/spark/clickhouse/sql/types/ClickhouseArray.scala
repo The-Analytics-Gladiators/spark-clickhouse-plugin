@@ -1,12 +1,13 @@
 package com.blackmorse.spark.clickhouse.sql.types
 
+import com.blackmorse.spark.clickhouse.sql.types.arrays.ArraySupport
 import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{ArrayType, DataType}
 
 import java.sql.{PreparedStatement, ResultSet}
 
-case class ClickhouseArray(typ: ClickhouseType) extends ClickhouseType {
+case class ClickhouseArray(typ: ClickhouseType with ArraySupport) extends ClickhouseType {
   override type T = Seq[AnyRef]
   override lazy val defaultValue: T = Seq[AnyRef]()
 

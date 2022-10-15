@@ -19,18 +19,6 @@ case class ClickhouseUInt64(nullable: Boolean, lowCardinality: Boolean) extends 
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.UInt64
 
-  override def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef = {
-    val array = resultSet.getArray(name).getArray
-    //Array(Nullable(primitive)) produces Long[], while Array(primitive) -> long[]
-    if(nullable) {
-      val mapper = (l: java.lang.Long) => if (l == null) null else new java.math.BigDecimal(l.toString)
-      array.asInstanceOf[Array[java.lang.Long]].map(mapper)
-    } else {
-      val mapper = (l: Long) => new java.math.BigDecimal(l.toString)
-      array.asInstanceOf[Array[Long]].map(mapper)
-    }
-  }
-
   override protected def setValueToStatement(i: Int, value: java.math.BigDecimal, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setBigDecimal(i, value)
 }

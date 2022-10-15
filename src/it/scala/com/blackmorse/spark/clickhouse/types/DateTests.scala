@@ -1,5 +1,6 @@
 package com.blackmorse.spark.clickhouse.types
 
+import com.blackmorse.spark.clickhouse.sql.types.arrays.DateArraySupport
 import com.blackmorse.spark.clickhouse.sql.types.primitives.ClickhouseDate
 import com.blackmorse.spark.clickhouse.types.BaseTestCases.testPrimitiveAndArray
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
@@ -27,7 +28,7 @@ class DateTests extends AnyFlatSpec with DataFrameSuiteBase {
 
   implicit val ord: Ordering[Date] = Ordering.by(_.getTime)
   "Date" should "be supported" in {
-    testPrimitiveAndArray(ClickhouseDate(nullable = false, lowCardinality = false))(
+    testPrimitiveAndArray(new ClickhouseDate(nullable = false, lowCardinality = false))(
       cases = Seq(
         (1 to 100).map(date),
         Seq(minDate, maxDate)

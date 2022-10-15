@@ -24,11 +24,6 @@ case class ClickhouseDecimal(p: Int, s: Int, nullable: Boolean) extends DecimalT
   protected override def setValueToStatement(i: Int, value: String, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setBigDecimal(i, new java.math.BigDecimal(value).setScale(s))
 
-  override def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
-    resultSet.getArray(name)
-      .getArray().asInstanceOf[Array[java.math.BigDecimal]]
-      .map(bd => if (bd == null) null else bd.toString)
-
   override def clickhouseDataTypeString: String = s"Decimal($p, $s)"
 }
 

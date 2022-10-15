@@ -19,11 +19,6 @@ abstract class ClickhouseBigIntType(private val _clickHouseDataType: ClickHouseD
   protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getString(name)
 
-  override def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
-    resultSet.getArray(name)
-      .getArray.asInstanceOf[Array[BigInteger]]
-      .map(bi => if(bi == null) null else bi.toString())
-
   override protected def setValueToStatement(i: Int, value: String, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setBigDecimal(i, new java.math.BigDecimal(value))
 }

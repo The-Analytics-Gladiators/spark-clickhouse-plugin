@@ -20,11 +20,6 @@ case class ClickhouseDateTime(nullable: Boolean, lowCardinality: Boolean) extend
   override protected def setValueToStatement(i: Int, value: Timestamp, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setTimestamp(i, value, clickhouseTimeZoneInfo.calendar)
 
-  override def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
-    resultSet.getArray(name)
-      .getArray.asInstanceOf[Array[LocalDateTime]]
-      .map(ldt => if(ldt == null) null else Timestamp.valueOf(ldt))
-
   override def clickhouseDataTypeString: String = "DateTime"
   //  //For some reason timezone is preserved while reading an array
 //  override def extractArrayFromRowAndSetToStatement(i: Int, row: Row, statement: PreparedStatement)
@@ -49,11 +44,6 @@ case class ClickhouseDateTime64(p: Int, nullable: Boolean) extends ClickhouseTyp
 
   protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
     resultSet.getTimestamp(name)
-
-  override def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
-    resultSet.getArray(name)
-      .getArray.asInstanceOf[Array[LocalDateTime]]
-      .map(ldt => if (ldt == null) null else Timestamp.valueOf(ldt))
 
   protected override def setValueToStatement(i: Int, value: Timestamp, statement: PreparedStatement)
                                             (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {

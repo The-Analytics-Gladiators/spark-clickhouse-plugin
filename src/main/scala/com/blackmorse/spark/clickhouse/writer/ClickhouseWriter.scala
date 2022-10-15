@@ -26,9 +26,9 @@ object ClickhouseWriter {
     val values = Array.fill(columnsNumber)("?").mkString("(", ", ", ")")
     val fields = schema.map(_.name).mkString("(", ", ", ")")
 
-    val clickhouseFields = ClickhouseSchemaParser.parseTable(url, table)
+    val clickhouseFields = ClickhouseSchemaParser.parseTable1(url, table)
 
-    val mergedSchema = SchemaMerger.mergeSchemas(schema, clickhouseFields)
+    val mergedSchema = SchemaMerger.mergeSchemas1(schema, clickhouseFields)
     val clickhouseTimeZoneInfo = JDBCTimeZoneUtils.fetchClickhouseTimeZoneFromServer(url)
 
     val rowSetters = mergedSchema.zipWithIndex.map { case ((sparkField, chField), index) =>

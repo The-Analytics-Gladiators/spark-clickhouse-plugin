@@ -33,4 +33,12 @@ object ClickhouseTypesParser {
         ClickhousePrimitive.toPrimitiveConstructor(ClickHouseDataType.valueOf(typ))(nullable, lowCardinality)
     }
   }
+
+  def parseType1(typ: String, lowCardinality: Boolean = false, nullable: Boolean = false): ChType = {
+
+    if (typ.startsWith(arrayPrefix)) {
+      ArrayCh(parseType1(typ.substring(arrayPrefix.length, typ.length - 1)))
+    }
+    LongCh
+  }
 }

@@ -1,5 +1,6 @@
 package com.blackmorse.spark.clickhouse.sql.types
 
+import com.blackmorse.spark.clickhouse.reader.ChType
 import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.DataType
@@ -26,8 +27,7 @@ trait ClickhouseType extends Serializable {
 
   protected def setValueToStatement(i: Int, value: T, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit
 
-  def extractFromRowAndSetToStatement(i: Int, row: Row, rowExtractor: (Row, Int) => Any, statement: PreparedStatement)
-                                     (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
+  def extractFromRowAndSetToStatement(i: Int, row: Row, rowExtractor: (Row, Int) => Any, statement: PreparedStatement) (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
     val rowIsNull = row.isNullAt(i)
     val statementIndex = i + 1
 
@@ -47,3 +47,5 @@ case class ClickhouseField(name: String, typ: ClickhouseType) {
     typ.extractFromRsByName(name, resultSet)(clickhouseTimeZoneInfo)
   }
 }
+
+case class ClickhouseField1(name: String, typ: ChType)

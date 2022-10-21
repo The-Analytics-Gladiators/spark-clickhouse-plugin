@@ -40,6 +40,11 @@ trait ClickhouseType extends Serializable {
     = resultSet.getArray(name).getArray
 
   def clickhouseDataTypeString: String
+
+  def mapFromArray(value: Any): AnyRef = value match {
+    case null => if (nullable) null else defaultValue.asInstanceOf[AnyRef]
+    case el => el.asInstanceOf[AnyRef]
+  }
 }
 
 case class ClickhouseField(name: String, typ: ClickhouseType) {

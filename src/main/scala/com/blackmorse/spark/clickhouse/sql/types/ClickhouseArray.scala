@@ -17,10 +17,7 @@ case class ClickhouseArray(typ: ClickhouseType) extends ClickhouseType {
     typ.extractArrayFromRsByName(name, resultSet)(clickhouseTimeZoneInfo)
 
   override protected def setValueToStatement(i: Int, value: Seq[AnyRef], statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
-    val array = value.map{
-      case null => if (typ.nullable) null else typ.defaultValue.asInstanceOf[AnyRef]
-      case el => el
-    }
+    val array = value map typ.mapFromArray
     val jdbcArray = statement.getConnection.createArrayOf(clickhouseDataTypeString, array.toArray)
     statement.setArray(i, jdbcArray)
   }

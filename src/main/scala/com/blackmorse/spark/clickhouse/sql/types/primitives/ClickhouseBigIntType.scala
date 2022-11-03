@@ -5,6 +5,7 @@ import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{ByteType, DataType, DecimalType, IntegerType, LongType, ShortType, StringType}
+import org.apache.spark.unsafe.types.UTF8String
 
 import java.math.BigInteger
 import java.sql.{PreparedStatement, ResultSet}
@@ -17,12 +18,12 @@ abstract class ClickhouseBigIntType(private val _clickHouseDataType: ClickHouseD
   override def toSparkType(): DataType = StringType
 
   protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
-    resultSet.getString(name)
+    UTF8String.fromString(resultSet.getString(name))
 
   override def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
     resultSet.getArray(name)
       .getArray.asInstanceOf[Array[BigInteger]]
-      .map(bi => if(bi == null) null else bi.toString())
+      .map(bi => if(bi == null) null else UTF8String.fromString(bi.toString()))
 
   override protected def setValueToStatement(i: Int, value: String, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setBigDecimal(i, new java.math.BigDecimal(value))

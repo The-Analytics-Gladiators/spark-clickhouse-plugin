@@ -15,7 +15,7 @@ case class ClickhouseDateTime(nullable: Boolean, lowCardinality: Boolean) extend
   override def toSparkType(): DataType = TimestampType
 
   protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
-    resultSet.getTimestamp(name)
+    resultSet.getTimestamp(name).getTime * 1000
 
   override protected def setValueToStatement(i: Int, value: Timestamp, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setTimestamp(i, value, clickhouseTimeZoneInfo.calendar)
@@ -23,7 +23,7 @@ case class ClickhouseDateTime(nullable: Boolean, lowCardinality: Boolean) extend
   override def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
     resultSet.getArray(name)
       .getArray.asInstanceOf[Array[LocalDateTime]]
-      .map(ldt => if(ldt == null) null else Timestamp.valueOf(ldt))
+      .map(ldt => if(ldt == null) null else Timestamp.valueOf(ldt).getTime * 1000)
 
   override def clickhouseDataTypeString: String = "DateTime"
   //  //For some reason timezone is preserved while reading an array
@@ -48,12 +48,12 @@ case class ClickhouseDateTime64(p: Int, nullable: Boolean) extends ClickhouseTyp
   override def toSparkType(): DataType = TimestampType
 
   protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
-    resultSet.getTimestamp(name)
+    resultSet.getTimestamp(name).getTime * 1000
 
   override def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
     resultSet.getArray(name)
       .getArray.asInstanceOf[Array[LocalDateTime]]
-      .map(ldt => if (ldt == null) null else Timestamp.valueOf(ldt))
+      .map(ldt => if (ldt == null) null else Timestamp.valueOf(ldt).getTime * 1000)
 
   protected override def setValueToStatement(i: Int, value: Timestamp, statement: PreparedStatement)
                                             (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {

@@ -3,6 +3,7 @@ package com.blackmorse.spark.clickhouse.sql.types
 import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.DataType
+import org.apache.spark.unsafe.types.UTF8String
 
 import java.sql.{PreparedStatement, ResultSet}
 
@@ -36,8 +37,15 @@ trait ClickhouseType extends Serializable {
     else setValueToStatement(statementIndex, rowExtractor(row, i).asInstanceOf[T], statement)(clickhouseTimeZoneInfo)
   }
 
-  def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef
-    = resultSet.getArray(name).getArray
+  def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef = {
+    val array = resultSet.getArray(name).getArray
+    //TODO
+    array match {
+      case a: Array[String] => a.map(el => UTF8String.fromString(el))
+      case _ => array
+    }
+  }
+
 
   def clickhouseDataTypeString: String
 

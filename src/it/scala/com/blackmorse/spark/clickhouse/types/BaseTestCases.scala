@@ -51,7 +51,8 @@ object BaseTestCases extends should.Matchers {
     )
     val rows = elements.map(el => Row.fromSeq(Seq(el)))
     val schema = StructType(Seq(StructField("a", ArrayType(sparkType), true)))
-    val df = sqlContext.createDataFrame(sc.parallelize(rows), schema)
+    val rdd = sc.parallelize(rows)
+    val df = sqlContext.createDataFrame(rdd, schema)
 
     withTable(Seq(s"a Array($clickhouseTypeName)"), "a") {
 

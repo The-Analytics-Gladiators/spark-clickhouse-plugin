@@ -23,7 +23,7 @@ class ClickhousePartitionReader(clickhouseReaderInfo: ClickhouseReaderInfo, clic
   private val conn = new ClickHouseDriver().connect(clickhouseReaderInfo.url, new Properties())
   private val stmt = conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
   stmt.setFetchSize(300)
-  logInfo(s"statement fetch size set to: ${stmt.getFetchSize}")
+  logDebug(s"statement fetch size set to: ${stmt.getFetchSize}")
 
   private val rs = stmt.executeQuery()
 
@@ -63,7 +63,7 @@ class ClickhousePartitionReader(clickhouseReaderInfo: ClickhouseReaderInfo, clic
       if (null != conn) {
         conn.close()
       }
-      logInfo("closed connection")
+      logDebug("closed connection")
     } catch {
       case e: Exception => logWarning("Exception closing connection", e)
     }

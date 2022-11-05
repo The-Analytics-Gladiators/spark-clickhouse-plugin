@@ -23,7 +23,7 @@ package object clickhouse {
   implicit class ClickHouseDataFrameReader(reader: DataFrameReader) {
     def clickhouse(host: String, port: Int, table: String): DataFrame =
       reader
-        .format("com.blackmorse.spark.clickhouse")
+        .format("com.blackmorse.spark.clickhouse.datasourcev2")
         .option(CLICKHOUSE_HOST_NAME, host)
         .option(CLICKHOUSE_PORT, port)
         .option(TABLE, table)

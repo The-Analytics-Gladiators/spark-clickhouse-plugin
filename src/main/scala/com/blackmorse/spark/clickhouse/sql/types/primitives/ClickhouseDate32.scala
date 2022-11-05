@@ -16,8 +16,14 @@ case class ClickhouseDate32(nullable: Boolean, lowCardinality: Boolean) extends 
   override val defaultValue: Date = new Date(0 - TimeZone.getDefault.getRawOffset)
   override def toSparkType(): DataType = DateType
 
-  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
-    resultSet.getDate(name)
+  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any = {
+      val d = resultSet.getDate(name)
+      val date = d.toLocalDate
+      val millis = JDBCTimeZoneUtils.localDateToDate(date, clickhouseTimeZoneInfo)
+        .getTime
+
+      (millis / 1000 / 60 / 60 / 24).toInt
+    }
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Date32
 
@@ -27,7 +33,7 @@ case class ClickhouseDate32(nullable: Boolean, lowCardinality: Boolean) extends 
   override def extractArrayFromRsByName(name: String, resultSet: ResultSet)
                                        (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
     resultSet.getArray(name).getArray.asInstanceOf[Array[LocalDate]]
-      .map(localDate => if(localDate == null) null else JDBCTimeZoneUtils.localDateToDate(localDate, clickhouseTimeZoneInfo))
+      .map(ld => if (ld == null) null else ld.toEpochDay.toInt)
 }
 
 object ClickhouseDate32 {

@@ -2,6 +2,7 @@ package com.blackmorse.spark.clickhouse.sql.types
 
 import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.util.ArrayData
 import org.apache.spark.sql.types.{ArrayType, DataType}
 
 import java.sql.{PreparedStatement, ResultSet}
@@ -13,8 +14,10 @@ case class ClickhouseArray(typ: ClickhouseType) extends ClickhouseType {
   override def toSparkType(): DataType = ArrayType(typ.toSparkType(), typ.nullable)
   override val nullable: Boolean = false
 
-  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
-    typ.extractArrayFromRsByName(name, resultSet)(clickhouseTimeZoneInfo)
+  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any = {
+    val array = typ.extractArrayFromRsByName(name, resultSet)(clickhouseTimeZoneInfo)
+    ArrayData.toArrayData(array)
+  }
 
   override protected def setValueToStatement(i: Int, value: Seq[AnyRef], statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
     val array = value map typ.mapFromArray

@@ -2,7 +2,8 @@ package com.blackmorse.spark.clickhouse.sql.types
 
 import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{DataType, DecimalType, DoubleType, FloatType, StringType}
+import org.apache.spark.sql.types.{DataType, DoubleType, FloatType, StringType}
+import org.apache.spark.unsafe.types.UTF8String
 
 import java.sql.{PreparedStatement, ResultSet}
 
@@ -19,7 +20,7 @@ case class ClickhouseDecimal(p: Int, s: Int, nullable: Boolean) extends DecimalT
   override def toSparkType(): DataType = StringType
 
   protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
-    resultSet.getString(name)
+    UTF8String.fromString(resultSet.getString(name))
 
   protected override def setValueToStatement(i: Int, value: String, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setBigDecimal(i, new java.math.BigDecimal(value).setScale(s))
@@ -27,7 +28,7 @@ case class ClickhouseDecimal(p: Int, s: Int, nullable: Boolean) extends DecimalT
   override def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
     resultSet.getArray(name)
       .getArray().asInstanceOf[Array[java.math.BigDecimal]]
-      .map(bd => if (bd == null) null else bd.toString)
+      .map(bd => if (bd == null) null else UTF8String.fromString(bd.toString))
 
   override def clickhouseDataTypeString: String = s"Decimal($p, $s)"
 }

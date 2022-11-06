@@ -1,6 +1,7 @@
 package com.blackmorse.spark.clickhouse.sql.types.primitives
 
 import com.blackmorse.spark.clickhouse.sql.types.ClickhousePrimitive
+import com.blackmorse.spark.clickhouse.sql.types.extractors.{DecimalRSExtractor, UInt64ArrayRSExtractor}
 import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
 import org.apache.spark.sql.Row
@@ -8,16 +9,14 @@ import org.apache.spark.sql.types.{ByteType, DataType, Decimal, DecimalType, Int
 
 import java.sql.{PreparedStatement, ResultSet}
 
-case class ClickhouseUInt64(nullable: Boolean, lowCardinality: Boolean) extends ClickhousePrimitive {
+case class ClickhouseUInt64(nullable: Boolean, lowCardinality: Boolean)
+    extends ClickhousePrimitive
+    with DecimalRSExtractor
+    with UInt64ArrayRSExtractor {
   override type T = java.math.BigDecimal
   override val defaultValue: java.math.BigDecimal = java.math.BigDecimal.ZERO
 
   override def toSparkType(): DataType = DecimalType(38, 0)
-
-  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any = {
-    val v = resultSet.getBigDecimal(name).setScale(0)
-    Decimal(v)
-  }
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.UInt64
 

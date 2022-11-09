@@ -1,7 +1,7 @@
 package com.blackmorse.spark.clickhouse.writer
 
 import com.blackmorse.spark.clickhouse.sql.types.primitives.{ClickhouseBigIntType, ClickhouseBoolean, ClickhouseDate, ClickhouseDate32, ClickhouseFloat32, ClickhouseFloat64, ClickhouseInt16, ClickhouseInt32, ClickhouseInt64, ClickhouseInt8, ClickhouseString, ClickhouseUInt16, ClickhouseUInt32, ClickhouseUInt64, ClickhouseUInt8}
-import com.blackmorse.spark.clickhouse.sql.types.{ClickhouseArray, ClickhouseDateTime, ClickhouseDateTime64, ClickhouseDecimal, ClickhouseType}
+import com.blackmorse.spark.clickhouse.sql.types.{ClickhouseArray, ClickhouseDateTime, ClickhouseDateTime64, ClickhouseDecimal, ClickhouseFixedString, ClickhouseType}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.DataType
 
@@ -27,5 +27,6 @@ object RowExtractors {
       case ClickhouseDecimal(_, _, _) => ClickhouseDecimal.mapRowExtractor(sparkType)
       case _: ClickhouseBigIntType => ClickhouseBigIntType.mapRowExtractor(sparkType)
       case ClickhouseArray(_)      => ClickhouseArray.mapRowExtractor(sparkType)
+      case ClickhouseFixedString(_, _, _) => ClickhouseFixedString.mapRowExtractor(sparkType)
   }
 }

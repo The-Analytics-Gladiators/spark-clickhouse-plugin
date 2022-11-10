@@ -1,22 +1,22 @@
 package com.blackmorse.spark.clickhouse.sql.types.primitives
 
 import com.blackmorse.spark.clickhouse.sql.types.ClickhousePrimitive
+import com.blackmorse.spark.clickhouse.sql.types.extractors.{StringArrayRSExtractor, StringRSExtractor}
 import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{DataType, StringType}
-import org.apache.spark.unsafe.types.UTF8String
 
-import java.sql.{PreparedStatement, ResultSet}
+import java.sql.PreparedStatement
 
-case class ClickhouseString(nullable: Boolean, lowCardinality: Boolean) extends ClickhousePrimitive {
+case class ClickhouseString(nullable: Boolean, lowCardinality: Boolean)
+    extends ClickhousePrimitive
+    with StringRSExtractor
+    with StringArrayRSExtractor {
   override type T = String
   override val defaultValue: String = ""
 
   override def toSparkType(): DataType = StringType
-
-  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
-    UTF8String.fromString(resultSet.getString(name))
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.String
 

@@ -5,11 +5,11 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.connector.write.{DataWriter, WriterCommitMessage}
 
-import java.util.Properties
+import scala.util.Using
 
 class ClickhouseWriter(writerInfo: ClickhouseWriterInfo) extends DataWriter[InternalRow] with Logging {
 
-  private val connection = new ClickHouseDriver().connect(writerInfo.url, new Properties())
+  private val connection = new ClickHouseDriver().connect(writerInfo.url, writerInfo.connectionProperties)
   private val fields = writerInfo.schema.map(_.name).mkString("(", ", ", ")")
   private val values = Array.fill(writerInfo.schema.size)("?").mkString("(", ", ", ")")
   private val insertStatement = s"INSERT INTO ${writerInfo.tableName} $fields VALUES $values"
@@ -18,11 +18,12 @@ class ClickhouseWriter(writerInfo: ClickhouseWriterInfo) extends DataWriter[Inte
 
   override def write(record: InternalRow): Unit = {
     rowsInBatch += 1
-    writerInfo.rowSetters.foreach(rowSetter => rowSetter(record, statement))
+    writerInfo.rowSetters.foreach(_(record, statement))
     statement.addBatch()
     if (rowsInBatch >= writerInfo.batchSize) {
-      statement.execute()
-      statement.close()
+      log.debug(s"Batch complete, sending $rowsInBatch records")
+      Using(statement) { stm => stm.executeBatch() }
+        .recoverWith { case ex: Exception => throw new Exception(ex) } // consider custom exceptions
       statement = connection.prepareStatement(insertStatement)
       rowsInBatch = 0
     }
@@ -41,7 +42,7 @@ class ClickhouseWriter(writerInfo: ClickhouseWriterInfo) extends DataWriter[Inte
         statement.close()
       }
     } catch {
-      case e: Exception => logWarning("Exception closing statement", e)
+      case exception: Exception => logWarning("Exception closing statement", exception)
     }
     try {
       if (null != connection) {
@@ -49,7 +50,7 @@ class ClickhouseWriter(writerInfo: ClickhouseWriterInfo) extends DataWriter[Inte
       }
       logDebug("closed connection")
     } catch {
-      case e: Exception => logWarning("Exception closing connection", e)
+      case exception: Exception => logWarning("Exception closing connection", exception)
     }
   }
 }

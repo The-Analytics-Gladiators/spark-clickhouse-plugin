@@ -1,8 +1,7 @@
 package com.blackmorse.spark.clickhouse.sql.types.extractors
 
 import com.blackmorse.spark.clickhouse.sql.types.ClickhouseArray
-import com.blackmorse.spark.clickhouse.utils.JDBCTimeZoneUtils
-import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
+import com.blackmorse.spark.clickhouse.utils.{ClickhouseTimeZoneInfo, JDBCTimeZoneUtils}
 import org.apache.spark.sql.catalyst.util.ArrayData
 import org.apache.spark.sql.types.Decimal
 import org.apache.spark.unsafe.types.UTF8String

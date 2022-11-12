@@ -1,6 +1,5 @@
 package com.blackmorse.spark.clickhouse.utils
 
-import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import com.clickhouse.jdbc.ClickHouseDriver
 
 import java.time.LocalDate

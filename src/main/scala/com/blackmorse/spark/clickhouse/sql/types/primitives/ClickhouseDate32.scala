@@ -2,12 +2,12 @@ package com.blackmorse.spark.clickhouse.sql.types.primitives
 
 import com.blackmorse.spark.clickhouse.sql.types.ClickhousePrimitive
 import com.blackmorse.spark.clickhouse.sql.types.extractors.{DateArrayRSExtractor, DateRSExtractor}
-import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
+import com.blackmorse.spark.clickhouse.utils.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
-import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{DataType, DateType}
 
-import java.sql.{Date, PreparedStatement}
+import java.sql.{Date, PreparedStatement, ResultSet}
+import java.time.LocalDate
 import java.util.TimeZone
 
 case class ClickhouseDate32(nullable: Boolean, lowCardinality: Boolean)
@@ -22,10 +22,11 @@ case class ClickhouseDate32(nullable: Boolean, lowCardinality: Boolean)
 
   override protected def setValueToStatement(i: Int, value: Date, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setDate(i, value, clickhouseTimeZoneInfo.calendar)
-}
 
-object ClickhouseDate32 {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => Date = (row, index) => sparkType match {
-    case DateType => row.getDate(index)
-  }
+  override def extractArrayFromRsByName(name: String, resultSet: ResultSet)
+                                       (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef =
+    resultSet.getArray(name).getArray.asInstanceOf[Array[LocalDate]]
+      .map(ld => if (ld == null) null else ld.toEpochDay.toInt)
+
+  override def convertInternalValue(value: Any): Date = new Date(value.asInstanceOf[Integer].toLong * 1000 * 60 * 60 * 24)
 }

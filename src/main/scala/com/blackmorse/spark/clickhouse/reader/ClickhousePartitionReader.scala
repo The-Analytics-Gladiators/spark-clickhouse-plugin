@@ -1,4 +1,4 @@
-package com.blackmorse.spark.clickhouse.datasourcev2
+package com.blackmorse.spark.clickhouse.reader
 
 import com.clickhouse.jdbc.ClickHouseDriver
 import org.apache.spark.internal.Logging

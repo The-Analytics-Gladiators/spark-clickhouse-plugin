@@ -1,8 +1,8 @@
 package com.blackmorse.spark.clickhouse.sql.types
 
+import com.blackmorse.spark.clickhouse.utils.ClickhouseTimeZoneInfo
 import com.blackmorse.spark.clickhouse.sql.types.extractors.{ArrayRSExtractor, SimpleArrayRSExtractor}
-import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.util.ArrayData
 import org.apache.spark.sql.types.{ArrayType, DataType}
 
 import java.sql.PreparedStatement
@@ -24,10 +24,6 @@ case class ClickhouseArray(typ: ClickhouseType)
   }
 
   override def clickhouseDataTypeString: String = s"Array(${typ.clickhouseDataTypeString})"
-}
 
-object ClickhouseArray {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => Seq[Any] = (row, index) => sparkType match {
-    case ArrayType(_, _) => row.getSeq[Any](index)
-  }
+  override def convertInternalValue(value: Any): Seq[AnyRef] = typ.convertInternalArrayValue(value.asInstanceOf[ArrayData]).asInstanceOf[Seq[AnyRef]]
 }

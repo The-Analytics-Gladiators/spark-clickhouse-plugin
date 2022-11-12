@@ -1,9 +1,9 @@
 package com.blackmorse.spark.clickhouse.sql.types
 
 import com.blackmorse.spark.clickhouse.sql.types.extractors.{BigDecimalArrayRSExtractor, StringRSExtractor}
-import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{DataType, DoubleType, FloatType, StringType}
+import com.blackmorse.spark.clickhouse.utils.ClickhouseTimeZoneInfo
+import org.apache.spark.sql.types.{DataType, StringType}
+import org.apache.spark.unsafe.types.UTF8String
 
 import java.sql.PreparedStatement
 
@@ -26,12 +26,7 @@ case class ClickhouseDecimal(p: Int, s: Int, nullable: Boolean)
     statement.setBigDecimal(i, new java.math.BigDecimal(value).setScale(s))
 
   override def clickhouseDataTypeString: String = s"Decimal($p, $s)"
-}
 
-object ClickhouseDecimal {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => String = (row, index) => sparkType match {
-    case FloatType  => row.getFloat(index).toString
-    case DoubleType => row.getDouble(index).toString
-    case StringType => row.getString(index)
-  }
+  override def convertInternalValue(value: Any): String =
+    value.asInstanceOf[UTF8String].toString
 }

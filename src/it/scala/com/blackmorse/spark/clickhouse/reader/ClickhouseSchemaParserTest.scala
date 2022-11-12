@@ -1,9 +1,9 @@
 package com.blackmorse.spark.clickhouse.reader
 
 import com.blackmorse.spark.clickhouse.ClickhouseTests.withTable
+import com.blackmorse.spark.clickhouse.spark.types.ClickhouseSchemaParser
 import com.blackmorse.spark.clickhouse.sql.types._
 import com.blackmorse.spark.clickhouse.sql.types.primitives.{ClickhouseDate, ClickhouseFloat64, ClickhouseInt128, ClickhouseInt16, ClickhouseInt256, ClickhouseInt32, ClickhouseInt64, ClickhouseInt8, ClickhouseString, ClickhouseUInt128, ClickhouseUInt16, ClickhouseUInt256, ClickhouseUInt32, ClickhouseUInt64, ClickhouseUInt8}
-import com.clickhouse.client.ClickHouseDataType
 import org.scalatest.flatspec.AnyFlatSpec
 
 class ClickhouseSchemaParserTest extends AnyFlatSpec {

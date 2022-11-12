@@ -1,4 +1,4 @@
-package com.blackmorse.spark.clickhouse.datasourcev2
+package com.blackmorse.spark.clickhouse.reader
 
 import org.apache.spark.sql.types.StructType
 

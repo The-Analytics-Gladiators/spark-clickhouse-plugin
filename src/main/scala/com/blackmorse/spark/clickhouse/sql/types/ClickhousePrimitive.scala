@@ -1,12 +1,8 @@
 package com.blackmorse.spark.clickhouse.sql.types
 
 import com.blackmorse.spark.clickhouse.sql.types.primitives._
-import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{ByteType, DataType, DateType, DecimalType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, TimestampType}
-
-import java.sql.{PreparedStatement, ResultSet}
+import org.apache.spark.sql.types.DataType
 
 trait ClickhousePrimitive extends ClickhouseType {
   val nullable: Boolean

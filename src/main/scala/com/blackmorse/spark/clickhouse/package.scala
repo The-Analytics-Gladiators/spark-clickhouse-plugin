@@ -1,6 +1,6 @@
 package com.blackmorse.spark
 
-import org.apache.spark.sql.{DataFrame, DataFrameReader, DataFrameWriter}
+import org.apache.spark.sql.{DataFrame, DataFrameReader, DataFrameWriter, SaveMode}
 
 package object clickhouse {
   val CLICKHOUSE_HOST_NAME = "HOST_NAME"
@@ -16,6 +16,8 @@ package object clickhouse {
         .option(CLICKHOUSE_PORT, port)
         .option(TABLE, table)
         .option(BATCH_SIZE, 1000000)
+//        .option("spark.sql.storeAssignmentPolicy", "legacy")
+        .mode(SaveMode.Append)
         .save()
     }
   }
@@ -23,7 +25,7 @@ package object clickhouse {
   implicit class ClickHouseDataFrameReader(reader: DataFrameReader) {
     def clickhouse(host: String, port: Int, table: String): DataFrame =
       reader
-        .format("com.blackmorse.spark.clickhouse.datasourcev2")
+        .format("com.blackmorse.spark.clickhouse")
         .option(CLICKHOUSE_HOST_NAME, host)
         .option(CLICKHOUSE_PORT, port)
         .option(TABLE, table)

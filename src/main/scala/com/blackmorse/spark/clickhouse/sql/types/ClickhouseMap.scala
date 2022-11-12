@@ -1,11 +1,10 @@
 package com.blackmorse.spark.clickhouse.sql.types
 
 import com.blackmorse.spark.clickhouse.sql.types.extractors.{SimpleArrayRSExtractor, StringRSExtractor}
-import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
-import org.apache.spark.sql.Row
+import com.blackmorse.spark.clickhouse.utils.ClickhouseTimeZoneInfo
 import org.apache.spark.sql.types.DataType
 
-import java.sql.{PreparedStatement, ResultSet}
+import java.sql.PreparedStatement
 
 //TODO Not used yet
 case class ClickhouseMap(key: ClickhouseType, value: ClickhouseType, nullable: Boolean)

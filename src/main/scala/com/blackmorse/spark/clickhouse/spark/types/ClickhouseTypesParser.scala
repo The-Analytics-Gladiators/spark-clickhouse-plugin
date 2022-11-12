@@ -1,8 +1,7 @@
-package com.blackmorse.spark.clickhouse.reader
+package com.blackmorse.spark.clickhouse.spark.types
 
 import com.blackmorse.spark.clickhouse.sql.types._
 import com.clickhouse.client.ClickHouseDataType
-
 
 object ClickhouseTypesParser {
   private val arrayPrefix = "Array("

@@ -1,75 +1,55 @@
 package com.blackmorse.spark.clickhouse.writer
 
-import com.blackmorse.spark.clickhouse.reader.ClickhouseSchemaParser
-import com.blackmorse.spark.clickhouse.spark.types.SchemaMerger
-import com.blackmorse.spark.clickhouse.utils.JDBCTimeZoneUtils
-import com.blackmorse.spark.clickhouse.{BATCH_SIZE, CLICKHOUSE_HOST_NAME, CLICKHOUSE_PORT, TABLE, WriteClickhouseRelation}
 import com.clickhouse.jdbc.ClickHouseDriver
-import org.apache.spark.sql.sources.BaseRelation
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.internal.Logging
+import org.apache.spark.sql.catalyst.InternalRow
+import org.apache.spark.sql.connector.write.{DataWriter, WriterCommitMessage}
 
-import java.sql.PreparedStatement
 import java.util.Properties
-import scala.util.{Failure, Success, Using}
 
-object ClickhouseWriter {
-  def writeDataFrame(dataFrame: DataFrame, parameters: Map[String, String], sqlContext: SQLContext): BaseRelation = {
-    val hostName = parameters(CLICKHOUSE_HOST_NAME)
-    val port = parameters(CLICKHOUSE_PORT)
-    val table = parameters(TABLE)
-    val batchSize = parameters(BATCH_SIZE).toInt
+class ClickhouseWriter(writerInfo: ClickhouseWriterInfo) extends DataWriter[InternalRow] with Logging {
 
-    val url = s"jdbc:clickhouse://$hostName:$port"
+  private val connection = new ClickHouseDriver().connect(writerInfo.url, new Properties())
+  private val fields = writerInfo.schema.map(_.name).mkString("(", ", ", ")")
+  private val values = Array.fill(writerInfo.schema.size)("?").mkString("(", ", ", ")")
+  private val insertStatement = s"INSERT INTO ${writerInfo.tableName} $fields VALUES $values"
+  private var statement = connection.prepareStatement(insertStatement)
+  private var rowsInBatch = 0
 
-    val schema = dataFrame.schema
-    val columnsNumber = schema.size
-    val values = Array.fill(columnsNumber)("?").mkString("(", ", ", ")")
-    val fields = schema.map(_.name).mkString("(", ", ", ")")
-
-    val clickhouseFields = ClickhouseSchemaParser.parseTable(url, table)
-
-    val mergedSchema = SchemaMerger.mergeSchemas(schema, clickhouseFields)
-    val clickhouseTimeZoneInfo = JDBCTimeZoneUtils.fetchClickhouseTimeZoneFromServer(url)
-
-    val rowSetters = mergedSchema.zipWithIndex.map { case ((sparkField, chField), index) =>
-      val clickhouseType = chField.typ
-      val rowExtractor = RowExtractors.mapRowExtractors(sparkField.dataType, clickhouseType)
-
-      (row: Row, statement: PreparedStatement) =>
-        clickhouseType.extractFromRowAndSetToStatement(index, row, rowExtractor, statement)(clickhouseTimeZoneInfo)
+  override def write(record: InternalRow): Unit = {
+    rowsInBatch += 1
+    writerInfo.rowSetters.foreach(rowSetter => rowSetter(record, statement))
+    statement.addBatch()
+    if (rowsInBatch >= writerInfo.batchSize) {
+      statement.execute()
+      statement.close()
+      statement = connection.prepareStatement(insertStatement)
+      rowsInBatch = 0
     }
+  }
 
-    dataFrame
-      .foreachPartition((iterator: scala.collection.Iterator[Row]) => {
-        Using(new ClickHouseDriver().connect(url, new Properties())) { connection =>
-          Using(connection.prepareStatement(s"INSERT INTO $table $fields VALUES $values")) { stmt =>
-            var statement = stmt
-            var rowsInBatch = 0
-            while (iterator.hasNext) {
-              rowsInBatch += 1
-              val row = iterator.next()
+  override def commit(): WriterCommitMessage = {
+    statement.executeBatch()
+    new WriterCommitMessage {}
+  }
 
-              rowSetters.foreach(rowSetter => rowSetter(row, statement))
+  override def abort(): Unit = {}
 
-              statement.addBatch()
-              if (rowsInBatch >= batchSize) {
-                statement.execute()
-                statement.close()
-                statement = connection.prepareStatement(s"INSERT INTO $table $fields VALUES $values")
-                rowsInBatch = 0
-              }
-            }
-
-            if (rowsInBatch > 0) {
-              statement.executeBatch()
-            }
-          }
-        }.flatten match {
-          case Success(_) =>
-          case Failure(exception) => throw exception
-        }
-      })
-
-    WriteClickhouseRelation(sqlContext, schema)
+  override def close(): Unit = {
+    try {
+      if (null != statement) {
+        statement.close()
+      }
+    } catch {
+      case e: Exception => logWarning("Exception closing statement", e)
+    }
+    try {
+      if (null != connection) {
+        connection.close()
+      }
+      logDebug("closed connection")
+    } catch {
+      case e: Exception => logWarning("Exception closing connection", e)
+    }
   }
 }

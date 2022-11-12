@@ -1,6 +1,6 @@
 package com.blackmorse.spark.clickhouse
 
-import com.blackmorse.spark.clickhouse.reader.ClickhouseTypesParser
+import com.blackmorse.spark.clickhouse.spark.types.ClickhouseTypesParser
 import com.blackmorse.spark.clickhouse.sql.types._
 import com.blackmorse.spark.clickhouse.sql.types.primitives.{ClickhouseBoolean, ClickhouseDate, ClickhouseDate32, ClickhouseFloat32, ClickhouseFloat64, ClickhouseInt128, ClickhouseInt16, ClickhouseInt256, ClickhouseInt32, ClickhouseInt64, ClickhouseInt8, ClickhouseString, ClickhouseUInt128, ClickhouseUInt16, ClickhouseUInt256, ClickhouseUInt32, ClickhouseUInt64, ClickhouseUInt8}
 import org.scalatest.matchers.should

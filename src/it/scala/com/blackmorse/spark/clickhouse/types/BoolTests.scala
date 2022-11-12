@@ -18,7 +18,8 @@ class BoolTests extends AnyFlatSpec with DataFrameSuiteBase {
     )
   }
 
-  "Bool" should "work with ByteType" in {
+  //Should decide: do we want to auto-convert numeric types into boolean?
+  "Bool" should "work with ByteType" ignore {
     testPrimitiveAndArray(ClickhouseBoolean(nullable = false, lowCardinality = false))(
       cases = Seq(
         (0 to 100) map (_.toByte),
@@ -30,7 +31,7 @@ class BoolTests extends AnyFlatSpec with DataFrameSuiteBase {
     )
   }
 
-  "Bool" should "work with ShortType" in {
+  "Bool" should "work with ShortType" ignore {
     testPrimitiveAndArray(ClickhouseBoolean(nullable = false, lowCardinality = false))(
       cases = Seq(
         (-100 to 100) map (_.toShort),
@@ -42,7 +43,7 @@ class BoolTests extends AnyFlatSpec with DataFrameSuiteBase {
     )
   }
 
-  "Bool" should "work with IntegerType" in {
+  "Bool" should "work with IntegerType" ignore {
     testPrimitiveAndArray(ClickhouseBoolean(nullable = false, lowCardinality = false))(
       cases = Seq(
         -100 to 100,
@@ -54,7 +55,7 @@ class BoolTests extends AnyFlatSpec with DataFrameSuiteBase {
     )
   }
 
-  "Bool" should "work with LongType" in {
+  "Bool" should "work with LongType" ignore {
     testPrimitiveAndArray(ClickhouseBoolean(nullable = false, lowCardinality = false))(
       cases = Seq(
         (-100 to 100) map (_.toLong),

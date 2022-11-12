@@ -1,6 +1,6 @@
-package com.blackmorse.spark.clickhouse.datasourcev2
+package com.blackmorse.spark.clickhouse.reader
 
-import org.apache.spark.sql.connector.read.{Batch, InputPartition, PartitionReaderFactory, Scan, ScanBuilder}
+import org.apache.spark.sql.connector.read._
 import org.apache.spark.sql.types.StructType
 
 class ClickhouseScanBuilder(clickhouseReaderInfo: ClickhouseReaderInfo) extends ScanBuilder {

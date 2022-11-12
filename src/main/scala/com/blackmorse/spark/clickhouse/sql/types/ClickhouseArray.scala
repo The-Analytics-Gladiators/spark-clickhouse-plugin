@@ -1,23 +1,21 @@
 package com.blackmorse.spark.clickhouse.sql.types
 
 import com.blackmorse.spark.clickhouse.utils.ClickhouseTimeZoneInfo
-import org.apache.spark.sql.Row
+import com.blackmorse.spark.clickhouse.sql.types.extractors.{ArrayRSExtractor, SimpleArrayRSExtractor}
 import org.apache.spark.sql.catalyst.util.ArrayData
 import org.apache.spark.sql.types.{ArrayType, DataType}
 
-import java.sql.{PreparedStatement, ResultSet}
+import java.sql.PreparedStatement
 
-case class ClickhouseArray(typ: ClickhouseType) extends ClickhouseType {
+case class ClickhouseArray(typ: ClickhouseType)
+    extends ClickhouseType
+    with ArrayRSExtractor
+    with SimpleArrayRSExtractor {
   override type T = Seq[AnyRef]
   override lazy val defaultValue: T = Seq[AnyRef]()
 
   override def toSparkType(): DataType = ArrayType(typ.toSparkType(), typ.nullable)
   override val nullable: Boolean = false
-
-  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any = {
-    val array = typ.extractArrayFromRsByName(name, resultSet)(clickhouseTimeZoneInfo)
-    ArrayData.toArrayData(array)
-  }
 
   override protected def setValueToStatement(i: Int, value: Seq[AnyRef], statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
     val array = value map typ.mapFromArray

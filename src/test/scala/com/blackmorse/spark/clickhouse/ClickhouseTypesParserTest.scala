@@ -273,4 +273,18 @@ class ClickhouseTypesParserTest extends AnyPropSpec
       ClickhouseTypesParser.parseType(typ) should be (expectedResult)
     }
   }
+
+  val fixedStrings = Table(
+    "fixedStrings",
+    "FixedString(3)" -> ClickhouseFixedString(false, false, 3),
+    "Nullable(FixedString(3))" -> ClickhouseFixedString(true, false, 3),
+    "LowCardinality(FixedString(3))" -> ClickhouseFixedString(false, true, 3),
+    "Array(Nullable(FixedString(3)))" -> ClickhouseArray(ClickhouseFixedString(true, false, 3)),
+  )
+
+  property("Parsing various of Fixed Strings") {
+    forAll(fixedStrings) { case (typ, expectedResult) =>
+      ClickhouseTypesParser.parseType(typ) should be(expectedResult)
+    }
+  }
 }

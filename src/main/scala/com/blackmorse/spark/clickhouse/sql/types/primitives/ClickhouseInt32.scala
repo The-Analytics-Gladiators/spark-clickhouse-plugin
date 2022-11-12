@@ -1,22 +1,21 @@
 package com.blackmorse.spark.clickhouse.sql.types.primitives
 
 import com.blackmorse.spark.clickhouse.sql.types.ClickhousePrimitive
+import com.blackmorse.spark.clickhouse.sql.types.extractors.{IntRSExtractor, SimpleArrayRSExtractor}
 import com.blackmorse.spark.clickhouse.utils.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{ByteType, DataType, IntegerType, ShortType}
+import org.apache.spark.sql.types.{DataType, IntegerType}
 
-import java.sql.{PreparedStatement, ResultSet}
+import java.sql.PreparedStatement
 
-case class ClickhouseInt32(nullable: Boolean, lowCardinality: Boolean) extends ClickhousePrimitive {
+case class ClickhouseInt32(nullable: Boolean, lowCardinality: Boolean)
+    extends ClickhousePrimitive
+    with IntRSExtractor
+    with SimpleArrayRSExtractor{
   override type T = Int
   override val defaultValue: Int = 0
 
   override def toSparkType(): DataType = IntegerType
-
-  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
-    resultSet.getInt(name)
-
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Int32
 

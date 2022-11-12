@@ -1,21 +1,21 @@
 package com.blackmorse.spark.clickhouse.sql.types.primitives
 
 import com.blackmorse.spark.clickhouse.sql.types.ClickhousePrimitive
+import com.blackmorse.spark.clickhouse.sql.types.extractors.{LongRSExtractor, SimpleArrayRSExtractor}
 import com.blackmorse.spark.clickhouse.utils.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{ByteType, DataType, IntegerType, LongType, ShortType}
+import org.apache.spark.sql.types.{DataType, LongType}
 
-import java.sql.{PreparedStatement, ResultSet}
+import java.sql.PreparedStatement
 
-case class ClickhouseInt64(nullable: Boolean, lowCardinality: Boolean) extends ClickhousePrimitive {
+case class ClickhouseInt64(nullable: Boolean, lowCardinality: Boolean)
+    extends ClickhousePrimitive
+    with LongRSExtractor
+    with SimpleArrayRSExtractor {
   override type T = Long
   override val defaultValue: Long = 0
 
   override def toSparkType(): DataType = LongType
-
-  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
-    resultSet.getLong(name)
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Int64
 

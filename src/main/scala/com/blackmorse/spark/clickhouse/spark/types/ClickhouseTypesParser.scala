@@ -10,6 +10,7 @@ object ClickhouseTypesParser {
   private val decimalPrefix = "Decimal("
   private val dateTime = "DateTime"
   private val dateTime64 = "DateTime64("
+  private val fixedStringPrefix = "FixedString("
 
   def parseType(typ: String, lowCardinality: Boolean = false, nullable: Boolean = false): ClickhouseType = {
 
@@ -28,6 +29,9 @@ object ClickhouseTypesParser {
       val rest = typ.substring(decimalPrefix.length, typ.length - 1)
       val split = rest.split(",")
       ClickhouseDecimal(split.head.trim.toInt, split(1).trim.toInt, nullable = nullable)
+    } else if (typ.startsWith(fixedStringPrefix)) {
+      val length = typ.substring(fixedStringPrefix.length, typ.length - 1)
+      ClickhouseFixedString(nullable = nullable, lowCardinality = lowCardinality, length = length.toInt)
     } else {
       ClickhousePrimitive.toPrimitiveConstructor(ClickHouseDataType.valueOf(typ))(nullable, lowCardinality)
     }

@@ -1,21 +1,21 @@
 package com.blackmorse.spark.clickhouse.sql.types.primitives
 
 import com.blackmorse.spark.clickhouse.sql.types.ClickhousePrimitive
+import com.blackmorse.spark.clickhouse.sql.types.extractors.{DoubleRSExtractor, SimpleArrayRSExtractor}
 import com.blackmorse.spark.clickhouse.utils.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.{DataType, DoubleType, FloatType}
+import org.apache.spark.sql.types.{DataType, DoubleType}
 
-import java.sql.{PreparedStatement, ResultSet}
+import java.sql.PreparedStatement
 
-case class ClickhouseFloat64(nullable: Boolean, lowCardinality: Boolean) extends ClickhousePrimitive {
+case class ClickhouseFloat64(nullable: Boolean, lowCardinality: Boolean)
+    extends ClickhousePrimitive
+    with DoubleRSExtractor
+    with SimpleArrayRSExtractor {
   override type T = Double
   override val defaultValue: Double = 0.0d
 
   override def toSparkType(): DataType = DoubleType
-
-  protected override def extractNonNullableFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Any =
-    resultSet.getDouble(name)
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Float64
 

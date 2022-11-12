@@ -61,7 +61,8 @@ object BaseTestCases extends should.Matchers {
       val dataFrame = sqlContext.read.clickhouse(host, port, table)
 
       dataFrame.schema.length should be(1)
-      dataFrame.schema.head.dataType should be(ArrayType(clickhouseType.toSparkType(), false))
+      //Datasource v2 doesn't allow to write nullable to non-nullable
+      dataFrame.schema.head.dataType should be(ArrayType(clickhouseType.toSparkType(), true))
 
       val result: Array[java.util.List[clickhouseType.T]] = dataFrame
         .rdd

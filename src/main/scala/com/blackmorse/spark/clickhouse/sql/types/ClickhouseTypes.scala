@@ -1,9 +1,10 @@
 package com.blackmorse.spark.clickhouse.sql.types
 
-import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
-import org.apache.spark.sql.Row
+import com.blackmorse.spark.clickhouse.utils.ClickhouseTimeZoneInfo
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.unsafe.types.UTF8String
+import org.apache.spark.sql.catalyst.InternalRow
+import org.apache.spark.sql.catalyst.util.ArrayData
 
 import java.sql.{PreparedStatement, ResultSet}
 
@@ -27,15 +28,23 @@ trait ClickhouseType extends Serializable {
 
   protected def setValueToStatement(i: Int, value: T, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit
 
-  def extractFromRowAndSetToStatement(i: Int, row: Row, rowExtractor: (Row, Int) => Any, statement: PreparedStatement)
+
+  def extractFromRowAndSetToStatement(i: Int, row: InternalRow, rowExtractor: (InternalRow, Int) => Any, statement: PreparedStatement)
                                      (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
     val rowIsNull = row.isNullAt(i)
     val statementIndex = i + 1
 
     if (rowIsNull && nullable) statement.setObject(statementIndex, null)
     else if (rowIsNull) setValueToStatement(statementIndex, defaultValue, statement)(clickhouseTimeZoneInfo)
-    else setValueToStatement(statementIndex, rowExtractor(row, i).asInstanceOf[T], statement)(clickhouseTimeZoneInfo)
+    else {
+      val extracted = rowExtractor(row, i)
+      setValueToStatement(statementIndex, convertInternalValue(extracted), statement)(clickhouseTimeZoneInfo)
+    }
   }
+
+  def convertInternalValue(value: Any): T = value.asInstanceOf[T]
+
+  def convertInternalArrayValue(value: ArrayData): Seq[T] = value.toSeq(toSparkType())
 
   def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef = {
     val array = resultSet.getArray(name).getArray
@@ -45,7 +54,6 @@ trait ClickhouseType extends Serializable {
       case _ => array
     }
   }
-
 
   def clickhouseDataTypeString: String
 

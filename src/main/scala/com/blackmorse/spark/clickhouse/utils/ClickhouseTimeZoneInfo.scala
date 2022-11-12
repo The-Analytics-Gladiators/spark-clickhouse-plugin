@@ -1,4 +1,4 @@
-package com.blackmorse.spark.clickhouse.writer
+package com.blackmorse.spark.clickhouse.utils
 
 import java.util.{Calendar, TimeZone}
 

@@ -1,9 +1,10 @@
 package com.blackmorse.spark.clickhouse.sql.types.primitives
 
 import com.blackmorse.spark.clickhouse.sql.types.ClickhousePrimitive
-import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
+import com.blackmorse.spark.clickhouse.utils.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.util.ArrayData
 import org.apache.spark.sql.types.{ByteType, DataType}
 
 import java.sql.{PreparedStatement, ResultSet}
@@ -21,10 +22,6 @@ case class ClickhouseInt8(nullable: Boolean, lowCardinality: Boolean) extends Cl
     statement.setByte(i, value)
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Int8
-}
 
-object ClickhouseInt8 {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => Byte = (row, index) => sparkType match {
-    case ByteType => row.getByte(index)
-  }
+  override def convertInternalArrayValue(value: ArrayData): Seq[Byte] = value.toByteArray()
 }

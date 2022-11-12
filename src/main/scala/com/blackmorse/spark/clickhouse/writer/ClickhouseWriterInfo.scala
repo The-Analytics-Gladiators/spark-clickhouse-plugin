@@ -1,0 +1,12 @@
+package com.blackmorse.spark.clickhouse.writer
+
+import org.apache.spark.sql.catalyst.InternalRow
+import org.apache.spark.sql.types.StructType
+
+import java.sql.PreparedStatement
+
+case class ClickhouseWriterInfo(url: String,
+                                tableName: String,
+                                batchSize: Int,
+                                schema: StructType,
+                                rowSetters: Seq[(InternalRow, PreparedStatement) => Unit])

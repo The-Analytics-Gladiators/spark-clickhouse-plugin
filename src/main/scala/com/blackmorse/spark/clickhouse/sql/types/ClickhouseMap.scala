@@ -1,6 +1,6 @@
 package com.blackmorse.spark.clickhouse.sql.types
 
-import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
+import com.blackmorse.spark.clickhouse.utils.ClickhouseTimeZoneInfo
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.DataType
 

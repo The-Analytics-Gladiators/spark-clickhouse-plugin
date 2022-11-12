@@ -1,7 +1,7 @@
 package com.blackmorse.spark.clickhouse.sql.types.primitives
 
 import com.blackmorse.spark.clickhouse.sql.types.ClickhousePrimitive
-import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
+import com.blackmorse.spark.clickhouse.utils.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{DataType, FloatType}
@@ -21,11 +21,4 @@ case class ClickhouseFloat32(nullable: Boolean, lowCardinality: Boolean) extends
 
   override protected def setValueToStatement(i: Int, value: Float, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setFloat(i, value)
-}
-
-object ClickhouseFloat32 {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => Float = (row, index) => sparkType match {
-    case FloatType => row.getFloat(index)
-  }
-
 }

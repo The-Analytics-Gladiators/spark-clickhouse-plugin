@@ -1,34 +1,42 @@
 package com.blackmorse.spark.clickhouse
 
-import com.blackmorse.spark.clickhouse.reader.ReaderClickhouseRelation
-import com.blackmorse.spark.clickhouse.writer.ClickhouseWriter
-import com.clickhouse.client.ClickHouseDataType
-import com.clickhouse.jdbc.ClickHouseDriver
-import org.apache.spark.sql.{DataFrame, Row, SQLContext, SaveMode}
-import org.apache.spark.sql.sources.{BaseRelation, CreatableRelationProvider, RelationProvider, TableScan}
-import org.apache.spark.sql.types.{ArrayType, BooleanType, ByteType, DateType, DecimalType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, StructType, TimestampType}
+import com.blackmorse.spark.clickhouse.reader.ClickhouseReaderInfo
+import com.blackmorse.spark.clickhouse.spark.types.ClickhouseSchemaParser
+import com.blackmorse.spark.clickhouse.utils.JDBCTimeZoneUtils
+import org.apache.spark.sql.connector.catalog.{Table, TableProvider}
+import org.apache.spark.sql.connector.expressions.Transform
+import org.apache.spark.sql.types.{ArrayType, StructField, StructType}
+import org.apache.spark.sql.util.CaseInsensitiveStringMap
 
-import java.sql.Timestamp
-import java.util.Calendar
-import java.util.{Calendar, Properties, TimeZone}
-import scala.util.{Failure, Success, Using}
+import java.util
 
-case class WriteClickhouseRelation(@transient sqlContext: SQLContext, schema: StructType) extends BaseRelation
+class DefaultSource extends TableProvider {
+  override def inferSchema(options: CaseInsensitiveStringMap): StructType = getReaderInfo(options).schema
 
-class DefaultSource extends RelationProvider with CreatableRelationProvider {
+  override def getTable(schema: StructType, partitioning: Array[Transform], properties: util.Map[String, String]): Table =
+    new ClickhouseTable(getReaderInfo(properties))
 
-  /**
-   * Relation for writing into Clickhouse
-   */
-  override def createRelation(sqlContext: SQLContext, mode: SaveMode, parameters: Map[String, String], dataFrame: DataFrame): BaseRelation = {
+  private def getReaderInfo(options: util.Map[String, String]): ClickhouseReaderInfo = {
+    val hostName = options.get(CLICKHOUSE_HOST_NAME)
+    val port = options.get(CLICKHOUSE_PORT)
+    val table = options.get(TABLE)
 
-    ClickhouseWriter.writeDataFrame(dataFrame, parameters, sqlContext)
-  }
+    val url = s"jdbc:clickhouse://$hostName:$port"
 
-  /**
-   * Relation for reading from Clickhouse
-   */
-  override def createRelation(sqlContext: SQLContext, parameters: Map[String, String]): BaseRelation = {
-    ReaderClickhouseRelation(sqlContext, parameters)
+    val clickhouseFields = ClickhouseSchemaParser.parseTable(url, table)
+    val clickhouseTimeZoneInfo = JDBCTimeZoneUtils.fetchClickhouseTimeZoneFromServer(url)
+
+    val schema = StructType(clickhouseFields.map(clickhouseField => clickhouseField.typ.toSparkType() match {
+      case ArrayType(elementType, _) => StructField(clickhouseField.name, ArrayType(elementType, true))
+      case _ => StructField(clickhouseField.name, clickhouseField.typ.toSparkType(), /*clickhouse.typ.nullable*/true)
+    })
+    )
+
+    reader.ClickhouseReaderInfo(
+      schema = schema,
+      tableName = table,
+      url = url,
+      rowMapper = rs => clickhouseFields.map(_.extractFromRs(rs)(clickhouseTimeZoneInfo))
+    )
   }
 }

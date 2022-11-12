@@ -1,7 +1,7 @@
 package com.blackmorse.spark.clickhouse.sql.types
 
 import com.blackmorse.spark.clickhouse.sql.types.primitives._
-import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
+import com.blackmorse.spark.clickhouse.utils.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{ByteType, DataType, DateType, DecimalType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, TimestampType}

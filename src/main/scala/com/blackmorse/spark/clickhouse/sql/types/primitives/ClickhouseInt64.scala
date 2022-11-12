@@ -1,7 +1,7 @@
 package com.blackmorse.spark.clickhouse.sql.types.primitives
 
 import com.blackmorse.spark.clickhouse.sql.types.ClickhousePrimitive
-import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
+import com.blackmorse.spark.clickhouse.utils.ClickhouseTimeZoneInfo
 import com.clickhouse.client.ClickHouseDataType
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{ByteType, DataType, IntegerType, LongType, ShortType}
@@ -21,13 +21,4 @@ case class ClickhouseInt64(nullable: Boolean, lowCardinality: Boolean) extends C
 
   override protected def setValueToStatement(i: Int, value: Long, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setLong(i, value)
-}
-
-object ClickhouseInt64 {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => Long = (row, index) => sparkType match {
-    case ByteType    => row.getByte(index).toLong
-    case ShortType   => row.getShort(index).toLong
-    case IntegerType => row.getInt(index).toLong
-    case LongType    => row.getLong(index)
-  }
 }

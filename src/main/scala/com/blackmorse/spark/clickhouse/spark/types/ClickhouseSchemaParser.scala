@@ -1,4 +1,4 @@
-package com.blackmorse.spark.clickhouse.reader
+package com.blackmorse.spark.clickhouse.spark.types
 
 import com.blackmorse.spark.clickhouse.sql.types.ClickhouseField
 import com.clickhouse.jdbc.ClickHouseDriver

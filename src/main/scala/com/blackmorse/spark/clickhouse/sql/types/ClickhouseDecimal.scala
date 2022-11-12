@@ -1,6 +1,6 @@
 package com.blackmorse.spark.clickhouse.sql.types
 
-import com.blackmorse.spark.clickhouse.writer.ClickhouseTimeZoneInfo
+import com.blackmorse.spark.clickhouse.utils.ClickhouseTimeZoneInfo
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{DataType, DoubleType, FloatType, StringType}
 import org.apache.spark.unsafe.types.UTF8String
@@ -31,12 +31,7 @@ case class ClickhouseDecimal(p: Int, s: Int, nullable: Boolean) extends DecimalT
       .map(bd => if (bd == null) null else UTF8String.fromString(bd.toString))
 
   override def clickhouseDataTypeString: String = s"Decimal($p, $s)"
-}
 
-object ClickhouseDecimal {
-  def mapRowExtractor(sparkType: DataType): (Row, Int) => String = (row, index) => sparkType match {
-    case FloatType  => row.getFloat(index).toString
-    case DoubleType => row.getDouble(index).toString
-    case StringType => row.getString(index)
-  }
+  override def convertInternalValue(value: Any): String =
+    value.asInstanceOf[UTF8String].toString
 }

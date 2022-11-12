@@ -3,14 +3,11 @@ package com.blackmorse.spark.clickhouse.writer
 import com.blackmorse.spark.clickhouse.spark.types.{ClickhouseSchemaParser, SchemaMerger}
 import com.blackmorse.spark.clickhouse.utils.JDBCTimeZoneUtils
 import com.blackmorse.spark.clickhouse.{BATCH_SIZE, CLICKHOUSE_HOST_NAME, CLICKHOUSE_PORT, TABLE}
-import com.clickhouse.jdbc.ClickHouseDriver
-import org.apache.spark.internal.Logging
+import org.apache.commons.collections.MapUtils
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.connector.write._
-import org.apache.spark.sql.types.StructType
 
 import java.sql.PreparedStatement
-import java.util.Properties
 
 class ClickhouseWriterBuilder(info: LogicalWriteInfo) extends WriteBuilder {
   override def build(): Write = new ClickhouseWrite(info)
@@ -28,7 +25,8 @@ class ClickhouseWrite(info: LogicalWriteInfo) extends Write {
     val url = s"jdbc:clickhouse://$hostName:$port"
     val clickhouseTimeZoneInfo = JDBCTimeZoneUtils.fetchClickhouseTimeZoneFromServer(url)
 
-    val clickhouseFields = ClickhouseSchemaParser.parseTable(url, table)
+    val allAvailableProperties = MapUtils.toProperties(info.options().asCaseSensitiveMap())
+    val clickhouseFields = ClickhouseSchemaParser.parseTable(url, table, allAvailableProperties)
     val schema = info.schema()
     val mergedSchema = SchemaMerger.mergeSchemas(schema, clickhouseFields)
 
@@ -46,7 +44,8 @@ class ClickhouseWrite(info: LogicalWriteInfo) extends Write {
       tableName = table,
       batchSize = batchSize,
       rowSetters = rowSetters,
-      schema = schema
+      schema = schema,
+      connectionProperties = allAvailableProperties
     )
   }
 }

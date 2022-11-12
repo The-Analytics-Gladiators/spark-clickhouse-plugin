@@ -18,9 +18,8 @@ class DefaultSource extends TableProvider {
 
   private def getReaderInfo(options: util.Map[String, String]): ClickhouseReaderInfo = {
     val hostName = options.get(CLICKHOUSE_HOST_NAME)
-    val port = options.get(CLICKHOUSE_PORT)
+    val port = options.getOrDefault(CLICKHOUSE_PORT, "8123")
     val table = options.get(TABLE)
-
     val url = s"jdbc:clickhouse://$hostName:$port"
 
     val clickhouseFields = ClickhouseSchemaParser.parseTable(url, table)

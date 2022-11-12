@@ -9,8 +9,8 @@ class ClickhouseScanBuilder(clickhouseReaderInfo: ClickhouseReaderInfo) extends 
 
 class ClickhouseScan(clickhouseReaderInfo: ClickhouseReaderInfo) extends Scan with Batch {
   //Scaling strategy will be applied here
-  override def planInputPartitions(): Array[InputPartition] =
-    Array(ClickhouseInputPartition())
+  private val SINGLE_PARTITION: Array[InputPartition] = Array(ClickhouseInputPartition())
+  override def planInputPartitions(): Array[InputPartition] = SINGLE_PARTITION
 
   override def toBatch: Batch = this
 

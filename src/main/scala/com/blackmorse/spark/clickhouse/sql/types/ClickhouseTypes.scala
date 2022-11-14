@@ -1,6 +1,6 @@
-package com.blackmorse.spark.clickhouse.sql.types
+  package com.blackmorse.spark.clickhouse.sql.types
 
-import com.blackmorse.spark.clickhouse.sql.types.extractors.{ArrayFromResultSetExtractor, TypeFromResultSetExtractor}
+import com.blackmorse.spark.clickhouse.sql.types.extractors.{ArrayFromResultSetExtractor, InternalRowValueConverter, TypeFromResultSetExtractor}
 import com.blackmorse.spark.clickhouse.utils.ClickhouseTimeZoneInfo
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.util.ArrayData
@@ -18,16 +18,16 @@ trait ClickhouseType
 
   val defaultValue: T
 
-  def toSparkType(): DataType
-
+  def toSparkType: DataType
 
   protected def setValueToStatement(i: Int, value: T, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit
 
-
-  def extractFromRowAndSetToStatement(i: Int, row: InternalRow, rowExtractor: (InternalRow, Int) => Any, statement: PreparedStatement)
+  def extractFromRowAndSetToStatement(i: Int, row: InternalRow, dfFieldDataType: DataType, statement: PreparedStatement)
                                      (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
     val rowIsNull = row.isNullAt(i)
     val statementIndex = i + 1
+
+    val rowExtractor = (row: InternalRow, index: Int) => InternalRow.getAccessor(dfFieldDataType, nullable)(row, index)
 
     if (rowIsNull && nullable) statement.setObject(statementIndex, null)
     else if (rowIsNull) setValueToStatement(statementIndex, defaultValue, statement)(clickhouseTimeZoneInfo)
@@ -37,25 +37,11 @@ trait ClickhouseType
     }
   }
 
-  def convertInternalValue(value: Any): T = value.asInstanceOf[T]
+  def convertInternalValue(value: Any): T
 
-  def convertInternalArrayValue(value: ArrayData): Seq[T] = value.toSeq(toSparkType())
-
-  def extractArrayFromRsByName(name: String, resultSet: ResultSet)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): AnyRef = {
-    val array = resultSet.getArray(name).getArray
-    //TODO
-    array match {
-      case a: Array[String] => a.map(el => UTF8String.fromString(el))
-      case _ => array
-    }
-  }
+  def convertInternalArrayValue(value: ArrayData, sparkType: DataType): Seq[T]
 
   def clickhouseDataTypeString: String
-
-  def mapFromArray(value: Any): AnyRef = value match {
-    case null => if (nullable) null else defaultValue.asInstanceOf[AnyRef]
-    case el => el.asInstanceOf[AnyRef]
-  }
 }
 
 case class ClickhouseField(name: String, typ: ClickhouseType) {

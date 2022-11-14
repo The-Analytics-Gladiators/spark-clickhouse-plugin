@@ -1,20 +1,23 @@
 package com.blackmorse.spark.clickhouse.types
 
-import com.blackmorse.spark.clickhouse.sql.types.primitives.{ClickhouseBoolean, ClickhouseInt8}
+import com.blackmorse.spark.clickhouse.sql.types.primitives.ClickhouseBoolean
+import com.blackmorse.spark.clickhouse.types.BaseTestCases.{testPrimitive, testPrimitiveAndArray}
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import org.scalatest.flatspec.AnyFlatSpec
-import com.blackmorse.spark.clickhouse.types.BaseTestCases.testPrimitiveAndArray
 import org.apache.spark.sql.types.{ByteType, IntegerType, LongType, ShortType}
+import org.scalatest.flatspec.AnyFlatSpec
 
 class BoolTests extends AnyFlatSpec with DataFrameSuiteBase {
   import sqlContext.implicits._
 
+
   "Bool" should "be supported" in {
-    testPrimitiveAndArray(clickhouseType = ClickhouseBoolean(nullable = false, lowCardinality = false))(
-      cases = Seq(
-        Seq(true, false)
-      ),
-      rowConverter = row => row.getBoolean(0)
+    //TODO Impossible to set Array[AnyRef] with Booleans for JDBC driver
+    testPrimitive(clickhouseType = ClickhouseBoolean(nullable = false, lowCardinality = false))(
+      Seq(true, false),
+      row => row.getBoolean(0),
+      ClickhouseBoolean(false, false).toSparkType,
+      convertToOriginalType = _.asInstanceOf[Boolean],
+      comparator = (b,s ) => b == s
     )
   }
 

@@ -9,14 +9,14 @@ import org.apache.spark.sql.connector.read.{InputPartition, PartitionReader, Par
 import java.sql.ResultSet
 import java.util.Properties
 
-class ClickhousePartitionReaderFactory(clickhouseReaderInfo: ClickhouseReaderInfo) extends PartitionReaderFactory {
+class ClickhousePartitionReaderFactory(clickhouseReaderInfo: ClickhouseReaderConfiguration) extends PartitionReaderFactory {
   override def createReader(partition: InputPartition): PartitionReader[InternalRow] =
     new ClickhousePartitionReader(
       clickhouseReaderInfo = clickhouseReaderInfo,
       clickhouseInputPartition = partition.asInstanceOf[ClickhouseInputPartition])
 }
 
-class ClickhousePartitionReader(clickhouseReaderInfo: ClickhouseReaderInfo, clickhouseInputPartition: ClickhouseInputPartition) extends PartitionReader[InternalRow] with Logging {
+class ClickhousePartitionReader(clickhouseReaderInfo: ClickhouseReaderConfiguration, clickhouseInputPartition: ClickhouseInputPartition) extends PartitionReader[InternalRow] with Logging {
   private val fields = clickhouseReaderInfo.schema.fields.map(f => s"`${f.name}`").mkString(", ")
   val sql = s"SELECT $fields FROM ${clickhouseReaderInfo.tableName}"
 

@@ -33,10 +33,8 @@ class ClickhouseWrite(info: LogicalWriteInfo) extends Write {
     val rowSetters = mergedSchema.zipWithIndex.map { case ((sparkField, chField), index) =>
       val clickhouseType = chField.typ
 
-      val rowExtractor = (row: InternalRow, index: Int) => InternalRow.getAccessor(sparkField.dataType, clickhouseType.nullable)(row, index)
-
       (row: InternalRow, statement: PreparedStatement) =>
-        clickhouseType.extractFromRowAndSetToStatement(index, row, rowExtractor, statement)(clickhouseTimeZoneInfo)
+        clickhouseType.extractFromRowAndSetToStatement(index, row, sparkField.dataType, statement)(clickhouseTimeZoneInfo)
     }
 
     ClickhouseWriterInfo(

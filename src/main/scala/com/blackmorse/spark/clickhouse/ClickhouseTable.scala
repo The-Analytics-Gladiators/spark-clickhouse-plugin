@@ -1,6 +1,6 @@
 package com.blackmorse.spark.clickhouse
 
-import com.blackmorse.spark.clickhouse.reader.{ClickhouseReaderInfo, ClickhouseScanBuilder}
+import com.blackmorse.spark.clickhouse.reader.{ClickhouseReaderConfiguration, ClickhouseScanBuilder}
 import com.blackmorse.spark.clickhouse.writer.ClickhouseWriterBuilder
 import org.apache.spark.sql.connector.catalog.{SupportsRead, SupportsWrite, Table, TableCapability}
 import org.apache.spark.sql.connector.read._
@@ -11,7 +11,7 @@ import org.apache.spark.sql.util.CaseInsensitiveStringMap
 import java.util
 import scala.collection.JavaConverters._
 
-class ClickhouseTable(clickhouseReaderInfo: ClickhouseReaderInfo)
+class ClickhouseTable(clickhouseReaderInfo: ClickhouseReaderConfiguration)
     extends Table
     with SupportsRead
     with SupportsWrite {

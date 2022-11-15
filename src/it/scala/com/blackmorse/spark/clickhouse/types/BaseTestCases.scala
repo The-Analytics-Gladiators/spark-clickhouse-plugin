@@ -20,7 +20,7 @@ object BaseTestCases extends should.Matchers {
   def testPrimitiveAndArray(clickhouseType: ClickhouseType)(cases: Seq[Seq[Any]],
                                                             //TODO should be in ClickhouseType ?
                                                             rowConverter: Row => clickhouseType.T,
-                                                            forceSparkType: DataType = clickhouseType.toSparkType(),
+                                                            forceSparkType: DataType = clickhouseType.toSparkType,
                                                             convertToOriginalType: Any => clickhouseType.T = t => t.asInstanceOf[clickhouseType.T],
                                                             comparator: (clickhouseType.T, clickhouseType.T) => Boolean = (t: clickhouseType.T, s: clickhouseType.T) => t == s)
                            (implicit ord: Ordering[clickhouseType.T], encoder: Encoder[Seq[clickhouseType.T]], ct: ClassTag[clickhouseType.T], sqlContext: SQLContext): Unit = {
@@ -62,7 +62,7 @@ object BaseTestCases extends should.Matchers {
 
       dataFrame.schema.length should be(1)
       //Datasource v2 doesn't allow to write nullable to non-nullable
-      dataFrame.schema.head.dataType should be(ArrayType(clickhouseType.toSparkType(), true))
+      dataFrame.schema.head.dataType should be(ArrayType(clickhouseType.toSparkType, true))
 
       val result: Array[java.util.List[clickhouseType.T]] = dataFrame
         .rdd
@@ -99,7 +99,7 @@ object BaseTestCases extends should.Matchers {
 //      val dataFrame = sqlContext.read.clickhouse(host, port, table)
 //
 //      dataFrame.schema.length should be(1)
-//      dataFrame.schema.head.dataType should be(ArrayType(clickhouseType.toSparkType(), true))
+//      dataFrame.schema.head.dataType should be(ArrayType(clickhouseType.toSparkType, true))
 //
 //      val result = dataFrame
 //        .rdd

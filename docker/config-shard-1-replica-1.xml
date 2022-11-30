@@ -13,15 +13,14 @@
         <!-- <console>1</console> --> <!-- Default behavior is autodetection (log to console if not daemon mode and is tty) -->
     </logger>
     <!--display_name>production</display_name--> <!-- It is the name that will be shown in the client -->
-    <http_port>8124</http_port>
-    <tcp_port>9001</tcp_port>
-    <mysql_port>9005</mysql_port>
+    <http_port>8123</http_port>
+    <tcp_port>9000</tcp_port>
+    <mysql_port>9004</mysql_port>
     <!-- For HTTPS and SSL over native protocol. -->
     <!--
     <https_port>8443</https_port>
     <tcp_port_secure>9440</tcp_port_secure>
     -->
-
    <database_atomic_delay_before_drop_table_sec>0</database_atomic_delay_before_drop_table_sec>
 
     <!-- Used with https_port and tcp_port_secure. Full ssl options list: https://github.com/ClickHouse-Extras/poco/blob/master/NetSSL_OpenSSL/include/Poco/Net/SSLManager.h#L71 -->
@@ -58,7 +57,7 @@
     -->
 
     <!-- Port for communication between replicas. Used for data exchange. -->
-    <interserver_http_port>9010</interserver_http_port>
+    <interserver_http_port>9009</interserver_http_port>
 
     <!-- Hostname that is used by other replicas to request this server.
          If not specified, than it is determined analoguous to 'hostname -f' command.
@@ -153,7 +152,7 @@
     <!-- Directory with user provided files that are accessible by 'file' table function. -->
     <user_files_path>/var/lib/clickhouse/user_files/</user_files_path>
 
-    <!-- Path to folder where users and roles created by SQL commands are stored. -->
+    !-- Path to folder where users and roles created by SQL commands are stored. -->
     <access_control_path>/var/lib/clickhouse/access/</access_control_path>
 
     <!-- Path to configuration file with users, access rights, profiles of settings, quotas. -->
@@ -205,16 +204,19 @@
                     <host>clickhouse-server</host>
                     <port>9000</port>
                 </replica>
-            </shard>
-            <shard>
                 <replica>
                     <host>clickhouse-server-replica</host>
                     <port>9001</port>
                 </replica>
             </shard>
+            <shard>
+                <replica>
+                    <host>clickhouse-server-second-shard</host>
+                    <port>9002</port>
+                </replica>
+            </shard>
         </spark_clickhouse_cluster>
     </remote_servers>
-
     <!-- The list of hosts allowed to use in URL-related storage engines and table functions.
         If this section is not present in configuration, all hosts are allowed.
     -->
@@ -262,8 +264,8 @@
     <macros >
 
         <cluster>spark_clickhouse_cluster</cluster>
-        <shard>2</shard>
-        <replica>clickhouse-server-replica</replica>
+        <shard>1</shard>
+        <replica>1</replica>
 
     </macros>
 

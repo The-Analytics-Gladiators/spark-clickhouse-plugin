@@ -1,5 +1,6 @@
 package com.blackmorse.spark.clickhouse.writer
 
+import com.blackmorse.spark.clickhouse.exceptions.ClickhouseUnableToReadMetadataException
 import com.blackmorse.spark.clickhouse.spark.types.{ClickhouseSchemaParser, SchemaMerger}
 import com.blackmorse.spark.clickhouse.utils.JDBCTimeZoneUtils
 import com.blackmorse.spark.clickhouse.{BATCH_SIZE, CLICKHOUSE_HOST_NAME, CLICKHOUSE_PORT, TABLE}
@@ -8,6 +9,7 @@ import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.connector.write._
 
 import java.sql.PreparedStatement
+import scala.util.{Failure, Success}
 
 class ClickhouseWriterBuilder(info: LogicalWriteInfo) extends WriteBuilder {
   override def build(): Write = new ClickhouseWrite(info)
@@ -26,7 +28,12 @@ class ClickhouseWrite(info: LogicalWriteInfo) extends Write {
     val clickhouseTimeZoneInfo = JDBCTimeZoneUtils.fetchClickhouseTimeZoneFromServer(url)
 
     val allAvailableProperties = MapUtils.toProperties(info.options().asCaseSensitiveMap())
-    val clickhouseFields = ClickhouseSchemaParser.parseTable(url, table, allAvailableProperties)
+    val parsedTable = ClickhouseSchemaParser.parseTable(url, table, allAvailableProperties) match {
+      case Failure(exception) => throw ClickhouseUnableToReadMetadataException(s"Unable to read metadata about $table on $url", exception)
+      case Success(value) => value
+    }
+    val clickhouseFields = parsedTable.fields
+
     val schema = info.schema()
     val mergedSchema = SchemaMerger.mergeSchemas(schema, clickhouseFields)
 

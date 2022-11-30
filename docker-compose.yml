@@ -1,7 +1,14 @@
 version: "3.7"
+
+networks:
+  ch_network:
+    name: ch_network
+
 services:
   zookeeper:
     image: zookeeper:3.8.0
+    networks:
+      - ch_network
 
   clickhouse-server:
     image: clickhouse/clickhouse-server:22.3.13.80-alpine
@@ -11,8 +18,10 @@ services:
       - "9000:9000"
       - "9004:9004"
     volumes:
-      - ./docker/config-main.xml:/etc/clickhouse-server/config.xml
+      - ./docker/config-shard-1-replica-1.xml:/etc/clickhouse-server/config.xml
       - ./docker/users.xml:/etc/clickhouse-server/users.xml
+    networks:
+      - ch_network
 
   clickhouse-server-replica:
     image: clickhouse/clickhouse-server:22.3.13.80-alpine
@@ -22,5 +31,21 @@ services:
       - "9001:9001"
       - "9005:9005"
     volumes:
-      - ./docker/config-replica.xml:/etc/clickhouse-server/config.xml
+      - ./docker/config-shard-1-replica-2.xml:/etc/clickhouse-server/config.xml
       - ./docker/users.xml:/etc/clickhouse-server/users.xml
+    networks:
+      - ch_network
+
+
+  clickhouse-server-second-shard:
+    image: clickhouse/clickhouse-server:22.3.13.80-alpine
+    container_name: clickhouse-server-second-shard
+    ports:
+      - "8125:8125"
+      - "9002:9002"
+      - "9006:9006"
+    volumes:
+      - ./docker/config-shard-2-replica-1.xml:/etc/clickhouse-server/config.xml
+      - ./docker/users.xml:/etc/clickhouse-server/users.xml
+    networks:
+      - ch_network

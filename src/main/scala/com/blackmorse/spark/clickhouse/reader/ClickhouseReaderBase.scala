@@ -1,26 +1,21 @@
 package com.blackmorse.spark.clickhouse.reader
 
-import com.clickhouse.jdbc.ClickHouseDriver
+import com.clickhouse.jdbc.ClickHouseConnection
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions.GenericInternalRow
-import org.apache.spark.sql.connector.read.{InputPartition, PartitionReader, PartitionReaderFactory}
+import org.apache.spark.sql.connector.read.{InputPartition, PartitionReader}
 
 import java.sql.ResultSet
-import java.util.Properties
 
-class ClickhousePartitionReaderFactory(clickhouseReaderInfo: ClickhouseReaderConfiguration) extends PartitionReaderFactory {
-  override def createReader(partition: InputPartition): PartitionReader[InternalRow] =
-    new ClickhousePartitionReader(
-      clickhouseReaderInfo = clickhouseReaderInfo,
-      clickhouseInputPartition = partition.asInstanceOf[ClickhouseInputPartition])
-}
-
-class ClickhousePartitionReader(clickhouseReaderInfo: ClickhouseReaderConfiguration, clickhouseInputPartition: ClickhouseInputPartition) extends PartitionReader[InternalRow] with Logging {
+class ClickhouseReaderBase[Partition <: InputPartition](clickhouseReaderInfo: ClickhouseReaderConfiguration,
+                                                        connectionProvider: () => ClickHouseConnection)
+    extends PartitionReader[InternalRow]
+    with Logging {
   private val fields = clickhouseReaderInfo.schema.fields.map(f => s"`${f.name}`").mkString(", ")
-  val sql = s"SELECT $fields FROM ${clickhouseReaderInfo.tableName}"
+  private val sql = s"SELECT $fields FROM ${clickhouseReaderInfo.tableName}"
 
-  private val conn = new ClickHouseDriver().connect(clickhouseReaderInfo.url, new Properties())
+  private val conn = connectionProvider()
   private val stmt = conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
   stmt.setFetchSize(300)
   logDebug(s"statement fetch size set to: ${stmt.getFetchSize}")
@@ -34,12 +29,12 @@ class ClickhousePartitionReader(clickhouseReaderInfo: ClickhouseReaderConfigurat
     clickhouseReaderInfo.rowMapper(rs)
       .zip(clickhouseReaderInfo.schema.fields)
       .zipWithIndex.foreach { case ((v, field), index) =>
-        if (v != null) {
-          val writer = InternalRow.getWriter(index, field.dataType)
-          writer(internalRow, v)
-        } else {
-          internalRow.setNullAt(index)
-        }
+      if (v != null) {
+        val writer = InternalRow.getWriter(index, field.dataType)
+        writer(internalRow, v)
+      } else {
+        internalRow.setNullAt(index)
+      }
     }
     internalRow
   }

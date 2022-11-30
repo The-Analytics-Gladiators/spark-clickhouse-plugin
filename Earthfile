@@ -19,10 +19,23 @@ jar:
     RUN sbt "set test in assembly := {}" assembly
     SAVE ARTIFACT TARGET/scala-2.12/spark-clickhouse-plugin-assembly-*.jar AS LOCAL ./jars
 
+testimage:
+    FROM earthly/dind:alpine
+    COPY Dockerfile .
+    COPY src src
+    COPY project project
+    COPY build.sbt build.sbt
+    RUN sbt test:compile
+    FROM DOCKERFILE .
+    SAVE IMAGE sbt_ch_plugin:latest
+
 test:
-    FROM +build
+    FROM earthly/dind:alpine
+    RUN apk add curl
+    COPY docker docker
     COPY docker-compose.yml build.sbt .
     COPY docker/wait.sh .
-    WITH DOCKER --compose docker-compose.yml
-       RUN ./wait.sh && sbt test it:test
+    WITH DOCKER --load sbt_ch_plugin:latest=+testimage --compose docker-compose.yml
+        #RUN ./wait.sh && docker exec -i sbt-clickhouse-plugin sbt test it:test
+        RUN ./wait.sh &&  docker run --rm --name sbt-clickhouse-plugin --network ch_network sbt_ch_plugin:latest sbt test it:test
     END

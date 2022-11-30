@@ -20,7 +20,7 @@
             -->
             <load_balancing>random</load_balancing>
 	    <log_queries>1</log_queries>
-	    <insert_quorum>2</insert_quorum>
+	    <insert_quorum>1</insert_quorum>
 	    <joined_subquery_requires_alias>0</joined_subquery_requires_alias>
             <!--ADDITIONAL_PROPERTIES-->
         </default>
@@ -89,7 +89,7 @@
             <quota>default</quota>
 
             <!-- User can create other users and grant rights to them. -->
-            <!-- <access_management>1</access_management> -->
+             <access_management>1</access_management>
         </default>
     </users>
 

@@ -5,8 +5,10 @@ import com.blackmorse.spark.clickhouse.spark.types.ClickhouseSchemaParser
 import com.blackmorse.spark.clickhouse.sql.types._
 import com.blackmorse.spark.clickhouse.sql.types.primitives.{ClickhouseDate, ClickhouseFloat64, ClickhouseInt128, ClickhouseInt16, ClickhouseInt256, ClickhouseInt32, ClickhouseInt64, ClickhouseInt8, ClickhouseString, ClickhouseUInt128, ClickhouseUInt16, ClickhouseUInt256, ClickhouseUInt32, ClickhouseUInt64, ClickhouseUInt8}
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+import com.blackmorse.spark.clickhouse.ClickhouseHosts._
 
-class ClickhouseSchemaParserTest extends AnyFlatSpec {
+class ClickhouseSchemaParserTest extends AnyFlatSpec with Matchers {
   "ClickhouseSchemaParser" should "parse schema with Nullables, Arrays and LowCardinalities" in {
     withTable(Seq(
       "a Int32",
@@ -18,7 +20,9 @@ class ClickhouseSchemaParserTest extends AnyFlatSpec {
       "g Array(LowCardinality(UInt8))",
       "h Array(LowCardinality(Nullable(UInt64)))"), "a") {
 
-      val fields = ClickhouseSchemaParser.parseTable("jdbc:clickhouse://localhost:8123", "default.test_table")
+      val parsedTable = ClickhouseSchemaParser.parseTable(s"jdbc:clickhouse://$shard1Replica1", "default.test_table")
+      val fields = parsedTable.get.fields
+      parsedTable.get.engine should be("MergeTree")
 
       assert(fields equals Seq(
           ClickhouseField("a", ClickhouseInt32(nullable = false, lowCardinality = false)),
@@ -40,7 +44,9 @@ class ClickhouseSchemaParserTest extends AnyFlatSpec {
       "c Decimal64(8)",
       "d Decimal128(12)",
     ), "a") {
-      val fields = ClickhouseSchemaParser.parseTable("jdbc:clickhouse://localhost:8123", "default.test_table")
+      val parsedTable = ClickhouseSchemaParser.parseTable(s"jdbc:clickhouse://$shard1Replica1", "default.test_table")
+      val fields = parsedTable.get.fields
+      parsedTable.get.engine should be("MergeTree")
 
       assert(fields equals Seq(
         ClickhouseField("a", ClickhouseDecimal(3, 2, nullable = false)),
@@ -59,7 +65,9 @@ class ClickhouseSchemaParserTest extends AnyFlatSpec {
       "d DateTime64(8)",
       "e Nullable(DateTime('UTC'))"
     ), "a") {
-      val fields = ClickhouseSchemaParser.parseTable("jdbc:clickhouse://localhost:8123", "default.test_table")
+      val parsedTable = ClickhouseSchemaParser.parseTable(s"jdbc:clickhouse://$shard1Replica1", "default.test_table")
+      val fields = parsedTable.get.fields
+      parsedTable.get.engine should be("MergeTree")
 
       assert(fields equals Seq(
         ClickhouseField("a", ClickhouseDate(nullable = false, lowCardinality = false)),
@@ -86,7 +94,9 @@ class ClickhouseSchemaParserTest extends AnyFlatSpec {
       "l Int256",
       "m UInt256"
     ), "a") {
-      val fields = ClickhouseSchemaParser.parseTable("jdbc:clickhouse://localhost:8123", "default.test_table")
+      val parsedTable = ClickhouseSchemaParser.parseTable(s"jdbc:clickhouse://$shard1Replica1", "default.test_table")
+      val fields = parsedTable.get.fields
+      parsedTable.get.engine should be("MergeTree")
 
       assert(fields equals Seq(
         ClickhouseField("a", ClickhouseUInt8(nullable = false, lowCardinality = false)),

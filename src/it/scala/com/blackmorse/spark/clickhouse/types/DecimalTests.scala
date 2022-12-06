@@ -8,9 +8,6 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 class DecimalTests extends AnyFlatSpec with DataFrameSuiteBase {
   import sqlContext.implicits._
-  val host = "localhost"
-  val port = 8123
-  val table = "default.test_table"
 
   val comparator: (String, String) => Boolean =
     (r, e) => new java.math.BigDecimal(r).subtract(new java.math.BigDecimal(e)).abs().compareTo(new java.math.BigDecimal("0.01")) == -1

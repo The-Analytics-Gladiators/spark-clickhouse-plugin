@@ -3,6 +3,7 @@ package com.blackmorse.spark.clickhouse
 import com.clickhouse.jdbc.ClickHouseDriver
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.scalatest.flatspec.AnyFlatSpec
+import com.blackmorse.spark.clickhouse.ClickhouseHosts._
 
 import java.util.Properties
 
@@ -16,16 +17,17 @@ class DummyTest extends AnyFlatSpec with DataFrameSuiteBase {
 
   "Test clickhouse cluster" should "be consistent" in {
   //TODO managed connections
-    val connection = new ClickHouseDriver().connect("jdbc:clickhouse://localhost:8123", new Properties());
-    val connection2 = new ClickHouseDriver().connect("jdbc:clickhouse://localhost:8124", new Properties());
+    val connection = new ClickHouseDriver().connect(s"jdbc:clickhouse://$shard1Replica1", new Properties());
+    val connection2 = new ClickHouseDriver().connect(s"jdbc:clickhouse://$shard2Replica1", new Properties());
 
-    connection.createStatement().executeQuery("CREATE TABLE t ON CLUSTER  spark_clickhouse_cluster (a UInt64) ENGINE = MergeTree() ORDER BY a")
-    connection.createStatement().executeQuery("CREATE TABLE d ON CLUSTER  spark_clickhouse_cluster (a UInt64) ENGINE = Distributed('spark_clickhouse_cluster', 'default', 't')")
+    connection.createStatement().executeQuery(s"CREATE TABLE t ON CLUSTER  $clusterName (a UInt64) ENGINE = MergeTree() ORDER BY a")
+    connection.createStatement().executeQuery(s"CREATE TABLE d ON CLUSTER  $clusterName (a UInt64) ENGINE = Distributed('$clusterName', 'default', 't')")
     connection.createStatement().executeQuery("INSERT INTO t VALUES (1)")
     connection2.createStatement().executeQuery("INSERT INTO t VALUES (2)")
 
 
-    val frame1 = sqlContext.read.jdbc("jdbc:clickhouse://localhost:8123", "default.d", new Properties())
+//    val frame1 = sqlContext.read.jdbc("jdbc:clickhouse://clickhouse-server:8123", "default.d", new Properties())
+    val frame1 = sqlContext.read.clickhouse(shard1Replica1.hostName, shard1Replica1.port, "default.d")
     val set = frame1.collect().map(_.getDecimal(0)).map(_.longValue()).toSet
 
     assert(set == Set(1L, 2L))

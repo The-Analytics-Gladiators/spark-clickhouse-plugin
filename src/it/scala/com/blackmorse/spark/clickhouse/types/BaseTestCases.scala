@@ -5,7 +5,7 @@ import com.blackmorse.spark.clickhouse.sql.types.ClickhouseType
 import org.apache.spark.sql.types.{ArrayType, DataType, StructField, StructType}
 import org.apache.spark.sql.{Encoder, Row, SQLContext}
 import org.scalatest.matchers.should
-
+import com.blackmorse.spark.clickhouse.ClickhouseHosts._
 import scala.reflect.ClassTag
 
 
@@ -13,9 +13,6 @@ object BaseTestCases extends should.Matchers {
   import com.blackmorse.spark.clickhouse._
 
   import collection.JavaConverters._
-  val host = "localhost"
-  val port = 8123
-  val table = "default.test_table"
 
   def testPrimitiveAndArray(clickhouseType: ClickhouseType)(cases: Seq[Seq[Any]],
                                                             //TODO should be in ClickhouseType ?
@@ -56,9 +53,9 @@ object BaseTestCases extends should.Matchers {
 
     withTable(Seq(s"a Array($clickhouseTypeName)"), "a") {
 
-      df.write.clickhouse(host, port, table)
+      df.write.clickhouse(shard1Replica1.hostName, shard1Replica1.port, testTable)
 
-      val dataFrame = sqlContext.read.clickhouse(host, port, table)
+      val dataFrame = sqlContext.read.clickhouse(shard1Replica1.hostName, shard1Replica1.port, testTable)
 
       dataFrame.schema.length should be(1)
       //Datasource v2 doesn't allow to write nullable to non-nullable
@@ -140,9 +137,9 @@ object BaseTestCases extends should.Matchers {
 
     val df = sqlContext.createDataFrame(sc.parallelize(rows), schema)
     withTable(Seq(s"a $clickhouseTypeName"), "a") {
-      df.write.clickhouse(host, port, table)
+      df.write.clickhouse(shard1Replica1.hostName, shard1Replica1.port, testTable)
 
-      val rdd = sqlContext.read.clickhouse(host, port, table).rdd
+      val rdd = sqlContext.read.clickhouse(shard1Replica1.hostName, shard1Replica1.port, testTable).rdd
       val res = rdd
         .map(row => rowConverter(row)).collect()
 
@@ -157,9 +154,9 @@ object BaseTestCases extends should.Matchers {
     }
 
     withTable(Seq(s"a Nullable($clickhouseTypeName)"), "tuple()") {
-      df.write.clickhouse(host, port, table)
+      df.write.clickhouse(shard1Replica1.hostName, shard1Replica1.port, testTable)
 
-      val rdd = sqlContext.read.clickhouse(host, port, table).rdd
+      val rdd = sqlContext.read.clickhouse(shard1Replica1.hostName, shard1Replica1.port, testTable).rdd
 
       val collect = rdd.collect()
       val nullsFromRdd = collect.count(_.isNullAt(0))

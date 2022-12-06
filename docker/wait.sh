@@ -1,16 +1,15 @@
 #! /bin/sh
 
-# Wait for Minio
-echo -n 'Waiting for Clickhouse...'
-until curl -s http://localhost:8123
-do
-  sleep 0.5
-  echo -n "."
-done
+function wait_for_clickhouse() {
+  url=$1
+  echo -n "Waiting for Clickhouse $url ..."
+  until curl -s $url
+  do
+    sleep 0.5
+    echo -n "."
+  done
+}
 
-until curl -s http://localhost:8124
-do
-  sleep 0.5
-  echo -n "."
-done
-echo ""
+wait_for_clickhouse http://localhost:8123
+wait_for_clickhouse http://localhost:8124
+wait_for_clickhouse http://localhost:8125

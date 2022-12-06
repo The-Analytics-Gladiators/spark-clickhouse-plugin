@@ -8,7 +8,7 @@ class ArrayFieldTests extends AnyFlatSpec with DataFrameSuiteBase {
   import com.blackmorse.spark.clickhouse._
   import sqlContext.implicits._
   import collection.JavaConverters._
-  val host = "localhost"
+  val host = "clickhouse-server"
   val port = 8123
   val table = "default.test_table"
 

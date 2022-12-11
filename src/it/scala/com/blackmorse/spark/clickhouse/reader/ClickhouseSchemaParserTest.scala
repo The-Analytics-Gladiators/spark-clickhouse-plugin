@@ -1,12 +1,12 @@
 package com.blackmorse.spark.clickhouse.reader
 
 import com.blackmorse.spark.clickhouse.ClickhouseTests.withTable
-import com.blackmorse.spark.clickhouse.spark.types.ClickhouseSchemaParser
 import com.blackmorse.spark.clickhouse.sql.types._
 import com.blackmorse.spark.clickhouse.sql.types.primitives.{ClickhouseDate, ClickhouseFloat64, ClickhouseInt128, ClickhouseInt16, ClickhouseInt256, ClickhouseInt32, ClickhouseInt64, ClickhouseInt8, ClickhouseString, ClickhouseUInt128, ClickhouseUInt16, ClickhouseUInt256, ClickhouseUInt32, ClickhouseUInt64, ClickhouseUInt8}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import com.blackmorse.spark.clickhouse.ClickhouseHosts._
+import com.blackmorse.spark.clickhouse.parsers.ClickhouseSchemaParser
 
 class ClickhouseSchemaParserTest extends AnyFlatSpec with Matchers {
   "ClickhouseSchemaParser" should "parse schema with Nullables, Arrays and LowCardinalities" in {

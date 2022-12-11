@@ -6,9 +6,11 @@ import java.sql.ResultSet
 import java.util.Properties
 
 case class ClickhouseReaderConfiguration(schema: StructType,
-                                         tableName: String,
-                                         engine: String,
                                          url: String,
-                                         cluster: Option[String],
+                                         tableInfo: TableInfo,
                                          rowMapper: ResultSet => Seq[Any],
                                          connectionProperties: Properties)
+
+case class TableInfo(name: String,
+                     engine: String,
+                     cluster: Option[String])

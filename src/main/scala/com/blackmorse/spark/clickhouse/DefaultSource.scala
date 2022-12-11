@@ -1,8 +1,8 @@
 package com.blackmorse.spark.clickhouse
 
 import com.blackmorse.spark.clickhouse.exceptions.ClickhouseUnableToReadMetadataException
-import com.blackmorse.spark.clickhouse.reader.ClickhouseReaderConfiguration
-import com.blackmorse.spark.clickhouse.spark.types.ClickhouseSchemaParser
+import com.blackmorse.spark.clickhouse.parsers.ClickhouseSchemaParser
+import com.blackmorse.spark.clickhouse.reader.{ClickhouseReaderConfiguration, TableInfo}
 import com.blackmorse.spark.clickhouse.utils.JDBCTimeZoneUtils
 import org.apache.commons.collections.MapUtils
 import org.apache.spark.sql.connector.catalog.{Table, TableProvider}
@@ -42,10 +42,12 @@ class DefaultSource extends TableProvider {
 
     ClickhouseReaderConfiguration(
       schema = schema,
-      tableName = table,
-      engine = parsedTable.engine,
+      tableInfo = TableInfo(
+        name = table,
+        engine = parsedTable.engine,
+        cluster = cluster
+      ),
       url = url,
-      cluster = cluster,
       rowMapper = rs => clickhouseFields.map(_.extractFromRs(rs)(clickhouseTimeZoneInfo)),
       connectionProperties = MapUtils.toProperties(options)
     )

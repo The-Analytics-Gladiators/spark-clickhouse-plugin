@@ -8,6 +8,7 @@ package object clickhouse {
   val TABLE = "TABLE"
   val BATCH_SIZE = "BATCH_SIZE"
   val CLUSTER = "CLUSTER"
+  val READ_DIRECTLY_FROM_DISTRIBUTED_TABLE = "read_directly_from_distributed"
 
   implicit class ClickHouseDataWriter[T](writer: DataFrameWriter[T]) {
     def clickhouse(host: String, port: Int, table: String): Unit = {

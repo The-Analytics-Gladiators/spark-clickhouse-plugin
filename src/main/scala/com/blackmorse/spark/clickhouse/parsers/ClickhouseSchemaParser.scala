@@ -1,13 +1,11 @@
-package com.blackmorse.spark.clickhouse.spark.types
+package com.blackmorse.spark.clickhouse.parsers
 
+import com.blackmorse.spark.clickhouse.spark.types.ClickhouseTypesParser
 import com.blackmorse.spark.clickhouse.sql.types.ClickhouseField
 import com.blackmorse.spark.clickhouse.utils.JDBCUtils
-import com.clickhouse.jdbc.ClickHouseDriver
 
-import java.sql.ResultSet
 import java.util.Properties
-import scala.collection.mutable
-import scala.util.{Failure, Success, Try, Using}
+import scala.util.Try
 
 case class ClickhouseParsedTable(fields: Seq[ClickhouseField], engine: String)
 

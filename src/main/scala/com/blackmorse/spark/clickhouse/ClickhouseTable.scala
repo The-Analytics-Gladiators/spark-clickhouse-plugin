@@ -22,7 +22,7 @@ class ClickhouseTable(clickhouseReaderInfo: ClickhouseReaderConfiguration)
   override def newScanBuilder(options: CaseInsensitiveStringMap): ScanBuilder =
     new ClickhouseScanBuilder(clickhouseReaderInfo)
 
-  override def name(): String = clickhouseReaderInfo.tableName
+  override def name(): String = clickhouseReaderInfo.tableInfo.name
 
   override def schema(): StructType = clickhouseReaderInfo.schema
 

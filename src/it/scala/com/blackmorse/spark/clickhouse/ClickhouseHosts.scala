@@ -12,4 +12,5 @@ object ClickhouseHosts {
   val clusterName: String = "spark_clickhouse_cluster"
   val testTable: String = "default.test_table"
   val clusterTestTable: String = "default.cluster_test_table"
+  val clusterDistributedTestTable: String = "default.cluster_distributed_test_table"
 }

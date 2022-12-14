@@ -13,7 +13,7 @@ class ClickhouseReaderBase[Partition <: InputPartition](clickhouseReaderInfo: Cl
     extends PartitionReader[InternalRow]
     with Logging {
   private val fields = clickhouseReaderInfo.schema.fields.map(f => s"`${f.name}`").mkString(", ")
-  private val sql = s"SELECT $fields FROM ${clickhouseReaderInfo.tableName}"
+  private val sql = s"SELECT $fields FROM ${clickhouseReaderInfo.tableInfo.name}"
 
   private val conn = connectionProvider()
   private val stmt = conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)

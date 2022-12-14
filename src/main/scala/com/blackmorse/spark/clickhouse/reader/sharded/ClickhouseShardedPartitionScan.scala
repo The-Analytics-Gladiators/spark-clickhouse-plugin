@@ -10,7 +10,7 @@ import scala.util.{Failure, Success}
 
 case class ShardedClickhousePartition(partitionUrl: String) extends InputPartition
 
-class ClickhouseShardedPartitionScan(clickhouseReaderConfiguration: ClickhouseReaderConfiguration)
+class ClickhouseShardedPartitionScan(val clickhouseReaderConfiguration: ClickhouseReaderConfiguration)
     extends Scan
     with Batch {
 
@@ -26,7 +26,7 @@ class ClickhouseShardedPartitionScan(clickhouseReaderConfiguration: ClickhouseRe
 
   private val shardsUrls = JDBCUtils.executeSql(clickhouseReaderConfiguration.url)(sql){rs => rs.getString(1)} match {
     case Success(value) => value
-    case Failure(exception) => throw ClickhouseUnableToReadMetadataException(s"Unable to read shards of the cluster ${clickhouseReaderConfiguration.cluster} " +
+    case Failure(exception) => throw ClickhouseUnableToReadMetadataException(s"Unable to read shards of the cluster ${clickhouseReaderConfiguration.tableInfo.cluster} " +
           s"at ${clickhouseReaderConfiguration.url}. Request: $sql", exception)
   }
 

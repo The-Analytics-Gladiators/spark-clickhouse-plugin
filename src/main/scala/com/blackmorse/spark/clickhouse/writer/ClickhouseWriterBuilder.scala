@@ -1,7 +1,8 @@
 package com.blackmorse.spark.clickhouse.writer
 
 import com.blackmorse.spark.clickhouse.exceptions.ClickhouseUnableToReadMetadataException
-import com.blackmorse.spark.clickhouse.spark.types.{ClickhouseSchemaParser, SchemaMerger}
+import com.blackmorse.spark.clickhouse.parsers.ClickhouseSchemaParser
+import com.blackmorse.spark.clickhouse.spark.types.SchemaMerger
 import com.blackmorse.spark.clickhouse.utils.JDBCTimeZoneUtils
 import com.blackmorse.spark.clickhouse.{BATCH_SIZE, CLICKHOUSE_HOST_NAME, CLICKHOUSE_PORT, TABLE}
 import org.apache.commons.collections.MapUtils

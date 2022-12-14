@@ -27,7 +27,7 @@ object ClickhouseTests {
     }
   }
 
-  def withClusterTable(fields: Seq[String], orderBy: String)(testSpec: => Any): Unit = {
+  def withClusterTable(fields: Seq[String], orderBy: String, withDistributed: Boolean)(testSpec: => Any): Unit = {
     val statement = connection.createStatement()
     try {
       statement.execute(
@@ -38,10 +38,23 @@ object ClickhouseTests {
            |ORDER BY $orderBy
            |""".stripMargin
       )
+      if (withDistributed) {
+
+        statement.execute(
+          s"""
+             |CREATE TABLE $clusterDistributedTestTable on cluster $clusterName (
+             |  ${fields.mkString(", ")}
+             |) ENGINE = Distributed('$clusterName', '${clusterTestTable.split("\\.").head}', '${clusterTestTable.split("\\.")(1)}')
+             |""".stripMargin
+        )
+      }
       testSpec
     } finally {
       statement.close()
       connection.createStatement().execute(s"DROP TABLE IF EXISTS $clusterTestTable ON CLUSTER $clusterName SYNC")
+      if (withDistributed) {
+        connection.createStatement().execute(s"DROP TABLE IF EXISTS $clusterDistributedTestTable ON CLUSTER $clusterName SYNC")
+      }
     }
   }
 }

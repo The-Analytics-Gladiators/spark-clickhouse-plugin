@@ -8,6 +8,7 @@ import org.apache.spark.sql.types.{DateType, TimestampType}
 import org.scalatest.flatspec.AnyFlatSpec
 
 import java.sql.{Date, Timestamp}
+import java.time.temporal.ChronoUnit
 import java.time.{LocalDate, LocalDateTime}
 
 
@@ -17,14 +18,14 @@ class DatesBackwardCompatibilityTest extends AnyFlatSpec with DataFrameSuiteBase
   implicit val ord: Ordering[Date] = Ordering.by(_.getTime)
   implicit val timestampOrdering: Ordering[Timestamp] = Ordering.by(_.getTime)
 
-  private lazy val nowTimestamp: Long = System.currentTimeMillis()
+  private val nowTimestamp: Long = System.currentTimeMillis()
 
   "Date" should "write in ch DateTime column" in {
     testPrimitiveAndArray(ClickhouseDateTime(nullable = false, lowCardinality = false))(
       cases = Seq(Seq(new Date(nowTimestamp))),
       rowConverter = row => row.getTimestamp(0),
       forceSparkType = DateType,
-      convertToOriginalType = t => Timestamp.valueOf(t.toString + " 00:00:00.0")
+      convertToOriginalType = _ => Timestamp.valueOf(LocalDate.now().atStartOfDay().truncatedTo(ChronoUnit.MILLIS))
     )
   }
 

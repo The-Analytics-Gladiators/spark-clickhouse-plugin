@@ -6,9 +6,9 @@ import com.blackmorse.spark.clickhouse.sql.types.primitives.{ClickhouseDate, Cli
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import com.blackmorse.spark.clickhouse.ClickhouseHosts._
-import com.blackmorse.spark.clickhouse.parsers.ClickhouseSchemaParser
+import com.blackmorse.spark.clickhouse.services.ClickhouseTableService
 
-class ClickhouseSchemaParserTest extends AnyFlatSpec with Matchers {
+class ClickhouseTableServiceTest extends AnyFlatSpec with Matchers {
   "ClickhouseSchemaParser" should "parse schema with Nullables, Arrays and LowCardinalities" in {
     withTable(Seq(
       "a Int32",
@@ -20,7 +20,7 @@ class ClickhouseSchemaParserTest extends AnyFlatSpec with Matchers {
       "g Array(LowCardinality(UInt8))",
       "h Array(LowCardinality(Nullable(UInt64)))"), "a") {
 
-      val parsedTable = ClickhouseSchemaParser.parseTable(s"jdbc:clickhouse://$shard1Replica1", "default.test_table")
+      val parsedTable = ClickhouseTableService.fetchFieldsAndEngine(s"jdbc:clickhouse://$shard1Replica1", "default.test_table")
       val fields = parsedTable.get.fields
       parsedTable.get.engine should be("MergeTree")
 
@@ -44,7 +44,7 @@ class ClickhouseSchemaParserTest extends AnyFlatSpec with Matchers {
       "c Decimal64(8)",
       "d Decimal128(12)",
     ), "a") {
-      val parsedTable = ClickhouseSchemaParser.parseTable(s"jdbc:clickhouse://$shard1Replica1", "default.test_table")
+      val parsedTable = ClickhouseTableService.fetchFieldsAndEngine(s"jdbc:clickhouse://$shard1Replica1", "default.test_table")
       val fields = parsedTable.get.fields
       parsedTable.get.engine should be("MergeTree")
 
@@ -65,7 +65,7 @@ class ClickhouseSchemaParserTest extends AnyFlatSpec with Matchers {
       "d DateTime64(8)",
       "e Nullable(DateTime('UTC'))"
     ), "a") {
-      val parsedTable = ClickhouseSchemaParser.parseTable(s"jdbc:clickhouse://$shard1Replica1", "default.test_table")
+      val parsedTable = ClickhouseTableService.fetchFieldsAndEngine(s"jdbc:clickhouse://$shard1Replica1", "default.test_table")
       val fields = parsedTable.get.fields
       parsedTable.get.engine should be("MergeTree")
 
@@ -94,7 +94,7 @@ class ClickhouseSchemaParserTest extends AnyFlatSpec with Matchers {
       "l Int256",
       "m UInt256"
     ), "a") {
-      val parsedTable = ClickhouseSchemaParser.parseTable(s"jdbc:clickhouse://$shard1Replica1", "default.test_table")
+      val parsedTable = ClickhouseTableService.fetchFieldsAndEngine(s"jdbc:clickhouse://$shard1Replica1", "default.test_table")
       val fields = parsedTable.get.fields
       parsedTable.get.engine should be("MergeTree")
 

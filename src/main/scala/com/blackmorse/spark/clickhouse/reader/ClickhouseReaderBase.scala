@@ -8,12 +8,11 @@ import org.apache.spark.sql.connector.read.{InputPartition, PartitionReader}
 
 import java.sql.ResultSet
 
-class ClickhouseReaderBase[Partition <: InputPartition](clickhouseReaderInfo: ClickhouseReaderConfiguration,
+class ClickhouseReaderBase[Partition <: InputPartition](chReaderConf: ClickhouseReaderConfiguration,
+                                                        sql: String,
                                                         connectionProvider: () => ClickHouseConnection)
     extends PartitionReader[InternalRow]
     with Logging {
-  private val fields = clickhouseReaderInfo.schema.fields.map(f => s"`${f.name}`").mkString(", ")
-  private val sql = s"SELECT $fields FROM ${clickhouseReaderInfo.tableInfo.name}"
 
   private val conn = connectionProvider()
   private val stmt = conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
@@ -25,9 +24,9 @@ class ClickhouseReaderBase[Partition <: InputPartition](clickhouseReaderInfo: Cl
   override def next(): Boolean = rs.next()
 
   override def get(): InternalRow = {
-    val internalRow = new GenericInternalRow(clickhouseReaderInfo.schema.size)
-    clickhouseReaderInfo.rowMapper(rs)
-      .zip(clickhouseReaderInfo.schema.fields)
+    val internalRow = new GenericInternalRow(chReaderConf.schema.size)
+    chReaderConf.rowMapper(rs)
+      .zip(chReaderConf.schema.fields)
       .zipWithIndex.foreach { case ((v, field), index) =>
       if (v != null) {
         val writer = InternalRow.getWriter(index, field.dataType)

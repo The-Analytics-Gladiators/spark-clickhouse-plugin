@@ -1,8 +1,8 @@
 package com.blackmorse.spark.clickhouse
 
 import com.blackmorse.spark.clickhouse.exceptions.ClickhouseUnableToReadMetadataException
-import com.blackmorse.spark.clickhouse.parsers.ClickhouseSchemaParser
 import com.blackmorse.spark.clickhouse.reader.{ClickhouseReaderConfiguration, TableInfo}
+import com.blackmorse.spark.clickhouse.services.ClickhouseTableService
 import com.blackmorse.spark.clickhouse.utils.JDBCTimeZoneUtils
 import org.apache.commons.collections.MapUtils
 import org.apache.spark.sql.connector.catalog.{Table, TableProvider}
@@ -26,7 +26,7 @@ class DefaultSource extends TableProvider {
     val url = s"jdbc:clickhouse://$hostName:$port"
 
     val cluster = Option(options.get(CLUSTER))
-    val parsedTable = ClickhouseSchemaParser.parseTable(url, table) match {
+    val parsedTable = ClickhouseTableService.fetchFieldsAndEngine(url, table) match {
       case Failure(exception) => throw ClickhouseUnableToReadMetadataException(s"Unable to read metadata about $table on $url", exception)
       case Success(value) => value
     }
@@ -45,7 +45,8 @@ class DefaultSource extends TableProvider {
       tableInfo = TableInfo(
         name = table,
         engine = parsedTable.engine,
-        cluster = cluster
+        cluster = cluster,
+        orderingKey = None
       ),
       url = url,
       rowMapper = rs => clickhouseFields.map(_.extractFromRs(rs)(clickhouseTimeZoneInfo)),

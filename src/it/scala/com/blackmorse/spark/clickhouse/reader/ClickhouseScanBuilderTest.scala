@@ -8,6 +8,7 @@ import org.scalatest.matchers.should.Matchers
 import com.blackmorse.spark.clickhouse.ClickhouseHosts._
 import com.blackmorse.spark.clickhouse.READ_DIRECTLY_FROM_DISTRIBUTED_TABLE
 import com.blackmorse.spark.clickhouse.reader.sharded.ClickhouseShardedPartitionScan
+import com.blackmorse.spark.clickhouse.reader.sharded.mergetree.MergeTreePartitionScan
 
 import java.util.Properties
 
@@ -19,7 +20,8 @@ class ClickhouseScanBuilderTest extends AnyFlatSpec with Matchers {
       tableInfo = TableInfo(
         name = "test_table",
         engine = "MergeTree",
-        cluster = None
+        cluster = None,
+        orderingKey = None
       ),
       rowMapper = _ => Seq(),
       connectionProperties = new Properties()
@@ -30,7 +32,7 @@ class ClickhouseScanBuilderTest extends AnyFlatSpec with Matchers {
     clickhouseScanBuilder.build().isInstanceOf[ClickhouseSinglePartitionScan] should be (true)
   }
 
-  "For Distributed table Sharded partition strategy with the underlying table" should "be chosen" in {
+  "Distributed Table with underlying MergeTree table" should "choose MergeTree strategy" in {
     withClusterTable(Seq("a UInt32"), "a", withDistributed = true) {
       val clickhouseReaderConfiguration = ClickhouseReaderConfiguration(
         schema = StructType(Seq()),
@@ -38,7 +40,8 @@ class ClickhouseScanBuilderTest extends AnyFlatSpec with Matchers {
         tableInfo = TableInfo(
           name = clusterDistributedTestTable,
           engine = "Distributed",
-          cluster = None
+          cluster = None,
+          orderingKey = None
         ),
         rowMapper = _ => Seq(),
         connectionProperties = new Properties()
@@ -46,9 +49,9 @@ class ClickhouseScanBuilderTest extends AnyFlatSpec with Matchers {
 
       val clickhouseScanBuilder = new ClickhouseScanBuilder(clickhouseReaderConfiguration)
       val scan = clickhouseScanBuilder.build()
-      scan.isInstanceOf[ClickhouseShardedPartitionScan] should be (true)
+      scan.isInstanceOf[MergeTreePartitionScan] should be (true)
 
-      scan.asInstanceOf[ClickhouseShardedPartitionScan].clickhouseReaderConfiguration
+      scan.asInstanceOf[MergeTreePartitionScan].chReaderConf
         .tableInfo.name should be (clusterTestTable)
     }
   }
@@ -63,7 +66,8 @@ class ClickhouseScanBuilderTest extends AnyFlatSpec with Matchers {
         tableInfo = TableInfo(
           name = clusterDistributedTestTable,
           engine = "Distributed",
-          cluster = None
+          cluster = None,
+          orderingKey = None
         ),
         rowMapper = _ => Seq(),
         connectionProperties = properties

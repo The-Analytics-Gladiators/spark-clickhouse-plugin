@@ -11,6 +11,8 @@ case class ClickhouseReaderConfiguration(schema: StructType,
                                          rowMapper: ResultSet => Seq[Any],
                                          connectionProperties: Properties)
 
+//TODO Split into MergeTree, Distributed, etc
 case class TableInfo(name: String,
                      engine: String,
-                     cluster: Option[String])
+                     cluster: Option[String],
+                     orderingKey: Option[String])

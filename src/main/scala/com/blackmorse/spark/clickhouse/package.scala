@@ -40,5 +40,11 @@ package object clickhouse {
         .option(TABLE, table)
         .option(CLUSTER, cluster)
         .load()
+
+    def readDirectlyFromDistributedTable(): DataFrameReader =
+      reader.option(READ_DIRECTLY_FROM_DISTRIBUTED_TABLE, true)
+
+    def batchSize(size: Int): DataFrameReader =
+      reader.option(BATCH_SIZE, size)
   }
 }

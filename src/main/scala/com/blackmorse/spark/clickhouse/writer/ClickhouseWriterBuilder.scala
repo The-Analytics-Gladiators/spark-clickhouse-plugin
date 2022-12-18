@@ -1,7 +1,7 @@
 package com.blackmorse.spark.clickhouse.writer
 
 import com.blackmorse.spark.clickhouse.exceptions.ClickhouseUnableToReadMetadataException
-import com.blackmorse.spark.clickhouse.parsers.ClickhouseSchemaParser
+import com.blackmorse.spark.clickhouse.services.ClickhouseTableService
 import com.blackmorse.spark.clickhouse.spark.types.SchemaMerger
 import com.blackmorse.spark.clickhouse.utils.JDBCTimeZoneUtils
 import com.blackmorse.spark.clickhouse.{BATCH_SIZE, CLICKHOUSE_HOST_NAME, CLICKHOUSE_PORT, TABLE}
@@ -29,7 +29,7 @@ class ClickhouseWrite(info: LogicalWriteInfo) extends Write {
     val clickhouseTimeZoneInfo = JDBCTimeZoneUtils.fetchClickhouseTimeZoneFromServer(url)
 
     val allAvailableProperties = MapUtils.toProperties(info.options().asCaseSensitiveMap())
-    val parsedTable = ClickhouseSchemaParser.parseTable(url, table, allAvailableProperties) match {
+    val parsedTable = ClickhouseTableService.fetchFieldsAndEngine(url, table, allAvailableProperties) match {
       case Failure(exception) => throw ClickhouseUnableToReadMetadataException(s"Unable to read metadata about $table on $url", exception)
       case Success(value) => value
     }

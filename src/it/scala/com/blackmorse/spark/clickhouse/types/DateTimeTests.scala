@@ -1,13 +1,15 @@
 package com.blackmorse.spark.clickhouse.types
 
-import com.blackmorse.spark.clickhouse.DateTimeUtils.time
+import com.blackmorse.spark.clickhouse.DateTimeUtils.{date, time}
 import com.blackmorse.spark.clickhouse.sql.types.{ClickhouseDateTime, ClickhouseDateTime64}
 import com.blackmorse.spark.clickhouse.types.BaseTestCases.testPrimitiveAndArray
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import org.apache.spark.sql.types.DateType
 import org.scalatest.flatspec.AnyFlatSpec
 
 import java.sql.Timestamp
-import java.time.{ZoneId, ZonedDateTime}
+import java.time.temporal.ChronoUnit
+import java.time.{LocalDate, ZoneId, ZonedDateTime}
 
 class DateTimeTests extends AnyFlatSpec with DataFrameSuiteBase {
   import sqlContext.implicits._
@@ -42,6 +44,18 @@ class DateTimeTests extends AnyFlatSpec with DataFrameSuiteBase {
         Seq(new Timestamp(minTime), new Timestamp(maxTime))
       ),
       rowConverter = row => row.getTimestamp(0)
+    )
+  }
+
+  "Date" should "write in ch DateTime column" in {
+    testPrimitiveAndArray(ClickhouseDateTime(nullable = false, lowCardinality = false))(
+      cases = Seq(
+        (1 to 100).map(date)
+      ),
+      rowConverter = row => row.getTimestamp(0),
+      forceSparkType = DateType,
+      convertToOriginalType = date => Timestamp.valueOf(LocalDate.parse(date.toString).atStartOfDay()
+        .truncatedTo(ChronoUnit.MILLIS))
     )
   }
 }

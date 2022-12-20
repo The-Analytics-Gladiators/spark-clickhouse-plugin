@@ -1,5 +1,6 @@
 package com.blackmorse.spark.clickhouse.types
 
+import com.blackmorse.spark.clickhouse.DateTimeUtils.time
 import com.blackmorse.spark.clickhouse.sql.types.{ClickhouseDateTime, ClickhouseDateTime64}
 import com.blackmorse.spark.clickhouse.types.BaseTestCases.testPrimitiveAndArray
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
@@ -10,14 +11,6 @@ import java.time.{ZoneId, ZonedDateTime}
 
 class DateTimeTests extends AnyFlatSpec with DataFrameSuiteBase {
   import sqlContext.implicits._
-
-  def time(offset: Int): Timestamp =
-    new Timestamp(
-      ZonedDateTime.now(ZoneId.of("UTC"))
-        .plusHours(offset)
-        .toInstant
-        .getEpochSecond * 1000
-    )
 
   //TODO fix UTC and system default zones to Clickhouse zone?
   private val minTime = ZonedDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneId.of("UTC"))

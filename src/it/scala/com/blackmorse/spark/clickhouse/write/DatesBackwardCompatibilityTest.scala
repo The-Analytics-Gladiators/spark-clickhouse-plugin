@@ -1,5 +1,6 @@
 package com.blackmorse.spark.clickhouse.write
 
+import com.blackmorse.spark.clickhouse.DateTimeUtils.{date, time}
 import com.blackmorse.spark.clickhouse.sql.types.ClickhouseDateTime
 import com.blackmorse.spark.clickhouse.sql.types.primitives.ClickhouseDate
 import com.blackmorse.spark.clickhouse.types.BaseTestCases.testPrimitiveAndArray
@@ -8,8 +9,8 @@ import org.apache.spark.sql.types.{DateType, TimestampType}
 import org.scalatest.flatspec.AnyFlatSpec
 
 import java.sql.{Date, Timestamp}
+import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import java.time.{LocalDate, LocalDateTime}
 
 
 class DatesBackwardCompatibilityTest extends AnyFlatSpec with DataFrameSuiteBase {
@@ -18,23 +19,26 @@ class DatesBackwardCompatibilityTest extends AnyFlatSpec with DataFrameSuiteBase
   implicit val ord: Ordering[Date] = Ordering.by(_.getTime)
   implicit val timestampOrdering: Ordering[Timestamp] = Ordering.by(_.getTime)
 
-  private val nowTimestamp: Long = System.currentTimeMillis()
-
   "Date" should "write in ch DateTime column" in {
     testPrimitiveAndArray(ClickhouseDateTime(nullable = false, lowCardinality = false))(
-      cases = Seq(Seq(new Date(nowTimestamp))),
+      cases = Seq(
+        (1 to 100).map(date)
+      ),
       rowConverter = row => row.getTimestamp(0),
       forceSparkType = DateType,
-      convertToOriginalType = _ => Timestamp.valueOf(LocalDate.now().atStartOfDay().truncatedTo(ChronoUnit.MILLIS))
+      convertToOriginalType = date => Timestamp.valueOf(LocalDate.parse(date.toString).atStartOfDay()
+        .truncatedTo(ChronoUnit.MILLIS))
     )
   }
 
   "DateTime" should "write in ch date column" in {
     testPrimitiveAndArray(ClickhouseDate(nullable = false, lowCardinality = false))(
-      cases = Seq(Seq(new Timestamp(nowTimestamp))),
+      cases = Seq(
+        (1 to 100) map time
+      ),
       rowConverter = row => row.getDate(0),
       forceSparkType = TimestampType,
-      convertToOriginalType = _ => Date.valueOf(LocalDate.now())
+      convertToOriginalType = timestamp => Date.valueOf(timestamp.asInstanceOf[Timestamp].toLocalDateTime.toLocalDate)
     )
   }
 

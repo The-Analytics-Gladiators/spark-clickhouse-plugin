@@ -26,7 +26,11 @@ class ClickhouseWrite(info: LogicalWriteInfo) extends Write {
     val batchSize = info.options.get(BATCH_SIZE).toInt
 
     val url = s"jdbc:clickhouse://$hostName:$port"
-    val clickhouseTimeZoneInfo = JDBCTimeZoneUtils.fetchClickhouseTimeZoneFromServer(url)
+    //TODO
+    val clickhouseTimeZoneInfo = JDBCTimeZoneUtils.fetchClickhouseTimeZoneFromServer(url) match {
+      case Success(value) => value
+      case Failure(exception) => throw ClickhouseUnableToReadMetadataException("Unable to read TimeZone", exception)
+    }
 
     val allAvailableProperties = MapUtils.toProperties(info.options().asCaseSensitiveMap())
     val parsedTable = ClickhouseTableService.fetchFieldsAndEngine(url, table, allAvailableProperties) match {

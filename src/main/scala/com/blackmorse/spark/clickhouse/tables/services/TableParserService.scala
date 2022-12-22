@@ -1,10 +1,10 @@
-package com.blackmorse.spark.clickhouse.services
+package com.blackmorse.spark.clickhouse.tables.services
 
 import com.blackmorse.spark.clickhouse.reader.TableInfo
 
 import scala.annotation.tailrec
 
-object ClickhouseDistributedTableService {
+object TableParserService {
   private val distributedPrefix = "Distributed("
   private val orderBy = "ORDER BY "
   private val mergeTree = "MergeTree"
@@ -23,9 +23,10 @@ object ClickhouseDistributedTableService {
     val startIndex = engineFull.indexOf(orderBy)
     if (startIndex == -1) None
     else if (engineFull(startIndex + orderBy.length) != '(') {
-      Some(
-        getWhatInside(engineFull.substring(startIndex + orderBy.length) + " ", 1, "", ' ', ' ')
-      )
+      Option {
+        val key = getWhatInside(engineFull.substring(startIndex + orderBy.length) + " ", 1, "", ' ', ' ')
+        if (key == "tuple()") null else key
+      }
     } else Some(
       getWhatInside(engineFull.substring(startIndex + orderBy.length + 1), 1, "", '(', ')')
     )

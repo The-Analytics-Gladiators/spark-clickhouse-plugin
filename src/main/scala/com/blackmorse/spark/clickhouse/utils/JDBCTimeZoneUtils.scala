@@ -1,17 +1,12 @@
 package com.blackmorse.spark.clickhouse.utils
 
-import com.blackmorse.spark.clickhouse.exceptions.ClickhouseUnableToReadMetadataException
-
 import java.time.LocalDate
-import scala.util.{Failure, Success}
+import scala.util.Try
 
 object JDBCTimeZoneUtils {
-  def fetchClickhouseTimeZoneFromServer(url: String): ClickhouseTimeZoneInfo =
+  def fetchClickhouseTimeZoneFromServer(url: String): Try[ClickhouseTimeZoneInfo] =
     JDBCUtils.executeSql(url)("SELECT timeZone()"){rs => ClickhouseTimeZoneInfo(rs.getString(1))}
-      .map(_.head) match {
-      case Failure(exception) => throw ClickhouseUnableToReadMetadataException("Unable to read timeZone() from Clickhouse", exception)
-      case Success(value) => value
-    }
+      .map(_.head)
 
   def localDateToDate(localDate: LocalDate, clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): java.sql.Date = {
     val instant = localDate.atStartOfDay(clickhouseTimeZoneInfo.calendar.getTimeZone.toZoneId).toInstant

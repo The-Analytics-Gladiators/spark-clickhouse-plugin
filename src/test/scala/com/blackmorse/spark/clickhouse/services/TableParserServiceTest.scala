@@ -1,10 +1,10 @@
 package com.blackmorse.spark.clickhouse.services
 
-import com.blackmorse.spark.clickhouse.services.ClickhouseDistributedTableService.parseOrderingKey
+import com.blackmorse.spark.clickhouse.tables.services.TableParserService.parseOrderingKey
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class ClickhouseDistributedTableServiceTest extends AnyFlatSpec with Matchers {
+class TableParserServiceTest extends AnyFlatSpec with Matchers {
   "parseOrderingKey" should "return None for no-ordering key" in {
     parseOrderingKey("ENGINE = TinyLog") should be (None)
   }
@@ -19,6 +19,10 @@ class ClickhouseDistributedTableServiceTest extends AnyFlatSpec with Matchers {
 
   "parse key with brackets" should "work" in {
     parseOrderingKey("ENGINE = MergeTree ORDER BY (field1, cityHash64(field_2))") should be (Some("field1, cityHash64(field_2)"))
+  }
+
+  "parse 'tuple()' ordering key" should "be parsed to None" in {
+    parseOrderingKey("ENGINE = MergeTree ORDER BY tuple() SETTINGS index_granularity = 8196") should be (None)
   }
 
   //TODO order by single key with spaces. E.g. "ORDER BY someFunc(a, b)"

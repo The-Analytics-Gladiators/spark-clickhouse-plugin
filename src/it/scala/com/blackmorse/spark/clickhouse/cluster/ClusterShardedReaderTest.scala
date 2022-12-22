@@ -79,7 +79,8 @@ class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameS
   it should "fail on non-matching clusters" in {
     withClusterTable(Seq("a Int32", "b String"), "a", withDistributed = true) {
       assertThrows[Exception] {
-        spark.read.clickhouse(shard1Replica1.hostName, shard1Replica1.port, clusterDistributedTestTable, "wrong_cluster")
+        spark.read.clickhouse(shard1Replica1.hostName, shard1Replica1.port, "wrong_cluster", clusterDistributedTestTable)
+          .collect()
       }
     }
   }
@@ -95,6 +96,20 @@ class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameS
       val collect = df.collect().map(row => (row.getInt(0), row.getString(1)))
 
       collect.sortBy(_._1) should be (writtenData)
+    }
+  }
+
+  it should "read from underlying MergeTree table with no ordering key by batches" in {
+    withClusterTable(Seq("a Int32", "b String"), "tuple()", withDistributed = true) {
+      val writtenData = writeData(9)
+      val df = spark.read
+        .batchSize(2)
+        .clickhouse(shard1Replica1.hostName, shard1Replica1.port, clusterDistributedTestTable)
+
+      df.rdd.partitions.length should be(10)
+      val collect = df.collect().map(row => (row.getInt(0), row.getString(1)))
+
+      collect.sortBy(_._1) should be(writtenData)
     }
   }
 }

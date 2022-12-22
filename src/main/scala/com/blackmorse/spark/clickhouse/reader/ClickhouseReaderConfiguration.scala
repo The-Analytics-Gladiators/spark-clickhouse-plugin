@@ -7,9 +7,9 @@ import java.util.Properties
 
 case class ClickhouseReaderConfiguration(schema: StructType,
                                          url: String,
-                                         tableInfo: TableInfo,
+                                         cluster: Option[String],
                                          rowMapper: ResultSet => Seq[Any],
-                                         connectionProperties: Properties)
+                                         connectionProps: Properties)
 
 //TODO Split into MergeTree, Distributed, etc
 case class TableInfo(name: String,

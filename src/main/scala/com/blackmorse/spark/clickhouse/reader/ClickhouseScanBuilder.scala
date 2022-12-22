@@ -1,37 +1,33 @@
 package com.blackmorse.spark.clickhouse.reader
 
 import com.blackmorse.spark.clickhouse.READ_DIRECTLY_FROM_DISTRIBUTED_TABLE
-import com.blackmorse.spark.clickhouse.reader.sharded.ClickhouseShardedPartitionScan
-import com.blackmorse.spark.clickhouse.reader.sharded.mergetree.MergeTreePartitionScan
+import com.blackmorse.spark.clickhouse.reader.sharded.{ClickhouseShardedPartitionScan, MergeTreePartitionsPlanner, PerShardPartitionsPlanner}
 import com.blackmorse.spark.clickhouse.reader.single.ClickhouseSinglePartitionScan
-import com.blackmorse.spark.clickhouse.services.{ClickhouseDistributedTableService, ClickhouseTableService}
+import com.blackmorse.spark.clickhouse.tables.{ClickhouseTable, DistributedTable, MergeTreeTable}
 import org.apache.spark.sql.connector.read._
 
-class ClickhouseScanBuilder(chReaderConf: ClickhouseReaderConfiguration) extends ScanBuilder {
-
-  private val readDirectlyFromDistributed = Option(chReaderConf.connectionProperties.get(READ_DIRECTLY_FROM_DISTRIBUTED_TABLE))
+class ClickhouseScanBuilder(chReaderConf: ClickhouseReaderConfiguration, clickhouseTable: ClickhouseTable) extends ScanBuilder {
+  private val readDirectlyFromDistributed = Option(chReaderConf.connectionProps.get(READ_DIRECTLY_FROM_DISTRIBUTED_TABLE))
     .map(_.asInstanceOf[String].toBoolean)
     .getOrElse(false)
 
-  override def build(): Scan = chReaderConf.tableInfo.engine match {
-    case "Distributed" if readDirectlyFromDistributed =>
-      new ClickhouseSinglePartitionScan(chReaderConf)
-    case "Distributed" =>
-      val underlyingTable = ClickhouseTableService.getUnderlyingTableForDistributed(chReaderConf)
-      if (ClickhouseDistributedTableService.isMergeTree(underlyingTable)) {
-        new MergeTreePartitionScan(chReaderConf.copy(tableInfo = underlyingTable))
-      } else {
-        new ClickhouseShardedPartitionScan(chReaderConf.copy(tableInfo = underlyingTable))
+  override def build(): Scan = clickhouseTable match {
+    case table: DistributedTable if readDirectlyFromDistributed =>
+      new ClickhouseSinglePartitionScan(chReaderConf, table)
+    case DistributedTable(database, name, _, cluster, _) if {println(s"${chReaderConf.cluster}, $cluster"); chReaderConf.cluster.exists(_ != cluster)} =>
+      throw new IllegalArgumentException(s"User has pointed to the Distributed table: " +
+        s"$database.$name, which is defined on the $cluster, while user" +
+        s" has specified ${chReaderConf.cluster.get}")
+    case DistributedTable(_, _, _, cluster, underlyingTable) =>
+
+      underlyingTable match {
+        case table: MergeTreeTable =>
+          new ClickhouseShardedPartitionScan(chReaderConf.copy(cluster = Some(cluster)), table) with MergeTreePartitionsPlanner
+        case _ =>
+          new ClickhouseShardedPartitionScan(chReaderConf, underlyingTable) with PerShardPartitionsPlanner
       }
-    case _ => chReaderConf.tableInfo.cluster match {
-      case Some(cluster) =>
-        val tableInfo = ClickhouseTableService.getTableInfo(chReaderConf.url, chReaderConf.tableInfo.name, cluster, chReaderConf.connectionProperties).get
-        if (ClickhouseDistributedTableService.isMergeTree(tableInfo)) {
-           new MergeTreePartitionScan(chReaderConf.copy(tableInfo = tableInfo))
-        } else {
-          new ClickhouseShardedPartitionScan(chReaderConf)
-        }
-      case None => new ClickhouseSinglePartitionScan(chReaderConf)
-    }
+    case table: MergeTreeTable if chReaderConf.cluster.isDefined =>
+      new ClickhouseShardedPartitionScan(chReaderConf, table) with MergeTreePartitionsPlanner
+    case table => new ClickhouseSinglePartitionScan(chReaderConf, table)
   }
 }

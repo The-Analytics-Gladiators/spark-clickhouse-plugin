@@ -1,5 +1,6 @@
 package com.blackmorse.spark.clickhouse.writer
 
+import com.blackmorse.spark.clickhouse.tables.ClickhouseTable
 import com.clickhouse.jdbc.ClickHouseDriver
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.catalyst.InternalRow
@@ -7,20 +8,23 @@ import org.apache.spark.sql.connector.write.{DataWriter, WriterCommitMessage}
 
 import scala.util.Using
 
-class ClickhouseWriter(writerInfo: ClickhouseWriterInfo) extends DataWriter[InternalRow] with Logging {
+class ClickhouseWriter(chWriterConf: ClickhouseWriterConfiguration, clickhouseTable: ClickhouseTable, url: String) extends DataWriter[InternalRow] with Logging {
 
-  private val connection = new ClickHouseDriver().connect(writerInfo.url, writerInfo.connectionProperties)
-  private val fields = writerInfo.schema.map(_.name).mkString("(", ", ", ")")
-  private val values = Array.fill(writerInfo.schema.size)("?").mkString("(", ", ", ")")
-  private val insertStatement = s"INSERT INTO ${writerInfo.tableName} $fields VALUES $values"
+  //TODO unify URLs
+  private val jdbcUrl = if(url.startsWith("jdbc")) url else s"jdbc:clickhouse://$url"
+
+  private val connection = new ClickHouseDriver().connect(jdbcUrl, chWriterConf.connectionProps)
+  private val fields = chWriterConf.schema.map(_.name).mkString("(", ", ", ")")
+  private val values = Array.fill(chWriterConf.schema.size)("?").mkString("(", ", ", ")")
+  private val insertStatement = s"INSERT INTO $clickhouseTable $fields VALUES $values"
   private var statement = connection.prepareStatement(insertStatement)
   private var rowsInBatch = 0
 
   override def write(record: InternalRow): Unit = {
     rowsInBatch += 1
-    writerInfo.rowSetters.foreach(_(record, statement))
+    chWriterConf.rowSetters.foreach(_(record, statement))
     statement.addBatch()
-    if (rowsInBatch >= writerInfo.batchSize) {
+    if (rowsInBatch >= chWriterConf.batchSize) {
       log.debug(s"Batch complete, sending $rowsInBatch records")
       Using(statement) { stm => stm.executeBatch() }
         .recoverWith { case ex: Exception => throw new Exception(ex) } // consider custom exceptions

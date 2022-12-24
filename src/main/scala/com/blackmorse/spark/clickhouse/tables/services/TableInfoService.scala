@@ -1,6 +1,8 @@
 package com.blackmorse.spark.clickhouse.tables.services
 
 import com.blackmorse.spark.clickhouse.exceptions.ClickhouseUnableToReadMetadataException
+import com.blackmorse.spark.clickhouse.spark.types.ClickhouseTypesParser
+import com.blackmorse.spark.clickhouse.sql.types.ClickhouseField
 import com.blackmorse.spark.clickhouse.tables.{ClickhouseTable, DistributedTable, GenericTable, MergeTreeTable}
 import com.blackmorse.spark.clickhouse.utils.JDBCUtils
 
@@ -8,6 +10,11 @@ import java.util.Properties
 import scala.util.{Failure, Success, Try}
 
 object TableInfoService {
+  def fetchFields(url: String, table: String, connectionProperties: Properties): Try[Seq[ClickhouseField]] =
+    JDBCUtils.executeSql(url, connectionProperties)(s"DESCRIBE TABLE $table") { rs =>
+      ClickhouseField(rs.getString(1), ClickhouseTypesParser.parseType(rs.getString(2)))
+    }
+
   def readTableInfo(url: String, table: String, connectionProps: Properties): Try[ClickhouseTable] = {
     readNameDatabaseEngine(url, table, connectionProps).flatMap { case (database, name, engine) =>
       engine match {

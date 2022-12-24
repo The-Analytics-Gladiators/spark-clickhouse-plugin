@@ -1,8 +1,7 @@
 package com.blackmorse.spark.clickhouse
 
 import com.blackmorse.spark.clickhouse.exceptions.ClickhouseUnableToReadMetadataException
-import com.blackmorse.spark.clickhouse.reader.{ClickhouseReaderConfiguration, TableInfo}
-import com.blackmorse.spark.clickhouse.services.ClickhouseTableService
+import com.blackmorse.spark.clickhouse.reader.ClickhouseReaderConfiguration
 import com.blackmorse.spark.clickhouse.sql.types.ClickhouseField
 import com.blackmorse.spark.clickhouse.tables.ClickhouseTable
 import com.blackmorse.spark.clickhouse.tables.services.TableInfoService
@@ -34,7 +33,7 @@ class DefaultSource extends TableProvider {
 
     val cluster = Option(options.get(CLUSTER))
     (for {
-      clickhouseFields <- ClickhouseTableService.fetchFields(url, table,connectionProps)
+      clickhouseFields <- TableInfoService.fetchFields(url, table,connectionProps)
       clickhouseTimeZoneInfo <- JDBCTimeZoneUtils.fetchClickhouseTimeZoneFromServer(url)
       clickhouseTable <- TableInfoService.readTableInfo(url, table, connectionProps)
     } yield (ClickhouseReaderConfiguration(

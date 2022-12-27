@@ -1,0 +1,10 @@
+trigger:
+- main
+
+pool:
+  vmImage: earthly/earthly:latest
+
+steps:
+- script: earthly --ci +test
+  displayName: 'Earthly build'
+

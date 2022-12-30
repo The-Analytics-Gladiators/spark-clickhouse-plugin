@@ -8,8 +8,7 @@ import org.apache.spark.sql.connector.read._
 
 class ClickhouseScanBuilder(chReaderConf: ClickhouseReaderConfiguration, clickhouseTable: ClickhouseTable) extends ScanBuilder {
   private val readDirectlyFromDistributed = Option(chReaderConf.connectionProps.get(READ_DIRECTLY_FROM_DISTRIBUTED_TABLE))
-    .map(_.asInstanceOf[String].toBoolean)
-    .getOrElse(false)
+    .exists(_.asInstanceOf[String].toBoolean)
 
   override def build(): Scan = clickhouseTable match {
     case table: DistributedTable if readDirectlyFromDistributed =>

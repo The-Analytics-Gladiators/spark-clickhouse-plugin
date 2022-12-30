@@ -6,7 +6,7 @@ import com.clickhouse.jdbc.ClickHouseDriver
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.connector.read.{InputPartition, PartitionReader, PartitionReaderFactory}
 
-class ClickhouseShardedPartitionReader(chReaderConf: ClickhouseReaderConfiguration, table: ClickhouseTable)
+class ClickhouseShardedPartitionReaderFactory(chReaderConf: ClickhouseReaderConfiguration, table: ClickhouseTable)
     extends PartitionReaderFactory {
   override def createReader(partition: InputPartition): PartitionReader[InternalRow] = {
     val urlFunc = (hostName: String) => s"jdbc:clickhouse://$hostName"
@@ -25,7 +25,8 @@ class ClickhouseShardedPartitionReader(chReaderConf: ClickhouseReaderConfigurati
       chReaderConf = chReaderConf,
       connectionProvider = () =>
         new ClickHouseDriver().connect(url, chReaderConf.connectionProps),
-      sql = sql
+      sql = sql,
+      table = table
     )
   }
 }

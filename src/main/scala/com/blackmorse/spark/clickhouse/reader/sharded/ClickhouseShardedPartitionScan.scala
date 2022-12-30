@@ -31,7 +31,7 @@ abstract class ClickhouseShardedPartitionScan(val chReaderConf: ClickhouseReader
   override def planInputPartitions(): Array[InputPartition] =
     planPartitions(shardsUrls, table, chReaderConf)
 
-  override def createReaderFactory(): PartitionReaderFactory = new ClickhouseShardedPartitionReader(chReaderConf, table)
+  override def createReaderFactory(): PartitionReaderFactory = new ClickhouseShardedPartitionReaderFactory(chReaderConf, table)
 
   override def toBatch: Batch = this
 }

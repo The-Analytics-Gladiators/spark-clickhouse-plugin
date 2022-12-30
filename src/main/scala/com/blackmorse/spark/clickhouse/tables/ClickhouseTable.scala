@@ -5,7 +5,7 @@ sealed trait ClickhouseTable {
   val name: String
   val engine: String
 
-  override def toString() = s"$database.$name"
+  override def toString = s"$database.$name"
 }
 
 case class MergeTreeTable(database: String,

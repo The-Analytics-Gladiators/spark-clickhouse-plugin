@@ -8,8 +8,8 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
+  import sqlContext.implicits._
   private def writeData(count: Int): Seq[(Int, String)] = {
-    import sqlContext.implicits._
     val shardData1 = (1 to count).map(i => (i, i.toString))
     spark.sparkContext.parallelize(shardData1).toDF("a", "b")
       .write
@@ -20,6 +20,55 @@ class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameS
       .write.clickhouse(shard2Replica1.hostName, shard2Replica1.port, clusterTestTable)
 
     shardData1 ++ shardData2
+  }
+
+  private def writeDuplicateData: Seq[(Int, String)] = {
+    val count = 2
+    val shardData1 = (1 to count).map(i => (count, i.toString))
+    spark.sparkContext.parallelize(shardData1).toDF("a", "b")
+      .write
+      .clickhouse(shard1Replica1.hostName, shard1Replica1.port, clusterTestTable)
+
+    val shardData2 = ((count + 1) to (count * 2)).map(i => (count, i.toString))
+    spark.sparkContext.parallelize(shardData2).toDF("a", "b")
+      .write.clickhouse(shard2Replica1.hostName, shard2Replica1.port, clusterTestTable)
+
+    shardData1 ++ shardData2
+  }
+
+  "Data" should "be collapsed from distributed table" in {
+    withClusterTable(Seq("a Int32", "b String"), "a", withDistributed = true,
+      tableEngine = "ReplicatedReplacingMergeTree") {
+
+      val expectedData = Seq(writeDuplicateData.last)
+
+      val df = spark
+        .read
+        .useForceCollapsingModifier()
+        .clickhouse(shard1Replica1.hostName, shard1Replica1.port, clusterName, clusterDistributedTestTable)
+
+      df.rdd.partitions.length should be(2)
+      val collect = df.collect().map(row => (row.getInt(0), row.getString(1)))
+
+      collect should be(expectedData)
+    }
+  }
+
+  "Data" should "not be collapsed from distributed table" in {
+    withClusterTable(Seq("a Int32", "b String"), "a", withDistributed = true,
+      tableEngine = "ReplicatedReplacingMergeTree") {
+
+      val expectedData = writeDuplicateData
+
+      val df = spark
+        .read
+        .clickhouse(shard1Replica1.hostName, shard1Replica1.port, clusterName, clusterDistributedTestTable)
+
+      df.rdd.partitions.length should be(2)
+      val collect = df.collect().map(row => (row.getInt(0), row.getString(1)))
+
+      collect should be(expectedData)
+    }
   }
 
   it should "read from sharded MergeTree table" in {

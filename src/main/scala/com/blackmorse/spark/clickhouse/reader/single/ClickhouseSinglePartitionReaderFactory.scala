@@ -12,7 +12,8 @@ class ClickhouseSinglePartitionReaderFactory(chReaderConf: ClickhouseReaderConfi
     new ClickhouseReaderBase(
       chReaderConf = chReaderConf,
       connectionProvider = () => new ClickHouseDriver().connect(chReaderConf.url, chReaderConf.connectionProps),
-      sql = s"SELECT $fields FROM ${table.database}.${table.name}"
+      sql = s"SELECT $fields FROM ${table.database}.${table.name}",
+      table = table
     )
   }
 }

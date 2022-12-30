@@ -1,5 +1,7 @@
 package com.blackmorse.spark.clickhouse.reader
 
+import com.blackmorse.spark.clickhouse.USE_FORCE_COLLAPSING_MODIFIER
+import com.blackmorse.spark.clickhouse.tables.ClickhouseTable
 import com.clickhouse.jdbc.ClickHouseConnection
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.catalyst.InternalRow
@@ -9,13 +11,23 @@ import org.apache.spark.sql.connector.read.{InputPartition, PartitionReader}
 import java.sql.ResultSet
 
 class ClickhouseReaderBase[Partition <: InputPartition](chReaderConf: ClickhouseReaderConfiguration,
+                                                        table: ClickhouseTable,
                                                         sql: String,
                                                         connectionProvider: () => ClickHouseConnection)
     extends PartitionReader[InternalRow]
     with Logging {
 
+  private val useForceCollapsingModifier = Option(chReaderConf.connectionProps.get(USE_FORCE_COLLAPSING_MODIFIER))
+    .exists(_.asInstanceOf[String].toBoolean)
+
+  private val sqlQuery: String = table.engine match {
+    case engine if useForceCollapsingModifier &&
+      (engine.contains("CollapsingMergeTree") || engine.contains("ReplacingMergeTree")) => s"$sql FINAL"
+    case _ => sql
+  }
+
   private val conn = connectionProvider()
-  private val stmt = conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
+  private val stmt = conn.prepareStatement(sqlQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
   stmt.setFetchSize(300)
   logDebug(s"statement fetch size set to: ${stmt.getFetchSize}")
 

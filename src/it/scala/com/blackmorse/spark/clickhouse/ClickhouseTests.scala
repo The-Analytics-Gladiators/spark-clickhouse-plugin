@@ -10,7 +10,9 @@ object ClickhouseTests {
   val driver = new ClickHouseDriver()
   private lazy val connection = driver.connect(url, new Properties())
 
-  def withTable(fields: Seq[String], orderBy: String)(testSpec: => Any) {
+  def withTable(fields: Seq[String],
+                 orderBy: String,
+                 tableEngine: String = "MergeTree()")(testSpec: => Any) {
     val tableName = "default.test_table"
     val statement = connection.createStatement()
     try {
@@ -18,7 +20,7 @@ object ClickhouseTests {
         s"""
            |CREATE TABLE $tableName (
            |  ${fields.mkString(", ")}
-           |) ENGINE = MergeTree() ORDER BY $orderBy
+           |) ENGINE = $tableEngine ORDER BY $orderBy
            |""".stripMargin)
       testSpec
     } finally {
@@ -27,14 +29,17 @@ object ClickhouseTests {
     }
   }
 
-  def withClusterTable(fields: Seq[String], orderBy: String, withDistributed: Boolean)(testSpec: => Any): Unit = {
+  def withClusterTable(fields: Seq[String],
+                       orderBy: String,
+                       withDistributed: Boolean,
+                       tableEngine: String = "ReplicatedMergeTree")(testSpec: => Any): Unit = {
     val statement = connection.createStatement()
     try {
       statement.execute(
         s"""
            |CREATE TABLE $clusterTestTable on cluster $clusterName (
            |  ${fields.mkString(", ")}
-           |) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{shard}/$clusterTestTable', '{replica}')
+           |) ENGINE = $tableEngine('/clickhouse/tables/{shard}/$clusterTestTable', '{replica}')
            |ORDER BY $orderBy
            |""".stripMargin
       )

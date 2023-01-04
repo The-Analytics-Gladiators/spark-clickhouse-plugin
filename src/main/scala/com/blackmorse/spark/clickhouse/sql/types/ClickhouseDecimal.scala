@@ -23,7 +23,7 @@ case class ClickhouseDecimal(p: Int, s: Int, nullable: Boolean)
 
   override def toSparkType: DataType = StringType
 
-  protected override def setValueToStatement(i: Int, value: String, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
+  override def setValueToStatement(i: Int, value: String, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setBigDecimal(i, new java.math.BigDecimal(value).setScale(s))
 
   override def clickhouseDataTypeString: String = s"Decimal($p, $s)"

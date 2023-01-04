@@ -18,7 +18,7 @@ case class ClickhouseMap(key: ClickhouseType, value: ClickhouseType, nullable: B
 
   override val defaultValue: Map[key.T, value.T] = Map()
 
-  override protected def setValueToStatement(i: Int, v: Map[key.T, value.T], statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = ???
+  override def setValueToStatement(i: Int, v: Map[key.T, value.T], statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = ???
 
   override def clickhouseDataTypeString: String = ???
 

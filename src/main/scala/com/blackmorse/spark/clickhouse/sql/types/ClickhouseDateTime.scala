@@ -17,7 +17,7 @@ case class ClickhouseDateTime(nullable: Boolean, lowCardinality: Boolean)
 
   override def toSparkType: DataType = TimestampType
 
-  override protected def setValueToStatement(i: Int, value: Timestamp, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
+  override def setValueToStatement(i: Int, value: Timestamp, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setTimestamp(i, value, clickhouseTimeZoneInfo.calendar)
 
   override def clickhouseDataTypeString: String = "DateTime"
@@ -33,7 +33,7 @@ case class ClickhouseDateTime64(p: Int, nullable: Boolean)
   override lazy val defaultValue: Timestamp = new Timestamp(0)
   override def toSparkType: DataType = TimestampType
 
-  protected override def setValueToStatement(i: Int, value: Timestamp, statement: PreparedStatement)
+  override def setValueToStatement(i: Int, value: Timestamp, statement: PreparedStatement)
                                             (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
     statement.setTimestamp(i, value, clickhouseTimeZoneInfo.calendar)
   }

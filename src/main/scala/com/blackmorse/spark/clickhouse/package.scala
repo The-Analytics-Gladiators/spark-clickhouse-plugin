@@ -9,6 +9,7 @@ package object clickhouse {
   val BATCH_SIZE = "BATCH_SIZE"
   val CLUSTER = "CLUSTER"
   val DIRECTLY_USE_DISTRIBUTED_TABLE = "read_directly_from_distributed"
+  val RANDOM_WRITES_SHUFFLE = "random_writes_shuffle"
 
   implicit class ClickHouseDataWriter[T](writer: DataFrameWriter[T]) {
     def clickhouse(host: String, port: Int, table: String): Unit = {
@@ -17,7 +18,6 @@ package object clickhouse {
         .option(CLICKHOUSE_HOST_NAME, host)
         .option(CLICKHOUSE_PORT, port)
         .option(TABLE, table)
-        .option(BATCH_SIZE, 1000000)
         .mode(SaveMode.Append)
         .save()
     }
@@ -28,7 +28,6 @@ package object clickhouse {
         .option(CLICKHOUSE_HOST_NAME, host)
         .option(CLICKHOUSE_PORT, port)
         .option(TABLE, table)
-        .option(BATCH_SIZE, 1000000)
         .option(CLUSTER, cluster)
         .mode(SaveMode.Append)
         .save()
@@ -36,6 +35,12 @@ package object clickhouse {
 
     def writeDirectlyToDistributedTable(): DataFrameWriter[T] =
       writer.option(DIRECTLY_USE_DISTRIBUTED_TABLE, true)
+
+    def shuffle(): DataFrameWriter[T] =
+      writer.option(RANDOM_WRITES_SHUFFLE, true)
+
+    def batchSize(size: Int): DataFrameWriter[T] =
+      writer.option(BATCH_SIZE, size)
   }
 
   implicit class ClickHouseDataFrameReader(reader: DataFrameReader) {

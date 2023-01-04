@@ -18,7 +18,7 @@ case class ClickhouseArray(typ: ClickhouseType)
   override def toSparkType: DataType = ArrayType(typ.toSparkType, typ.nullable)
   override val nullable: Boolean = false
 
-  override protected def setValueToStatement(i: Int, value: Seq[AnyRef], statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
+  override def setValueToStatement(i: Int, value: Seq[AnyRef], statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
     val array = value.map {
       case null => if (typ.nullable) null else typ.defaultValue.asInstanceOf[AnyRef]
       case v => v

@@ -19,7 +19,7 @@ case class ClickhouseInt8(nullable: Boolean, lowCardinality: Boolean)
 
   override def toSparkType: DataType = ByteType
 
-  override protected def setValueToStatement(i: Int, value: Byte, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
+  override def setValueToStatement(i: Int, value: Byte, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setByte(i, value)
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Int8

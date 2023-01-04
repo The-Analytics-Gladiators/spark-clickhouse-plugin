@@ -21,6 +21,6 @@ case class ClickhouseDate32(nullable: Boolean, lowCardinality: Boolean)
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Date32
 
-  override protected def setValueToStatement(i: Int, value: Date, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
+  override def setValueToStatement(i: Int, value: Date, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setDate(i, value, clickhouseTimeZoneInfo.calendar)
 }

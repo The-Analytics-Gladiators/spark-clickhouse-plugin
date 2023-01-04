@@ -21,7 +21,7 @@ case class ClickhouseDate(nullable: Boolean, lowCardinality: Boolean)
   type T = java.sql.Date
   override def toSparkType: DataType = DateType
 
-  override protected def setValueToStatement(i: Int, value: sql.Date, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
+  override def setValueToStatement(i: Int, value: sql.Date, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setDate(i, value, clickhouseTimeZoneInfo.calendar)
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Date

@@ -17,7 +17,7 @@ case class ClickhouseFixedString(nullable: Boolean, lowCardinality: Boolean, len
 
   override def toSparkType: DataType = StringType
 
-  override protected def setValueToStatement(i: Int, value: String, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
+  override def setValueToStatement(i: Int, value: String, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
     statement.setString(i, value)
   }
 

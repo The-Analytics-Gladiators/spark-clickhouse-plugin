@@ -26,11 +26,13 @@ class DummyTest extends AnyFlatSpec with DataFrameSuiteBase {
     connection2.createStatement().executeQuery("INSERT INTO t VALUES (2)")
 
 
-//    val frame1 = sqlContext.read.jdbc("jdbc:clickhouse://clickhouse-server:8123", "default.d", new Properties())
     val frame1 = sqlContext.read.clickhouse(shard1Replica1.hostName, shard1Replica1.port, "default.d")
     val set = frame1.collect().map(_.getDecimal(0)).map(_.longValue()).toSet
 
     assert(set == Set(1L, 2L))
+
+    connection.createStatement().executeQuery(s"DROP TABLE t ON CLUSTER $clusterName")
+    connection.createStatement().executeQuery(s"DROP TABLE d ON CLUSTER $clusterName")
 
     connection.close()
     connection2.close()

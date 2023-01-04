@@ -21,6 +21,6 @@ case class ClickhouseUInt64(nullable: Boolean, lowCardinality: Boolean)
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.UInt64
 
-  override protected def setValueToStatement(i: Int, value: java.math.BigDecimal, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
+  override def setValueToStatement(i: Int, value: java.math.BigDecimal, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setBigDecimal(i, value)
 }

@@ -21,6 +21,6 @@ case class ClickhouseUInt8(nullable: Boolean, lowCardinality: Boolean)
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.UInt8
 
-  override protected def setValueToStatement(i: Int, value: Short, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
+  override def setValueToStatement(i: Int, value: Short, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setShort(i, value)
 }

@@ -20,7 +20,7 @@ case class ClickhouseBoolean(nullable: Boolean, lowCardinality: Boolean)
 
   override def clickhouseDataType: ClickHouseDataType = ClickHouseDataType.Bool
 
-  override protected def setValueToStatement(i: Int, value: Boolean, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
+  override def setValueToStatement(i: Int, value: Boolean, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setBoolean(i, value)
 
   //Impossible to set Array[AnyRef] with Booleans for JDBC driver

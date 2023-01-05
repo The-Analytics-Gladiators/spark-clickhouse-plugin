@@ -3,6 +3,7 @@ import sbtrelease.ReleaseStateTransformations._
 
 resolvers += Resolver.mavenLocal
 
+organization := "io.gladiators"
 name := "spark-clickhouse-plugin"
 
 scalaVersion := "2.12.15"

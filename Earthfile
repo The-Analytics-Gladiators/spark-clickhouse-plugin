@@ -19,6 +19,10 @@ jar:
     RUN sbt "set test in assembly := {}" assembly
     SAVE ARTIFACT TARGET/scala-2.12/spark-clickhouse-plugin-assembly-*.jar AS LOCAL ./jars
 
+release:
+    FROM +build
+    RUN sbt "set test in assembly := {}" release with-defaults
+
 testimage:
     FROM earthly/dind:alpine
     COPY Dockerfile .

@@ -19,7 +19,7 @@ jobs:
           name: Install released earthly
           command: "sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly'"
       - run: earthly --version
-      - run: earthly --use-inline-cache +test
+      - run: earthly --use-inline-cache --ci +test
 
 # workflows:
 #   version: 2

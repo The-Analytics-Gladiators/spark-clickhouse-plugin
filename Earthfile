@@ -1,4 +1,4 @@
-VERSION --use-registry-for-with-docker 0.6
+VERSION 0.6
 FROM hseeberger/scala-sbt:11.0.14.1_1.6.2_2.12.15
 WORKDIR /app
 

@@ -20,7 +20,7 @@ jobs:
         run: |
           git config --global user.email "gladiators@github.com"
           git config --global user.name "GitHub Gladiators Action"
-          sbt release with-defaults
+          sbt "release with-defaults"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           GITHUB_USERNAME: "The-Analytics-Gladiators"

@@ -17,7 +17,7 @@ jobs:
       - run: docker login --username "$DOCKERHUB_USERNAME" --password "$DOCKERHUB_TOKEN"
       - run: "sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/download/v0.6.30/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly'"
       - run: earthly --version
-      - run: earthly --no-use-registry-for-with-docker --ci +test
+      - run: earthly --no-cache --ci +test
 
 # workflows:
 #   version: 2

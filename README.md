@@ -9,6 +9,8 @@
 
 The most intuitive Spark Plugin for interacting with Clickhouse
 
+![gladiator](https://user-images.githubusercontent.com/739463/211081470-c122acee-781f-480e-b52e-48a8516529db.png)
+
 ## Usage
 
 ### Maven

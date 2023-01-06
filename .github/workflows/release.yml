@@ -24,16 +24,16 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           GITHUB_USERNAME: "The-Analytics-Gladiators"
-    - name: Generate README.md
-      uses: probablykasper/readme-template-action@v1
-      with:
-        token: "${{ secrets.GITHUB_TOKEN }}"
-        template: README_TEMPLATE.md
-        output: README.md
-    - name: Update README.md
-      run: |
-        if [[ "$(git status --porcelain)" != "" ]]; then
-          git add .
-          git commit -m "Auto-update README.md"
-          git push
-        fi      
+      - name: Generate README.md
+        uses: probablykasper/readme-template-action@v1
+        with:
+          token: "${{ secrets.GITHUB_TOKEN }}"
+          template: README_TEMPLATE.md
+          output: README.md
+      - name: Update README.md
+        run: |
+          if [[ "$(git status --porcelain)" != "" ]]; then
+            git add .
+            git commit -m "Auto-update README.md"
+            git push
+          fi      

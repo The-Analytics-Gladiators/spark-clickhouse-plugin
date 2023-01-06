@@ -1,28 +1,7 @@
 ```js
 // {{ TEMPLATE: }}
 module.exports = {
-  CUSTOM_PINNED_REPOS: {
-    type: 'specificRepos',
-    repos: [
-      'vidl',
-      'golang/go',
-      'probablykasper/embler',
-    ],
-    modifyVariables: function(repo, moment, user) {
-      repo.REPO_CREATED_MYDATE = moment(repo.REPO_CREATED_TIMESTAMP).format('YYYY MMMM Do')
-      return repo
-    },
-  },
-  "2_MOST_STARRED_REPOS": {
-    type: 'repos',
-    params: `
-      first: 2,
-      privacy: PUBLIC,
-      ownerAffiliations:[OWNER],
-      orderBy: { field:STARGAZERS, direction: DESC },
-    `,
-  },
-  LATEST_VIDL_RELEASE: {
+  LATEST_RELEASE: {
     type: 'customQuery',
     loop: false,
     query: async (octokit, moment, user) => {
@@ -44,7 +23,7 @@ module.exports = {
       // We have `loop: false`, so we return an object.
       // If we had `loop: true`, we would return an array of objects.
       return {
-        VIDL_RELEASE_TAG: release.name.replace("v", "")
+        RELEASE_TAG: release.name.replace("v", "")
       }
     }
   }
@@ -77,7 +56,7 @@ The most intuitive Spark Plugin for interacting with Clickhouse
         </repository>
         <repository>
           <id>github</id>
-          <url>https://maven.pkg.github.com/OWNER/REPOSITORY</url>
+          <url>https://maven.pkg.github.com/The-Analytics-Gladiators/spark-clickhouse-plugin</url>
           <snapshots>
             <enabled>true</enabled>
           </snapshots>
@@ -89,9 +68,18 @@ The most intuitive Spark Plugin for interacting with Clickhouse
   <dependency>
         <groupId>io.gladiators</groupId>
         <artifactId>spark-clickhouse-plugin_2.12</artifactId>
-        <version>$VIDL_RELEASE_TAG</version>
+        <version>{{ RELEASE_TAG }}</version>
     </dependency> 
   </dependencies>
+
+```
+
+### SBT
+
+```scala
+
+resolvers += "GitHubPackagesSamp" at "https://maven.pkg.github.com/The-Analytics-Gladiators/spark-clickhouse-plugin"
+libraryDependencies ++= Seq("io.gladiators" % "spark-clickhouse-plugin" % "{{ RELEASE_TAG }}")
 
 ```
 

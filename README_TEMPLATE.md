@@ -30,26 +30,21 @@ module.exports = {
       const result = await octokit.graphql(`
         query {
           repository(name: "spark-clickhouse-plugin", owner: "The-Analytics-Gladiators") {
-            releases(last: 1) {
+            refs(refPrefix: "refs/tags/", last: 1) {
               edges {
                 node {
-                  url
-                  publishedAt
-                  tagName
+                  name
                 }
               }
             }
           }
         }
       `)
-      const release = result.repository.releases.edges[0].node
-      const date = new Date(release.publishedAt)
+      const release = result.repository.refs.edges[0].node
       // We have `loop: false`, so we return an object.
       // If we had `loop: true`, we would return an array of objects.
       return {
-        VIDL_RELEASE_TAG: release.tagName,
-        VIDL_RELEASE_URL: release.url,
-        VIDL_RELEASE_WHEN: moment(release.publishedAt).fromNow(),
+        VIDL_RELEASE_TAG: release.name.replace("v", "")
       }
     }
   }

@@ -29,7 +29,7 @@ module.exports = {
       // You can do anything  you want with the GitHub API here.
       const result = await octokit.graphql(`
         query {
-          repository(name: "spark-clickhouse-plugin", owner: "${user.USERNAME}") {
+          repository(name: "spark-clickhouse-plugin", owner: "The-Analytics-Gladiators") {
             releases(last: 1) {
               edges {
                 node {
@@ -58,7 +58,7 @@ module.exports = {
 ```
 
 
-# spark-clickhouse-plugin
+# Mighty Spark Clickhouse Plugin
 
 [![spark-clickhouse-plugin](https://circleci.com/gh/The-Analytics-Gladiators/spark-clickhouse-plugin.svg?style=svg)](https://circleci.com/gh/The-Analytics-Gladiators/spark-clickhouse-plugin)
 ![https://circleci.com/gh/The-Analytics-Gladiators/spark-clickhouse-plugin](https://img.shields.io/github/license/The-Analytics-Gladiators/spark-clickhouse-plugin)
@@ -111,3 +111,6 @@ Contributions are welcome, but there are no guarantees that they are accepted as
 * Comment on the original issue that you have implemented a fix for it
 
 
+License
+
+Spark Clickhouse Plugin is licensed under the MIT license. See the LICENSE.txt file for more information.

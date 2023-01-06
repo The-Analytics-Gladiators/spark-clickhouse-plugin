@@ -40,7 +40,7 @@ module.exports = {
 
 ![gladiator](https://user-images.githubusercontent.com/739463/211081470-c122acee-781f-480e-b52e-48a8516529db.png)
 
-The most intuitive Spark Plugin for interacting with Clickhouse
+Behold the most intuitive Spark Plugin for interacting with Clickhouse
 
 ## Usage
 
@@ -78,7 +78,7 @@ The most intuitive Spark Plugin for interacting with Clickhouse
 
 ```scala
 
-resolvers += "GitHubPackagesSamp" at "https://maven.pkg.github.com/The-Analytics-Gladiators/spark-clickhouse-plugin"
+resolvers += "Github Gladiator" at "https://maven.pkg.github.com/The-Analytics-Gladiators/spark-clickhouse-plugin"
 libraryDependencies ++= Seq("io.gladiators" % "spark-clickhouse-plugin" % "{{ RELEASE_TAG }}")
 
 ```
@@ -96,6 +96,6 @@ Contributions are welcome, but there are no guarantees that they are accepted as
 * Comment on the original issue that you have implemented a fix for it
 
 
-License
+## License
 
 Spark Clickhouse Plugin is licensed under the MIT license. See the LICENSE.txt file for more information.

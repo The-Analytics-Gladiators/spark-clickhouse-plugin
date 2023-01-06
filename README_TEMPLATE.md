@@ -59,6 +59,8 @@ module.exports = {
 ![https://circleci.com/gh/The-Analytics-Gladiators/spark-clickhouse-plugin](https://img.shields.io/github/license/The-Analytics-Gladiators/spark-clickhouse-plugin)
 ![https://circleci.com/gh/The-Analytics-Gladiators/spark-clickhouse-plugin](https://img.shields.io/github/v/tag/The-Analytics-Gladiators/spark-clickhouse-plugin)
 
+![gladiator](https://user-images.githubusercontent.com/739463/211081470-c122acee-781f-480e-b52e-48a8516529db.png)
+
 The most intuitive Spark Plugin for interacting with Clickhouse
 
 ## Usage
@@ -87,7 +89,7 @@ The most intuitive Spark Plugin for interacting with Clickhouse
   <dependency>
         <groupId>io.gladiators</groupId>
         <artifactId>spark-clickhouse-plugin_2.12</artifactId>
-        <version>VIDL_RELEASE_TAG</version>
+        <version>$VIDL_RELEASE_TAG</version>
     </dependency> 
   </dependencies>
 

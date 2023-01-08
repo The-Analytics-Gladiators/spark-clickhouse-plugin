@@ -22,19 +22,6 @@ trait ClickhouseType
 
   def setValueToStatement(i: Int, value: T, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit
 
-  def extractFromRowAndSetToStatement(i: Int, row: InternalRow, dfFieldDataType: DataType, statement: PreparedStatement)
-                                     (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
-    val rowIsNull = row.isNullAt(i)
-    val statementIndex = i + 1
-
-    if (rowIsNull && nullable) statement.setObject(statementIndex, null)
-    else if (rowIsNull) setValueToStatement(statementIndex, defaultValue, statement)(clickhouseTimeZoneInfo)
-    else {
-      val extracted = InternalRow.getAccessor(dfFieldDataType, nullable)(row, i)
-      setValueToStatement(statementIndex, convertInternalValue(extracted), statement)(clickhouseTimeZoneInfo)
-    }
-  }
-
   def convertInternalValue(value: Any): T
 
   def convertInternalArrayValue(value: ArrayData, sparkType: DataType): Seq[T]

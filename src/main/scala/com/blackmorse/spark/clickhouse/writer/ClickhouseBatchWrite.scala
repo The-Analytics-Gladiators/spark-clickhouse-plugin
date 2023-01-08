@@ -20,10 +20,7 @@ class ClickhouseBatchWrite(chWriterConf: ClickhouseWriterConfiguration, clickhou
       case (_, t: DistributedTable) if directlyUseDistributed => new ClickhouseWriterFactory(chWriterConf.copy(shardingStrategy = SparkPartition), t, Seq(ClickhouseHost(1, chWriterConf.url)))
       case (_, DistributedTable(_, _, _, cluster, underlyingTable)) =>
         new ClickhouseWriterFactory(chWriterConf, underlyingTable, getShardUrls(chWriterConf.copy(cluster = Some(cluster))))
-//      case (_, DistributedTable(_, _, _, cluster, underlyingTable)) if !randomShuffle =>
-//        new ClickhouseWriterFactory(chWriterConf, underlyingTable, getShardUrls(chWriterConf.copy(cluster = Some(cluster))))
       case (Some(_), table)=> new ClickhouseWriterFactory(chWriterConf, table, getShardUrls(chWriterConf))
-//      case (Some(_), table) if !randomShuffle => new SimpleClickhouseWriterFactory(chWriterConf, table, getShardUrls(chWriterConf))
       case (None, table) => new ClickhouseWriterFactory(chWriterConf, table, Seq(ClickhouseHost(1, chWriterConf.url)))
     }
   }

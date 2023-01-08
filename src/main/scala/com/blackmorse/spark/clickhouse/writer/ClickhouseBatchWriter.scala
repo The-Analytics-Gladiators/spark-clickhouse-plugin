@@ -20,7 +20,6 @@ class ClickhouseBatchWriter(clickHouseDriver: ClickHouseDriver,
   private val connection = clickHouseDriver.connect(jdbcUrl, connectionProps)
   private var statement = connection.prepareStatement(sql)
   private var rowsInBatch = 0
-  private val rowsItself = mutable.Buffer[Int]()
 
   def addRow(record: InternalRow, fields: Seq[Field]): Unit = {
     rowsInBatch += 1
@@ -38,11 +37,9 @@ class ClickhouseBatchWriter(clickHouseDriver: ClickHouseDriver,
       }
     })
 
-    rowsItself.append(record.getInt(0))
     statement.addBatch()
     if (rowsInBatch >= batchSize) {
       log.debug(s"Batch complete, sending $rowsInBatch records")
-      rowsItself.clear()
       Using(statement)(stmt => stmt.executeBatch())
       statement = connection.prepareStatement(sql)
       rowsInBatch = 0

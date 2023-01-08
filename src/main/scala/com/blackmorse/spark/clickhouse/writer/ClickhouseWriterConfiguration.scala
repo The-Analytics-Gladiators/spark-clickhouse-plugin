@@ -6,7 +6,8 @@ import org.apache.spark.sql.types.{DataType, StructType}
 
 import java.util.Properties
 
-case class Field(chType: ClickhouseType,
+case class Field(name: String,
+                 chType: ClickhouseType,
                  sparkDataType: DataType,
                  index: Int,
                  clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo)
@@ -16,4 +17,5 @@ case class ClickhouseWriterConfiguration(url: String,
                                          cluster: Option[String],
                                          schema: StructType,
                                          fields: Seq[Field],
+                                         shardingStrategy: ShardingStrategy,
                                          connectionProps: Properties = new Properties())

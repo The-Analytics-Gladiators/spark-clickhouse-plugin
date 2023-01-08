@@ -3,8 +3,10 @@ package com.blackmorse.spark.clickhouse.writer
 import com.clickhouse.jdbc.ClickHouseDriver
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.catalyst.InternalRow
+import ru.yandex.clickhouse.settings.ClickHouseProperties
 
 import java.util.Properties
+import scala.collection.mutable
 import scala.util.Using
 
 class ClickhouseBatchWriter(clickHouseDriver: ClickHouseDriver,
@@ -14,9 +16,11 @@ class ClickhouseBatchWriter(clickHouseDriver: ClickHouseDriver,
                             batchSize: Int) extends Logging {
   //TODO unify URLs
   private val jdbcUrl = if(url.startsWith("jdbc")) url else s"jdbc:clickhouse://$url"
+  private val clickhouseProperties = new ClickHouseProperties()
   private val connection = clickHouseDriver.connect(jdbcUrl, connectionProps)
   private var statement = connection.prepareStatement(sql)
   private var rowsInBatch = 0
+  private val rowsItself = mutable.Buffer[Int]()
 
   def addRow(record: InternalRow, fields: Seq[Field]): Unit = {
     rowsInBatch += 1
@@ -33,12 +37,16 @@ class ClickhouseBatchWriter(clickHouseDriver: ClickHouseDriver,
         field.chType.setValueToStatement(statementIndex, field.chType.convertInternalValue(extracted), statement)(field.clickhouseTimeZoneInfo)
       }
     })
+
+    rowsItself.append(record.getInt(0))
     statement.addBatch()
     if (rowsInBatch >= batchSize) {
       log.debug(s"Batch complete, sending $rowsInBatch records")
+      rowsItself.clear()
       Using(statement)(stmt => stmt.executeBatch())
       statement = connection.prepareStatement(sql)
       rowsInBatch = 0
+
     }
   }
 

@@ -20,19 +20,17 @@ trait ClickhouseType
 
   def toSparkType: DataType
 
-  protected def setValueToStatement(i: Int, value: T, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit
+  def setValueToStatement(i: Int, value: T, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit
 
   def extractFromRowAndSetToStatement(i: Int, row: InternalRow, dfFieldDataType: DataType, statement: PreparedStatement)
                                      (clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit = {
     val rowIsNull = row.isNullAt(i)
     val statementIndex = i + 1
 
-    val rowExtractor = (row: InternalRow, index: Int) => InternalRow.getAccessor(dfFieldDataType, nullable)(row, index)
-
     if (rowIsNull && nullable) statement.setObject(statementIndex, null)
     else if (rowIsNull) setValueToStatement(statementIndex, defaultValue, statement)(clickhouseTimeZoneInfo)
     else {
-      val extracted = rowExtractor(row, i)
+      val extracted = InternalRow.getAccessor(dfFieldDataType, nullable)(row, i)
       setValueToStatement(statementIndex, convertInternalValue(extracted), statement)(clickhouseTimeZoneInfo)
     }
   }

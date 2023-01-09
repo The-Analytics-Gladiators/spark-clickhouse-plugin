@@ -1,6 +1,6 @@
 package com.blackmorse.spark.clickhouse.reader
 
-import com.blackmorse.spark.clickhouse.READ_DIRECTLY_FROM_DISTRIBUTED_TABLE
+import com.blackmorse.spark.clickhouse.DIRECTLY_USE_DISTRIBUTED_TABLE
 import com.blackmorse.spark.clickhouse.reader.sharded.{ClickhouseShardedPartitionScan, MergeTreePartitionsPlanner}
 import com.blackmorse.spark.clickhouse.reader.single.ClickhouseSinglePartitionScan
 import com.blackmorse.spark.clickhouse.tables.{DistributedTable, MergeTreeTable}
@@ -60,7 +60,7 @@ class ClickhouseScanBuilderTest extends AnyFlatSpec with Matchers {
 
   "For Distributed with read_directly_from_distributed = 1 table " should "single partition strategy applied" in {
     val properties = new Properties()
-    properties.put(READ_DIRECTLY_FROM_DISTRIBUTED_TABLE, "true")
+    properties.put(DIRECTLY_USE_DISTRIBUTED_TABLE, "true")
     val clickhouseReaderConfiguration = ClickhouseReaderConfiguration(
       schema = StructType(Seq()),
       url = "url",

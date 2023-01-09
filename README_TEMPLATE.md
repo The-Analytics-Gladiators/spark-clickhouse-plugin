@@ -1,4 +1,35 @@
-
+```js
+// {{ TEMPLATE: }}
+module.exports = {
+  LATEST_RELEASE: {
+    type: 'customQuery',
+    loop: false,
+    query: async (octokit, moment, user) => {
+      // You can do anything  you want with the GitHub API here.
+      const result = await octokit.graphql(`
+        query {
+          repository(name: "spark-clickhouse-plugin", owner: "The-Analytics-Gladiators") {
+            refs(refPrefix: "refs/tags/", last: 1) {
+              edges {
+                node {
+                  name
+                }
+              }
+            }
+          }
+        }
+      `)
+      const release = result.repository.refs.edges[0].node
+      // We have `loop: false`, so we return an object.
+      // If we had `loop: true`, we would return an array of objects.
+      return {
+        RELEASE_TAG: release.name.replace("v", "")
+      }
+    }
+  }
+}
+// {{ :TEMPLATE }}
+```
 
 
 # Mighty Spark Clickhouse Plugin
@@ -37,7 +68,7 @@ Behold the most intuitive Spark Plugin for interacting with Clickhouse
   <dependency>
         <groupId>io.gladiators</groupId>
         <artifactId>spark-clickhouse-plugin_2.12</artifactId>
-        <version>0.15</version>
+        <version>{{ RELEASE_TAG }}</version>
     </dependency> 
   </dependencies>
 
@@ -48,7 +79,7 @@ Behold the most intuitive Spark Plugin for interacting with Clickhouse
 ```scala
 
 resolvers += "Github Gladiator" at "https://maven.pkg.github.com/The-Analytics-Gladiators/spark-clickhouse-plugin"
-libraryDependencies ++= Seq("io.gladiators" % "spark-clickhouse-plugin" % "0.15")
+libraryDependencies ++= Seq("io.gladiators" % "spark-clickhouse-plugin" % "{{ RELEASE_TAG }}")
 
 ```
 

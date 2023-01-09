@@ -1,15 +1,14 @@
 package com.blackmorse.spark.clickhouse.writer
 
 import com.blackmorse.spark.clickhouse.exceptions.ClickhouseUnableToReadMetadataException
-import com.blackmorse.spark.clickhouse.services.ClickhouseTableService
 import com.blackmorse.spark.clickhouse.spark.types.SchemaMerger
+import com.blackmorse.spark.clickhouse.tables.ClickhouseTable
+import com.blackmorse.spark.clickhouse.tables.services.TableInfoService
 import com.blackmorse.spark.clickhouse.utils.JDBCTimeZoneUtils
-import com.blackmorse.spark.clickhouse.{BATCH_SIZE, CLICKHOUSE_HOST_NAME, CLICKHOUSE_PORT, TABLE}
+import com.blackmorse.spark.clickhouse.{BATCH_SIZE, CLICKHOUSE_HOST_NAME, CLICKHOUSE_PORT, CLUSTER, TABLE}
 import org.apache.commons.collections.MapUtils
-import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.connector.write._
 
-import java.sql.PreparedStatement
 import scala.util.{Failure, Success}
 
 class ClickhouseWriterBuilder(info: LogicalWriteInfo) extends WriteBuilder {
@@ -17,59 +16,52 @@ class ClickhouseWriterBuilder(info: LogicalWriteInfo) extends WriteBuilder {
 }
 
 class ClickhouseWrite(info: LogicalWriteInfo) extends Write {
-  override def toBatch: BatchWrite = new ClickhouseBatchWrite(writerInfo())
+  override def toBatch: BatchWrite = {
+    val (chWriterInfo, clickhouseTable) = writerInfo()
+    new ClickhouseBatchWrite(chWriterInfo, clickhouseTable)
+  }
 
-  private def writerInfo(): ClickhouseWriterInfo = {
+  private def writerInfo(): (ClickhouseWriterConfiguration, ClickhouseTable) = {
     val hostName = info.options.get(CLICKHOUSE_HOST_NAME)
     val port = info.options.get(CLICKHOUSE_PORT)
     val table = info.options.get(TABLE)
-    val batchSize = info.options.get(BATCH_SIZE).toInt
+    val batchSize = Option(info.options.get(BATCH_SIZE))
+      .map(_.toInt)
+      .getOrElse(1000000
+      )
+    val cluster = Option(info.options.get(CLUSTER))
 
     val url = s"jdbc:clickhouse://$hostName:$port"
-    //TODO
-    val clickhouseTimeZoneInfo = JDBCTimeZoneUtils.fetchClickhouseTimeZoneFromServer(url) match {
-      case Success(value) => value
-      case Failure(exception) => throw ClickhouseUnableToReadMetadataException("Unable to read TimeZone", exception)
-    }
 
     val allAvailableProperties = MapUtils.toProperties(info.options().asCaseSensitiveMap())
-    val parsedTable = ClickhouseTableService.fetchFieldsAndEngine(url, table, allAvailableProperties) match {
-      case Failure(exception) => throw ClickhouseUnableToReadMetadataException(s"Unable to read metadata about $table on $url", exception)
+
+    (for {
+      clickhouseFields <- TableInfoService.fetchFields(url, table, allAvailableProperties)
+      clickhouseTimeZoneInfo <- JDBCTimeZoneUtils.fetchClickhouseTimeZoneFromServer(url)
+      clickhouseTable <- TableInfoService.readTableInfo(url, table, allAvailableProperties)
+    } yield {
+      val schema = info.schema()
+      val mergedSchema = SchemaMerger.mergeSchemas(schema, clickhouseFields)
+
+      val fields = mergedSchema.zipWithIndex.map { case ((sparkField, chField), index) =>
+        Field(chType = chField.typ,
+          sparkDataType = sparkField.dataType,
+          index = index,
+          clickhouseTimeZoneInfo = clickhouseTimeZoneInfo
+        )
+      }
+
+      (ClickhouseWriterConfiguration(
+        url = url,
+        batchSize = batchSize,
+        cluster = cluster,
+        fields = fields,
+        schema = schema,
+        connectionProps = allAvailableProperties
+      ), clickhouseTable)
+    }) match {
+      case Failure(exception) => throw ClickhouseUnableToReadMetadataException(s"Unable to read metadata about $table", exception)
       case Success(value) => value
     }
-    val clickhouseFields = parsedTable.fields
-
-    val schema = info.schema()
-    val mergedSchema = SchemaMerger.mergeSchemas(schema, clickhouseFields)
-
-    val rowSetters = mergedSchema.zipWithIndex.map { case ((sparkField, chField), index) =>
-      val clickhouseType = chField.typ
-
-      (row: InternalRow, statement: PreparedStatement) =>
-        clickhouseType.extractFromRowAndSetToStatement(index, row, sparkField.dataType, statement)(clickhouseTimeZoneInfo)
-    }
-
-    ClickhouseWriterInfo(
-      url = url,
-      tableName = table,
-      batchSize = batchSize,
-      rowSetters = rowSetters,
-      schema = schema,
-      connectionProperties = allAvailableProperties
-    )
   }
-}
-
-class ClickhouseBatchWrite(writerInfo: ClickhouseWriterInfo) extends BatchWrite {
-  override def createBatchWriterFactory(info: PhysicalWriteInfo): DataWriterFactory =
-    new ClickhouseWriterFactory(writerInfo)
-
-  override def commit(messages: Array[WriterCommitMessage]): Unit = {}
-
-  override def abort(messages: Array[WriterCommitMessage]): Unit = {}
-}
-
-class ClickhouseWriterFactory(writerInfo: ClickhouseWriterInfo) extends DataWriterFactory {
-  override def createWriter(partitionId: Int, taskId: Long): DataWriter[InternalRow] =
-    new ClickhouseWriter(writerInfo)
 }

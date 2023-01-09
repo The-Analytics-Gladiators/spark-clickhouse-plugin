@@ -10,6 +10,7 @@ object ClickhouseTests {
   val driver = new ClickHouseDriver()
   private lazy val connection = driver.connect(url, new Properties())
 
+
   def withTable(fields: Seq[String],
                  orderBy: String,
                  tableEngine: String = "MergeTree()")(testSpec: => Any) {
@@ -19,14 +20,14 @@ object ClickhouseTests {
     try {
       statement.execute(
         s"""
-           |CREATE TABLE $tableName (
+           |CREATE TABLE $testTable (
            |  ${fields.mkString(", ")}
            |) ENGINE = $tableEngine$sign ORDER BY $orderBy
            |""".stripMargin)
       testSpec
     } finally {
       statement.close()
-      connection.createStatement().execute(s"DROP TABLE IF EXISTS $tableName SYNC")
+      connection.createStatement().execute(s"DROP TABLE IF EXISTS $testTable SYNC")
     }
   }
 

@@ -1,8 +1,10 @@
+import sbtrelease._
+import sbtrelease.ReleaseStateTransformations._
+
 resolvers += Resolver.mavenLocal
 
+organization := "io.gladiators"
 name := "spark-clickhouse-plugin"
-
-version := "0.0.1"
 
 scalaVersion := "2.12.15"
 
@@ -17,7 +19,6 @@ libraryDependencies ++= Seq(
 
   "com.holdenkarau" %% "spark-testing-base" % "3.2.0_1.1.1" % "it,test",
   "org.typelevel" %% "discipline-scalatest" % "2.1.5" % "it,test"
-
 )
 
 configs(IntegrationTest)
@@ -47,4 +48,37 @@ assemblyMergeStrategy in assembly := {
       case _ => MergeStrategy.first
     }
   case _ => MergeStrategy.first
+}
+
+releaseIgnoreUntrackedFiles := true
+
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  publishArtifacts,
+  setNextVersion,
+  commitNextVersion,
+  pushChanges
+)
+
+publishMavenStyle := true
+
+publishTo := Some(
+  "GitHub Package Registry " at "https://maven.pkg.github.com/The-Analytics-Gladiators/spark-clickhouse-plugin"
+)
+
+(sys.env.get("GITHUB_USERNAME"), sys.env.get("GITHUB_TOKEN")) match {
+  case (Some(username), Some(token)) =>
+    credentials += Credentials(
+      "GitHub Package Registry",
+      "maven.pkg.github.com",
+      username,
+      token
+    )
+  case _ =>
+    println("No github token found")
+    credentials ++= Seq()
 }

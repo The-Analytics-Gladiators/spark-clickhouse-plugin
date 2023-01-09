@@ -20,7 +20,7 @@ abstract class ClickhouseBigIntType(private val _clickHouseDataType: ClickHouseD
   override def clickhouseDataType: ClickHouseDataType = _clickHouseDataType
   override def toSparkType: DataType = StringType
 
-  override protected def setValueToStatement(i: Int, value: String, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
+  override def setValueToStatement(i: Int, value: String, statement: PreparedStatement)(clickhouseTimeZoneInfo: ClickhouseTimeZoneInfo): Unit =
     statement.setBigDecimal(i, new java.math.BigDecimal(value))
 }
 

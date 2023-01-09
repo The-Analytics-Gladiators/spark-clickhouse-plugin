@@ -15,12 +15,13 @@ object ClickhouseTests {
                  tableEngine: String = "MergeTree()")(testSpec: => Any) {
     val tableName = "default.test_table"
     val statement = connection.createStatement()
+    val sign = if (isCollapsingMergeTreeEngine(tableEngine)) s"(${fields.last.split(" ")(0)})" else ""
     try {
       statement.execute(
         s"""
            |CREATE TABLE $tableName (
            |  ${fields.mkString(", ")}
-           |) ENGINE = $tableEngine ORDER BY $orderBy
+           |) ENGINE = $tableEngine$sign ORDER BY $orderBy
            |""".stripMargin)
       testSpec
     } finally {
@@ -34,12 +35,13 @@ object ClickhouseTests {
                        withDistributed: Boolean,
                        tableEngine: String = "ReplicatedMergeTree")(testSpec: => Any): Unit = {
     val statement = connection.createStatement()
+    val sign = if (isCollapsingMergeTreeEngine(tableEngine)) s", ${fields.last.split(" ")(0)}" else ""
     try {
       statement.execute(
         s"""
            |CREATE TABLE $clusterTestTable on cluster $clusterName (
            |  ${fields.mkString(", ")}
-           |) ENGINE = $tableEngine('/clickhouse/tables/{shard}/$clusterTestTable', '{replica}')
+           |) ENGINE = $tableEngine('/clickhouse/tables/{shard}/$clusterTestTable', '{replica}'$sign)
            |ORDER BY $orderBy
            |""".stripMargin
       )
@@ -61,5 +63,9 @@ object ClickhouseTests {
         connection.createStatement().execute(s"DROP TABLE IF EXISTS $clusterDistributedTestTable ON CLUSTER $clusterName SYNC")
       }
     }
+  }
+
+  private def isCollapsingMergeTreeEngine(tableEngine: String): Boolean = {
+    tableEngine.contains("CollapsingMergeTree")
   }
 }

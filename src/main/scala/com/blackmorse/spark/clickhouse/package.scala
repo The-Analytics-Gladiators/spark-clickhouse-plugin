@@ -48,7 +48,7 @@ package object clickhouse {
     def batchSize(size: Int): DataFrameReader =
       reader.option(BATCH_SIZE, size)
 
-    def useForceCollapsingModifier(): DataFrameReader =
-      reader.option(USE_FORCE_COLLAPSING_MODIFIER, true)
+    def disableForceCollapsing(): DataFrameReader =
+      reader.option(USE_FORCE_COLLAPSING_MODIFIER, false)
   }
 }

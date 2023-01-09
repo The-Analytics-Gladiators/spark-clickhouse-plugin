@@ -14,7 +14,6 @@ object ClickhouseTests {
   def withTable(fields: Seq[String],
                  orderBy: String,
                  tableEngine: String = "MergeTree()")(testSpec: => Any) {
-    val tableName = "default.test_table"
     val statement = connection.createStatement()
     val sign = if (isCollapsingMergeTreeEngine(tableEngine)) s"(${fields.last.split(" ")(0)})" else ""
     try {

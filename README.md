@@ -37,7 +37,7 @@ Behold the most intuitive Spark Plugin for interacting with Clickhouse
   <dependency>
         <groupId>io.gladiators</groupId>
         <artifactId>spark-clickhouse-plugin_2.12</artifactId>
-        <version>0.16</version>
+        <version>0.17</version>
     </dependency> 
   </dependencies>
 
@@ -48,7 +48,7 @@ Behold the most intuitive Spark Plugin for interacting with Clickhouse
 ```scala
 
 resolvers += "Github Gladiator" at "https://maven.pkg.github.com/The-Analytics-Gladiators/spark-clickhouse-plugin"
-libraryDependencies ++= Seq("io.gladiators" % "spark-clickhouse-plugin" % "0.16")
+libraryDependencies ++= Seq("io.gladiators" % "spark-clickhouse-plugin" % "0.17")
 
 ```
 

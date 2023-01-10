@@ -20,24 +20,17 @@ Behold the most intuitive Spark Plugin for interacting with Clickhouse
       <id>github</id>
       <repositories>
         <repository>
-          <id>central</id>
-          <url>https://repo1.maven.org/maven2</url>
-        </repository>
-        <repository>
-          <id>github</id>
-          <url>https://maven.pkg.github.com/The-Analytics-Gladiators/spark-clickhouse-plugin</url>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
         </repository>
       </repositories>
     </profile>
   </profiles>
   <dependencies>
   <dependency>
-        <groupId>io.gladiators</groupId>
+        <groupId>com.github.The-Analytics-Gladiators</groupId>
         <artifactId>spark-clickhouse-plugin_2.12</artifactId>
-        <version>0.17</version>
+        <version>0.18</version>
     </dependency> 
   </dependencies>
 
@@ -46,9 +39,8 @@ Behold the most intuitive Spark Plugin for interacting with Clickhouse
 ### SBT
 
 ```scala
-
-resolvers += "Github Gladiator" at "https://maven.pkg.github.com/The-Analytics-Gladiators/spark-clickhouse-plugin"
-libraryDependencies ++= Seq("io.gladiators" % "spark-clickhouse-plugin" % "0.17")
+resolvers += "jitpack" at "https://jitpack.io"
+libraryDependencies += "com.github.The-Analytics-Gladiators" % "spark-clickhouse-plugin" % "0.18"	
 
 ```
 

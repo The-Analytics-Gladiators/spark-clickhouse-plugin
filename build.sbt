@@ -6,10 +6,10 @@ resolvers += Resolver.mavenLocal
 organization := "io.gladiators"
 name := "spark-clickhouse-plugin"
 
-scalaVersion := "2.12.15"
 
-val sparkVersion = "3.2.0"
+val sparkVersion = "3.3.0"
 
+crossScalaVersions := Seq("2.12.15", "2.13.10")
 
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % sparkVersion % Provided,
@@ -17,7 +17,7 @@ libraryDependencies ++= Seq(
   "com.clickhouse" % "clickhouse-jdbc" % "0.3.2-patch11",
   "com.github.bigwheel" %% "util-backports" % "2.1", //backport of scala utils for 2.12
 
-  "com.holdenkarau" %% "spark-testing-base" % "3.2.0_1.1.1" % "it,test",
+  "com.holdenkarau" %% "spark-testing-base" % "3.3.0_1.3.0" % "it,test",
   "org.typelevel" %% "discipline-scalatest" % "2.1.5" % "it,test"
 )
 

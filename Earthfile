@@ -40,6 +40,9 @@ test:
     COPY docker-compose.yml build.sbt .
     COPY docker/wait.sh .
     WITH DOCKER --load sbt_ch_plugin:latest=+testimage --compose docker-compose.yml
-        #RUN ./wait.sh && docker exec -i sbt-clickhouse-plugin sbt test it:test
-        RUN ./wait.sh &&  docker run --rm --name sbt-clickhouse-plugin --network ch_network sbt_ch_plugin:latest sbt test it:test
+        RUN ./wait.sh &&  docker run --rm --name sbt-clickhouse-plugin --network ch_network sbt_ch_plugin:latest sbt ++2.12.15 test it:test
+    END
+
+    WITH DOCKER --load sbt_ch_plugin:latest=+testimage --compose docker-compose.yml
+        RUN ./wait.sh &&  docker run --rm --name sbt-clickhouse-plugin --network ch_network sbt_ch_plugin:latest sbt ++2.13.10 test it:test
     END

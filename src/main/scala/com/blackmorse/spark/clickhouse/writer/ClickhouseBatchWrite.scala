@@ -13,20 +13,15 @@ class ClickhouseBatchWrite(chWriterConf: ClickhouseWriterConfiguration, clickhou
     .map(_.asInstanceOf[String].toBoolean)
     .getOrElse(false)
 
-  private val randomShuffle = Option(chWriterConf.connectionProps.get(RANDOM_WRITES_SHUFFLE))
-    .map(_.asInstanceOf[String].toBoolean)
-    .getOrElse(false)
-
   override def createBatchWriterFactory(info: PhysicalWriteInfo): DataWriterFactory = {
     (chWriterConf.cluster, clickhouseTable) match {
       case (Some(userCluster), DistributedTable(_, _, _, cluster, _)) if userCluster != cluster => throw new IllegalArgumentException(s"User has pointed to the Distributed table: " +
         s"$clickhouseTable which is defined on the $cluster, while user has specified $userCluster")
-      case (_, t: DistributedTable) if directlyUseDistributed => new SimpleClickhouseWriterFactory(chWriterConf, t, Seq(ClickhouseHost(1, chWriterConf.url)))
-      case (_, DistributedTable(_, _, _, cluster, underlyingTable)) if randomShuffle => new ShardedClickhouseWriterFactory(chWriterConf, underlyingTable, getShardUrls(chWriterConf.copy(cluster = Some(cluster))))
-      case (_, DistributedTable(_, _, _, cluster, underlyingTable)) if !randomShuffle => new SimpleClickhouseWriterFactory(chWriterConf, underlyingTable, getShardUrls(chWriterConf.copy(cluster = Some(cluster))))
-      case (Some(_), table) if randomShuffle => new ShardedClickhouseWriterFactory(chWriterConf, table, getShardUrls(chWriterConf))
-      case (Some(_), table) if !randomShuffle => new SimpleClickhouseWriterFactory(chWriterConf, table, getShardUrls(chWriterConf))
-      case (None, table) => new SimpleClickhouseWriterFactory(chWriterConf, table, Seq(ClickhouseHost(1, chWriterConf.url)))
+      case (_, t: DistributedTable) if directlyUseDistributed => new ClickhouseWriterFactory(chWriterConf.copy(shardingStrategy = SparkPartition), t, Seq(ClickhouseHost(1, chWriterConf.url)))
+      case (_, DistributedTable(_, _, _, cluster, underlyingTable)) =>
+        new ClickhouseWriterFactory(chWriterConf, underlyingTable, getShardUrls(chWriterConf.copy(cluster = Some(cluster))))
+      case (Some(_), table)=> new ClickhouseWriterFactory(chWriterConf, table, getShardUrls(chWriterConf))
+      case (None, table) => new ClickhouseWriterFactory(chWriterConf, table, Seq(ClickhouseHost(1, chWriterConf.url)))
     }
   }
 

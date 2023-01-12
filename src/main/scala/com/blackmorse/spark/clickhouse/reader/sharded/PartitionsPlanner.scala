@@ -6,6 +6,10 @@ import com.blackmorse.spark.clickhouse.tables.services.{ClickhouseHost, TableInf
 import com.blackmorse.spark.clickhouse.tables.{ClickhouseTable, MergeTreeTable}
 import org.apache.spark.sql.connector.read.InputPartition
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, Future}
+
 trait PartitionsPlanner {
   def planPartitions(hosts: Seq[ClickhouseHost], table: ClickhouseTable, chReaderConf: ClickhouseReaderConfiguration): Array[InputPartition]
 }
@@ -19,22 +23,27 @@ trait MergeTreePartitionsPlanner extends PartitionsPlanner {
   private def divWithCeil(a: Long, b: Int): Long =
     if (a % b == 0) a / b else (a / b + 1)
   override def planPartitions(shardsUrls: Seq[ClickhouseHost], table: ClickhouseTable, chReaderConf: ClickhouseReaderConfiguration): Array[InputPartition] = {
+    val future = Future.sequence(shardsUrls.map(host => Future(getPartitionsForHost(host, table, chReaderConf))))
+      .map(_.flatten)
+
+    Await.result(future, 30.second).toArray
+  }
+
+  private def getPartitionsForHost(host: ClickhouseHost, table: ClickhouseTable, chReaderConf: ClickhouseReaderConfiguration): Seq[ShardedClickhousePartition] = {
+    val url = host.url
+    val count = TableInfoService.getCountRows(s"jdbc:clickhouse://${host.url}", table.toString(), chReaderConf.connectionProps)
+
     val batchSize = Option(chReaderConf.connectionProps.get(BATCH_SIZE))
       .map(_.asInstanceOf[String].toInt)
       .getOrElse(1000000)
 
-
-    shardsUrls.par.map(host => (host.url, TableInfoService.getCountRows(s"jdbc:clickhouse://${host.url}", table.toString(), chReaderConf.connectionProps)))
-      .flatMap {
-        case (url, count) =>
-          (0.toLong until divWithCeil(count, batchSize)) map (offset =>
-            ShardedClickhousePartition(
-              partitionUrl = url,
-              limitBy = Some(LimitBy(
-                offset = offset * batchSize,
-                batchSize = batchSize,
-                orderingKey = table.asInstanceOf[MergeTreeTable].orderingKey
-              ))))
-      }.toArray
+    (0.toLong until divWithCeil(count, batchSize)) map (offset =>
+      ShardedClickhousePartition(
+        partitionUrl = url,
+        limitBy = Some(LimitBy(
+          offset = offset * batchSize,
+          batchSize = batchSize,
+          orderingKey = table.asInstanceOf[MergeTreeTable].orderingKey
+        ))))
   }
 }

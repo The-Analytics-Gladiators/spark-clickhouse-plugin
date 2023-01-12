@@ -8,7 +8,7 @@ import org.apache.spark.Partitioner
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
-class SimpleShardedWriterTests extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
+class SparkPartitionShardedWriterTests extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
 
   it should "write to standalone table" in {
     withTable(Seq("a Int32", "b String"), "a") {

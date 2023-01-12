@@ -10,6 +10,7 @@ package object clickhouse {
   val CLUSTER = "CLUSTER"
   val DIRECTLY_USE_DISTRIBUTED_TABLE = "read_directly_from_distributed"
   val RANDOM_WRITES_SHUFFLE = "random_writes_shuffle"
+  val SHARD_FIELD = "shard_field"
   val FORCE_COLLAPSING_MODIFIER = "force_collapsing_modifier"
 
 
@@ -43,6 +44,9 @@ package object clickhouse {
 
     def batchSize(size: Int): DataFrameWriter[T] =
       writer.option(BATCH_SIZE, size)
+
+    def shardBy(fieldName: String): DataFrameWriter[T] =
+      writer.option(SHARD_FIELD, fieldName)
   }
 
   implicit class ClickHouseDataFrameReader(reader: DataFrameReader) {

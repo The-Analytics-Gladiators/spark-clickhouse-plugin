@@ -31,25 +31,23 @@ class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameS
     (shard1Data, shard2Data)
   }
 
-  private def generateDuplicateData: (Seq[(Int, String)], Seq[(Int, String)]) = {
+  private def generateDuplicateData(): (Seq[(Int, String)], Seq[(Int, String)]) = {
     val count = 2
     val shard1Data = (1 to count).map(i => (count, i.toString))
     val shard2Data = ((count + 1) to (count * 2)).map(i => (count, i.toString))
     (shard1Data, shard2Data)
   }
 
-  private def generateDuplicateDataForCollapsingMergeTree: Seq[(Int, String, Int)] = {
+  private def generateDuplicateDataForCollapsingMergeTree(): Seq[(Int, String, Int)] = {
     val count = 3
-    val data = (1 to count)
-      .map(i => (count, count.toString, if (i % 2 != 0) 1 else -1))
-    data
+    (1 to count).map(i => (count, count.toString, if (i % 2 != 0) 1 else -1))
   }
 
   "Data" should "be collapsed from distributed table with ReplacingMergeTree engine" in {
     withClusterTable(Seq("a Int32", "b String"), "a", withDistributed = true,
       tableEngine = "ReplicatedReplacingMergeTree") {
 
-      val (shard1Data, shard2Data) = generateDuplicateData
+      val (shard1Data, shard2Data) = generateDuplicateData()
       writeData(shard1Data, shard2Data)
 
       val df = spark
@@ -67,7 +65,7 @@ class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameS
     withClusterTable(Seq("a Int32", "b String"), "a", withDistributed = true,
       tableEngine = "ReplicatedReplacingMergeTree") {
 
-      val (shard1Data, shard2Data) = generateDuplicateData
+      val (shard1Data, shard2Data) = generateDuplicateData()
       val expectedData = writeData(shard1Data, shard2Data)
 
       val df = spark
@@ -87,7 +85,7 @@ class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameS
     withClusterTable(Seq("a Int32", "b String", "Sign Int8"), "a", withDistributed = true,
       tableEngine = "ReplicatedCollapsingMergeTree") {
 
-      val data = generateDuplicateDataForCollapsingMergeTree
+      val data = generateDuplicateDataForCollapsingMergeTree()
       writeData(data, data, Seq("a", "b", "Sign"))
 
       val df = spark
@@ -105,7 +103,7 @@ class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameS
     withClusterTable(Seq("a Int32", "b String", "Sign Int8"), "a", withDistributed = true,
       tableEngine = "ReplicatedCollapsingMergeTree") {
 
-      val data = generateDuplicateDataForCollapsingMergeTree
+      val data = generateDuplicateDataForCollapsingMergeTree()
       writeData(data, data, Seq("a", "b", "Sign"))
 
       val df = spark

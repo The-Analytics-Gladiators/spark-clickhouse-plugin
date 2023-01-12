@@ -19,23 +19,20 @@ class ClickhouseSingleReaderTest extends AnyFlatSpec with Matchers with DataFram
       .clickhouse(shard1Replica1.hostName, shard1Replica1.port, testTable)
   }
 
-  private def generateDuplicateData: Seq[(Int, String)] = {
+  private def generateDuplicateData(): Seq[(Int, String)] = {
     val count = 2
-    val data = (1 to count).map(i => (count, i.toString))
-    data
+    (1 to count).map(i => (count, i.toString))
   }
 
-  private def generateDuplicateDataForCollapsingMergeTree: Seq[(Int, String, Int)] = {
+  private def generateDuplicateDataForCollapsingMergeTree(): Seq[(Int, String, Int)] = {
     val count = 3
-    val data = (1 to count)
-      .map(i => (count, count.toString, if (i % 2 != 0) 1 else -1))
-    data
+    (1 to count).map(i => (count, count.toString, if (i % 2 != 0) 1 else -1))
   }
 
   "Data" should "be collapsed from table with ReplacingMergeTree engine" in {
     withTable(Seq("a Int32", "b String"), "a", tableEngine = "ReplacingMergeTree()") {
 
-      val data = generateDuplicateData
+      val data = generateDuplicateData()
       writeData(data)
 
       val df = spark
@@ -51,7 +48,7 @@ class ClickhouseSingleReaderTest extends AnyFlatSpec with Matchers with DataFram
   "Data" should "not be collapsed from table with ReplacingMergeTree engine" in {
     withTable(Seq("a Int32", "b String"), "a", tableEngine = "ReplacingMergeTree()") {
 
-      val expectedData = generateDuplicateData
+      val expectedData = generateDuplicateData()
       writeData(expectedData)
 
       val df = spark
@@ -68,7 +65,7 @@ class ClickhouseSingleReaderTest extends AnyFlatSpec with Matchers with DataFram
   "Data" should "be collapsed from table with CollapsingMergeTree engine" in {
     withTable(Seq("a Int32", "b String", "Sign Int8"), "a", tableEngine = "CollapsingMergeTree") {
 
-      val data = generateDuplicateDataForCollapsingMergeTree
+      val data = generateDuplicateDataForCollapsingMergeTree()
       writeData(data, Seq("a", "b", "Sign"))
 
       val df = spark
@@ -84,7 +81,7 @@ class ClickhouseSingleReaderTest extends AnyFlatSpec with Matchers with DataFram
   "Data" should "not be collapsed from table with CollapsingMergeTree engine" in {
     withTable(Seq("a Int32", "b String", "Sign Int8"), "a", tableEngine = "CollapsingMergeTree") {
 
-      val data = generateDuplicateDataForCollapsingMergeTree
+      val data = generateDuplicateDataForCollapsingMergeTree()
       writeData(data, Seq("a", "b", "Sign"))
 
       val df = spark

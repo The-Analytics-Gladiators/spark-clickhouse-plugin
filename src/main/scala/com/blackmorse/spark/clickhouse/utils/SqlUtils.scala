@@ -10,10 +10,9 @@ object SqlUtils {
                        useForceCollapsingModifier: Boolean
                      ): String = {
     val sql = s"SELECT $fields FROM $table"
-    table.engine match {
-      case engine if useForceCollapsingModifier &&
-        (engine.contains("CollapsingMergeTree") || engine.contains("ReplacingMergeTree")) => s"$sql FINAL"
-      case _ => sql
-    }
+    if (useForceCollapsingModifier &&
+      (table.engine.contains("CollapsingMergeTree") || table.engine.contains("ReplacingMergeTree")))
+      s"$sql FINAL"
+    else sql
   }
 }

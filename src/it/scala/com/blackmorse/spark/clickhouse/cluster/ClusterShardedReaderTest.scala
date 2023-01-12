@@ -4,52 +4,44 @@ import com.blackmorse.spark.clickhouse.ClickhouseHosts._
 import com.blackmorse.spark.clickhouse.ClickhouseTests.withClusterTable
 import com.blackmorse.spark.clickhouse._
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
+import org.apache.spark.sql.Encoder
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import spire.ClassTag
 
 class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameSuiteBase {
   import sqlContext.implicits._
-  private def writeData(count: Int): Seq[(Int, String)] = {
-    val shardData1 = (1 to count).map(i => (i, i.toString))
-    spark.sparkContext.parallelize(shardData1).toDF("a", "b")
+
+  def writeData[T:ClassTag](shard1Data: Seq[T], shard2Data: Seq[T], columns: Seq[String] = Seq("a", "b"))
+                           (implicit e: Encoder[T]): Seq[T] = {
+    spark.sparkContext.parallelize[T](shard1Data).toDF(columns:_*)
       .write
       .clickhouse(shard1Replica1.hostName, shard1Replica1.port, clusterTestTable)
 
-    val shardData2 = ((count + 1) to (count * 2)).map(i => (i, i.toString))
-    spark.sparkContext.parallelize(shardData2).toDF("a", "b")
-      .write.clickhouse(shard2Replica1.hostName, shard2Replica1.port, clusterTestTable)
-
-    shardData1 ++ shardData2
-  }
-
-  private def writeDuplicateData: Seq[(Int, String)] = {
-    val count = 2
-    val shardData1 = (1 to count).map(i => (count, i.toString))
-    spark.sparkContext.parallelize(shardData1).toDF("a", "b")
-      .write
-      .clickhouse(shard1Replica1.hostName, shard1Replica1.port, clusterTestTable)
-
-    val shardData2 = ((count + 1) to (count * 2)).map(i => (count, i.toString))
-    spark.sparkContext.parallelize(shardData2).toDF("a", "b")
+    spark.sparkContext.parallelize[T](shard2Data).toDF(columns:_*)
       .write
       .clickhouse(shard2Replica1.hostName, shard2Replica1.port, clusterTestTable)
 
-    shardData1 ++ shardData2
+    shard1Data ++ shard2Data
   }
 
-  private def writeDuplicateDataForCollapsingMergeTree: Seq[(Int, String, Int)] = {
+  private def generateData(count: Int): (Seq[(Int, String)], Seq[(Int, String)]) = {
+    val shard1Data = (1 to count).map(i => (i, i.toString))
+    val shard2Data = ((count + 1) to (count * 2)).map(i => (i, i.toString))
+    (shard1Data, shard2Data)
+  }
+
+  private def generateDuplicateData: (Seq[(Int, String)], Seq[(Int, String)]) = {
+    val count = 2
+    val shard1Data = (1 to count).map(i => (count, i.toString))
+    val shard2Data = ((count + 1) to (count * 2)).map(i => (count, i.toString))
+    (shard1Data, shard2Data)
+  }
+
+  private def generateDuplicateDataForCollapsingMergeTree: Seq[(Int, String, Int)] = {
     val count = 3
     val data = (1 to count)
       .map(i => (count, count.toString, if (i % 2 != 0) 1 else -1))
-
-    spark.sparkContext.parallelize(data).toDF("a", "b", "sign")
-      .write
-      .clickhouse(shard1Replica1.hostName, shard1Replica1.port, clusterTestTable)
-
-    spark.sparkContext.parallelize(data).toDF("a", "b", "sign")
-      .write
-      .clickhouse(shard2Replica1.hostName, shard2Replica1.port, clusterTestTable)
-
     data
   }
 
@@ -57,7 +49,8 @@ class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameS
     withClusterTable(Seq("a Int32", "b String"), "a", withDistributed = true,
       tableEngine = "ReplicatedReplacingMergeTree") {
 
-      writeDuplicateData
+      val (shard1Data, shard2Data) = generateDuplicateData
+      writeData(shard1Data, shard2Data)
 
       val df = spark
         .read
@@ -74,7 +67,8 @@ class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameS
     withClusterTable(Seq("a Int32", "b String"), "a", withDistributed = true,
       tableEngine = "ReplicatedReplacingMergeTree") {
 
-      val expectedData = writeDuplicateData
+      val (shard1Data, shard2Data) = generateDuplicateData
+      val expectedData = writeData(shard1Data, shard2Data)
 
       val df = spark
         .read
@@ -93,7 +87,8 @@ class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameS
     withClusterTable(Seq("a Int32", "b String", "Sign Int8"), "a", withDistributed = true,
       tableEngine = "ReplicatedCollapsingMergeTree") {
 
-      writeDuplicateDataForCollapsingMergeTree
+      val data = generateDuplicateDataForCollapsingMergeTree
+      writeData(data, data, Seq("a", "b", "Sign"))
 
       val df = spark
         .read
@@ -110,7 +105,8 @@ class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameS
     withClusterTable(Seq("a Int32", "b String", "Sign Int8"), "a", withDistributed = true,
       tableEngine = "ReplicatedCollapsingMergeTree") {
 
-      writeDuplicateDataForCollapsingMergeTree
+      val data = generateDuplicateDataForCollapsingMergeTree
+      writeData(data, data, Seq("a", "b", "Sign"))
 
       val df = spark
         .read
@@ -126,7 +122,8 @@ class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameS
 
   it should "read from sharded MergeTree table" in {
     withClusterTable(Seq("a Int32", "b String"), "a", withDistributed = false) {
-      val writtenData = writeData(2)
+      val (shard1Data, shard2Data) = generateData(2)
+      val writtenData = writeData(shard1Data, shard2Data)
 
       val df = sqlContext.read.clickhouse(shard1Replica1.hostName, shard1Replica1.port, clusterName, clusterTestTable)
 
@@ -139,7 +136,8 @@ class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameS
 
   it should "read from distributed table with specified cluster" in {
     withClusterTable(Seq("a Int32", "b String"), "a", withDistributed = true) {
-      val writtenData = writeData(2)
+      val (shard1Data, shard2Data) = generateData(2)
+      val writtenData = writeData(shard1Data, shard2Data)
 
       val df = spark.read.clickhouse(shard1Replica1.hostName, shard1Replica1.port, clusterName, clusterDistributedTestTable)
 
@@ -152,7 +150,8 @@ class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameS
 
   it should "read from distributed table without specifying cluster" in {
     withClusterTable(Seq("a Int32", "b String"), "a", withDistributed = true) {
-      val writtenData = writeData(2)
+      val (shard1Data, shard2Data) = generateData(2)
+      val writtenData = writeData(shard1Data, shard2Data)
 
       val df = spark.read.clickhouse(shard1Replica1.hostName, shard1Replica1.port, clusterDistributedTestTable)
 
@@ -165,7 +164,8 @@ class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameS
 
   it should "read from distributed table even with restriction of reading the underlying table" in {
     withClusterTable(Seq("a Int32", "b String"), "a", withDistributed = true) {
-      val writtenData = writeData(2)
+      val (shard1Data, shard2Data) = generateData(2)
+      val writtenData = writeData(shard1Data, shard2Data)
 
       val df = spark.read
         .readDirectlyFromDistributedTable()
@@ -189,7 +189,9 @@ class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameS
 
   it should "read from underlying MergeTree table by batches" in {
     withClusterTable(Seq("a Int32", "b String"), "a", withDistributed = true) {
-      val writtenData = writeData(9)
+      val (shard1Data, shard2Data) = generateData(9)
+      val writtenData = writeData(shard1Data, shard2Data)
+
       val df = spark.read
         .batchSize(2)
         .clickhouse(shard1Replica1.hostName, shard1Replica1.port, clusterDistributedTestTable)
@@ -203,7 +205,9 @@ class ClusterShardedReaderTest extends AnyFlatSpec with Matchers with DataFrameS
 
   it should "read from underlying MergeTree table with no ordering key by batches" in {
     withClusterTable(Seq("a Int32", "b String"), "tuple()", withDistributed = true) {
-      val writtenData = writeData(9)
+      val (shard1Data, shard2Data) = generateData(9)
+      val writtenData = writeData(shard1Data, shard2Data)
+
       val df = spark.read
         .batchSize(2)
         .clickhouse(shard1Replica1.hostName, shard1Replica1.port, clusterDistributedTestTable)

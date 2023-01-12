@@ -8,11 +8,10 @@ package object clickhouse {
   val TABLE = "TABLE"
   val BATCH_SIZE = "BATCH_SIZE"
   val CLUSTER = "CLUSTER"
-  val READ_DIRECTLY_FROM_DISTRIBUTED_TABLE = "read_directly_from_distributed"
   val DIRECTLY_USE_DISTRIBUTED_TABLE = "read_directly_from_distributed"
   val RANDOM_WRITES_SHUFFLE = "random_writes_shuffle"
-  val USE_FORCE_COLLAPSING_MODIFIER = "use_force_collapsing_modifier"
-  
+  val FORCE_COLLAPSING_MODIFIER = "force_collapsing_modifier"
+
 
   implicit class ClickHouseDataWriter[T](writer: DataFrameWriter[T]) {
     def clickhouse(host: String, port: Int, table: String): Unit = {
@@ -71,6 +70,6 @@ package object clickhouse {
       reader.option(BATCH_SIZE, size)
 
     def disableForceCollapsing(): DataFrameReader =
-      reader.option(USE_FORCE_COLLAPSING_MODIFIER, false)
+      reader.option(FORCE_COLLAPSING_MODIFIER, false)
   }
 }

@@ -1,6 +1,6 @@
 package com.blackmorse.spark.clickhouse.reader.single
 
-import com.blackmorse.spark.clickhouse.USE_FORCE_COLLAPSING_MODIFIER
+import com.blackmorse.spark.clickhouse.FORCE_COLLAPSING_MODIFIER
 import com.blackmorse.spark.clickhouse.reader.{ClickhouseReaderBase, ClickhouseReaderConfiguration}
 import com.blackmorse.spark.clickhouse.tables.ClickhouseTable
 import com.blackmorse.spark.clickhouse.utils.SqlUtils.prepareSqlQuery
@@ -10,7 +10,7 @@ import org.apache.spark.sql.connector.read.{InputPartition, PartitionReader, Par
 
 class ClickhouseSinglePartitionReaderFactory(chReaderConf: ClickhouseReaderConfiguration, table: ClickhouseTable) extends PartitionReaderFactory {
 
-  private val useForceCollapsingModifier = Option(chReaderConf.connectionProps.get(USE_FORCE_COLLAPSING_MODIFIER))
+  private val useForceCollapsingModifier = Option(chReaderConf.connectionProps.get(FORCE_COLLAPSING_MODIFIER))
     .forall(_.asInstanceOf[String].toBoolean)
 
   override def createReader(partition: InputPartition): PartitionReader[InternalRow] = {

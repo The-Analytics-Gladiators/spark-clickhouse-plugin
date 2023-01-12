@@ -4,39 +4,14 @@ import com.blackmorse.spark.clickhouse.exceptions.ClickhouseUnableToReadMetadata
 import com.blackmorse.spark.clickhouse.spark.types.SchemaMerger
 import com.blackmorse.spark.clickhouse.tables.ClickhouseTable
 import com.blackmorse.spark.clickhouse.tables.services.TableInfoService
-import com.blackmorse.spark.clickhouse.utils.JDBCTimeZoneUtils
-import com.blackmorse.spark.clickhouse.{BATCH_SIZE, CLICKHOUSE_HOST_NAME, CLICKHOUSE_PORT, CLUSTER, RANDOM_WRITES_SHUFFLE, SHARD_FIELD, TABLE}
+import com.blackmorse.spark.clickhouse.utils.{JDBCTimeZoneUtils, PropertiesUtils}
+import com.blackmorse.spark.clickhouse.{BATCH_SIZE, CLICKHOUSE_HOST_NAME, CLICKHOUSE_PORT, CLUSTER, TABLE}
 import org.apache.commons.collections.MapUtils
 import org.apache.spark.sql.connector.write._
-import org.apache.spark.sql.util.CaseInsensitiveStringMap
-import ru.yandex.clickhouse.settings.{ClickHouseConnectionSettings, ClickHouseQueryParam}
-
+//for cross-compilation
+import scala.collection.JavaConverters._
 import scala.util.{Failure, Success}
 
-sealed trait ShardingStrategy extends Serializable
-
-object ShardingStrategy {
-  def parseStrategy(options: CaseInsensitiveStringMap): ShardingStrategy = {
-    if (!options.containsKey(RANDOM_WRITES_SHUFFLE) && !options.containsKey(SHARD_FIELD)) {
-      SparkPartition
-    } else if (options.containsKey(SHARD_FIELD)){
-      ShardByField(options.get(SHARD_FIELD))
-    } else if (options.containsKey(RANDOM_WRITES_SHUFFLE)) {
-      RandomShuffle
-    } else {
-      throw new IllegalArgumentException("Wrong sharding settings. Probably you've specified both randomShuffle and field's sharding")
-    }
-  }
-}
-
-/**
- * Whole Spark partition will be written into one shard
- */
-object SparkPartition extends ShardingStrategy
-
-object RandomShuffle extends ShardingStrategy
-
-case class ShardByField(field: String) extends ShardingStrategy
 
 class ClickhouseWriterBuilder(info: LogicalWriteInfo) extends WriteBuilder {
   override def build(): Write = new ClickhouseWrite(info)
@@ -57,25 +32,14 @@ class ClickhouseWrite(info: LogicalWriteInfo) extends Write {
       .getOrElse(1000000)
     val cluster = Option(info.options.get(CLUSTER))
 
-    import scala.collection.JavaConverters._
-
-
     val shardingStrategy = ShardingStrategy.parseStrategy(info.options())
 
     val url = s"jdbc:clickhouse://$hostName:$port"
 
     val allAvailableProperties = MapUtils.toProperties(info.options().asCaseSensitiveMap())
 
-    val options = info.options().asCaseSensitiveMap().asScala
-      .flatMap{case (key, value) =>
-        if(ClickHouseConnectionSettings.values().exists(v => v.getKey == key.toLowerCase)
-          || ClickHouseQueryParam.values().exists(v => v.getKey == key.toLowerCase)) {
-          Some(s"${key.toLowerCase}=$value")
-        } else {
-          None
-        }
-      }.mkString(",")
-      allAvailableProperties.put("custom_http_params", options)
+    val options = PropertiesUtils.httpParams(info.options().asCaseSensitiveMap().asScala.toMap)
+    allAvailableProperties.put("custom_http_params", options)
 
     (for {
       clickhouseFields <- TableInfoService.fetchFields(url, table, allAvailableProperties)

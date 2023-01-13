@@ -11,6 +11,7 @@ package object clickhouse {
   val DIRECTLY_USE_DISTRIBUTED_TABLE = "read_directly_from_distributed"
   val RANDOM_WRITES_SHUFFLE = "random_writes_shuffle"
   val SHARD_FIELD = "shard_field"
+  val CH_PROPERTIES_PREFIX = "http_params_"
   val FORCE_COLLAPSING_MODIFIER = "force_collapsing_modifier"
 
 
@@ -35,6 +36,9 @@ package object clickhouse {
         .mode(SaveMode.Append)
         .save()
     }
+
+    def jdbcParam(key: String, value: String): DataFrameWriter[T] =
+      writer.option(s"${CH_PROPERTIES_PREFIX}key", value)
 
     def writeDirectlyToDistributedTable(): DataFrameWriter[T] =
       writer.option(DIRECTLY_USE_DISTRIBUTED_TABLE, true)
@@ -66,6 +70,9 @@ package object clickhouse {
         .option(TABLE, table)
         .option(CLUSTER, cluster)
         .load()
+
+    def jdbcParam(key: String, value: String): DataFrameReader =
+      reader.option(s"${CH_PROPERTIES_PREFIX}key", value)
 
     def readDirectlyFromDistributedTable(): DataFrameReader =
       reader.option(DIRECTLY_USE_DISTRIBUTED_TABLE, true)

@@ -1,9 +1,9 @@
 package com.blackmorse.spark.clickhouse.writer
 
-import com.blackmorse.spark.clickhouse.{DIRECTLY_USE_DISTRIBUTED_TABLE, RANDOM_WRITES_SHUFFLE}
+import com.blackmorse.spark.clickhouse.DIRECTLY_USE_DISTRIBUTED_TABLE
 import com.blackmorse.spark.clickhouse.exceptions.ClickhouseUnableToReadMetadataException
-import com.blackmorse.spark.clickhouse.tables.{ClickhouseTable, DistributedTable}
 import com.blackmorse.spark.clickhouse.tables.services.{ClickhouseHost, ClusterService}
+import com.blackmorse.spark.clickhouse.tables.{ClickhouseTable, DistributedTable}
 import org.apache.spark.sql.connector.write.{BatchWrite, DataWriterFactory, PhysicalWriteInfo, WriterCommitMessage}
 
 import scala.util.{Failure, Success}

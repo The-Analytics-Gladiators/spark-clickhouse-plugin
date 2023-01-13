@@ -26,7 +26,8 @@ class ClickhouseSingleReaderTest extends AnyFlatSpec with Matchers with DataFram
 
   private def generateDuplicateDataForCollapsingMergeTree(): Seq[(Int, String, Int)] = {
     val count = 3
-    (1 to count).map(i => (count, count.toString, if (i % 2 != 0) 1 else -1))
+    (1 to count).map(i =>
+      (count, if (i == count) (count * 2).toString else count.toString, if (i % 2 != 0) 1 else -1))
   }
 
   "Data" should "be collapsed from table with ReplacingMergeTree engine" in {

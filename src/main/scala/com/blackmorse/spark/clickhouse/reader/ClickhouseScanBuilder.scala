@@ -7,6 +7,7 @@ import com.blackmorse.spark.clickhouse.tables.{ClickhouseTable, DistributedTable
 import org.apache.spark.sql.connector.read._
 import org.apache.spark.sql.sources.Filter
 
+
 class ClickhouseScanBuilder(chReaderConf: ClickhouseReaderConfiguration, clickhouseTable: ClickhouseTable)
     extends ScanBuilder
     with SupportsPushDownFilters {

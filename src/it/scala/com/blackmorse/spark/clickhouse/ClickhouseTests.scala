@@ -10,14 +10,18 @@ object ClickhouseTests {
   val driver = new ClickHouseDriver()
   private lazy val connection = driver.connect(url, new Properties())
 
-  def withTable(fields: Seq[String], orderBy: String)(testSpec: => Any) {
+
+  def withTable(fields: Seq[String],
+                 orderBy: String,
+                 tableEngine: String = "MergeTree()")(testSpec: => Any) {
     val statement = connection.createStatement()
+    val sign = if (isCollapsingMergeTreeEngine(tableEngine)) s"(${fields.last.split(" ")(0)})" else ""
     try {
       statement.execute(
         s"""
            |CREATE TABLE $testTable (
            |  ${fields.mkString(", ")}
-           |) ENGINE = MergeTree() ORDER BY $orderBy
+           |) ENGINE = $tableEngine$sign ORDER BY $orderBy
            |""".stripMargin)
       testSpec
     } finally {
@@ -26,14 +30,18 @@ object ClickhouseTests {
     }
   }
 
-  def withClusterTable(fields: Seq[String], orderBy: String, withDistributed: Boolean)(testSpec: => Any): Unit = {
+  def withClusterTable(fields: Seq[String],
+                       orderBy: String,
+                       withDistributed: Boolean,
+                       tableEngine: String = "ReplicatedMergeTree")(testSpec: => Any): Unit = {
     val statement = connection.createStatement()
+    val sign = if (isCollapsingMergeTreeEngine(tableEngine)) s", ${fields.last.split(" ")(0)}" else ""
     try {
       statement.execute(
         s"""
            |CREATE TABLE $clusterTestTable on cluster $clusterName (
            |  ${fields.mkString(", ")}
-           |) ENGINE = ReplicatedMergeTree('/clickhouse/tables/{shard}/$clusterTestTable', '{replica}')
+           |) ENGINE = $tableEngine('/clickhouse/tables/{shard}/$clusterTestTable', '{replica}'$sign)
            |ORDER BY $orderBy
            |""".stripMargin
       )
@@ -55,5 +63,9 @@ object ClickhouseTests {
         connection.createStatement().execute(s"DROP TABLE IF EXISTS $clusterDistributedTestTable ON CLUSTER $clusterName SYNC")
       }
     }
+  }
+
+  private def isCollapsingMergeTreeEngine(tableEngine: String): Boolean = {
+    tableEngine.contains("CollapsingMergeTree")
   }
 }

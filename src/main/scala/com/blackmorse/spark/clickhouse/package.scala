@@ -12,6 +12,8 @@ package object clickhouse {
   val RANDOM_WRITES_SHUFFLE = "random_writes_shuffle"
   val SHARD_FIELD = "shard_field"
   val CH_PROPERTIES_PREFIX = "http_params_"
+  val FORCE_COLLAPSING_MODIFIER = "force_collapsing_modifier"
+
 
   implicit class ClickHouseDataWriter[T](writer: DataFrameWriter[T]) {
     def clickhouse(host: String, port: Int, table: String): Unit = {
@@ -77,5 +79,8 @@ package object clickhouse {
 
     def batchSize(size: Int): DataFrameReader =
       reader.option(BATCH_SIZE, size)
+
+    def disableForceCollapsing(): DataFrameReader =
+      reader.option(FORCE_COLLAPSING_MODIFIER, false)
   }
 }

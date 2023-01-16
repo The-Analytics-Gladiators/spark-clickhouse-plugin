@@ -30,7 +30,7 @@ Behold the most intuitive Spark Plugin for interacting with Clickhouse
   <dependency>
         <groupId>com.github.The-Analytics-Gladiators</groupId>
         <artifactId>spark-clickhouse-plugin_2.12</artifactId>
-        <version>0.20</version>
+        <version>0.21</version>
     </dependency> 
   </dependencies>
 
@@ -40,7 +40,7 @@ Behold the most intuitive Spark Plugin for interacting with Clickhouse
 
 ```scala
 resolvers += "jitpack" at "https://jitpack.io"
-libraryDependencies += "com.github.The-Analytics-Gladiators" % "spark-clickhouse-plugin" % "0.20"	
+libraryDependencies += "com.github.The-Analytics-Gladiators" % "spark-clickhouse-plugin" % "0.21"	
 
 ```
 

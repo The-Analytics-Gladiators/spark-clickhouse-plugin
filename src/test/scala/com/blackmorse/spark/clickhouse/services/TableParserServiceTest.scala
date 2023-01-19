@@ -13,6 +13,10 @@ class TableParserServiceTest extends AnyFlatSpec with Matchers {
     parseOrderingKey("ENGINE = MergeTree() ORDER BY field") should be (Some("field"))
   }
 
+  "parse single key with spaces" should "return this key" in {
+    parseOrderingKey("ENGINE = MergeTree() ORDER BY someFunc(a, b)") should be (Some("someFunc(a, b)"))
+  }
+
   "parse double key" should "return string" in {
     parseOrderingKey("ENGINE = MergeTree() ORDER BY (field1, field2) OTHER STUFF") should be (Some("field1, field2"))
   }
@@ -25,5 +29,4 @@ class TableParserServiceTest extends AnyFlatSpec with Matchers {
     parseOrderingKey("ENGINE = MergeTree ORDER BY tuple() SETTINGS index_granularity = 8196") should be (None)
   }
 
-  //TODO order by single key with spaces. E.g. "ORDER BY someFunc(a, b)"
 }

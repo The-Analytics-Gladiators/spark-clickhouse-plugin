@@ -25,7 +25,7 @@ object TableParserService {
     else if (engineFull(startIndex + orderBy.length) != '(') {
       Option {
         val key = getWhatInside(engineFull.substring(startIndex + orderBy.length) + " ", 1, "", ' ', ' ')
-        if (key == "tuple()") null else key
+        if (key.contains("tuple()")) null else key
       }
     } else Some(
       getWhatInside(engineFull.substring(startIndex + orderBy.length + 1), 1, "", '(', ')')
@@ -39,6 +39,8 @@ object TableParserService {
                             openSymbol: Char, closeSymbol: Char): String =
     str.headOption match {
       case None => throw new IllegalArgumentException(s"Can't parse ordering key from $str")
+      case Some(`closeSymbol`) if !str.isBlank && closeSymbol.isWhitespace =>
+        getWhatInside(str.tail, count, result + closeSymbol, openSymbol, closeSymbol)
       case Some(`closeSymbol`) if count == 1 => result
       case Some(`closeSymbol`) => getWhatInside(str.tail, count - 1, result + closeSymbol, openSymbol, closeSymbol)
       case Some(`openSymbol`) => getWhatInside(str.tail, count + 1, result + openSymbol, openSymbol, closeSymbol)
